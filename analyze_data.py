@@ -42,6 +42,35 @@ def analyze_vim_data(url):
     df_vim['selected_level'] = pd.to_numeric(df_vim['selected_level'], errors='coerce')
     df_clean = df_vim.dropna(subset=['selected_level']).copy()
     df_clean = df_clean[df_clean['parameter'] != 'attention_check']
+
+    # --- Section A2: Response Distribution Analysis ---
+    print("\n" + "="*50)
+    print("--- Response Distribution Analysis ---")
+    print("Frequency of each level (1-21) selected for each parameter.")
+    print("This helps check for floor/ceiling effects and unused scale regions.\n")
+
+    # Get a list of all unique parameters that were actually rated
+    all_params_rated = df_clean['parameter'].unique()
+
+    for param in all_params_rated:
+        print(f"--- Distribution for: {param} ---")
+        
+        # Filter the DataFrame for the current parameter
+        param_data = df_clean[df_clean['parameter'] == param]
+        
+        # Get the value counts for the 'selected_level' column
+        # .value_counts() automatically counts occurrences of each unique value
+        # .sort_index() ensures the output is sorted by level (1, 2, 3...)
+        distribution = param_data['selected_level'].value_counts().sort_index()
+        
+        # Print the distribution in a readable format
+        for level, count in distribution.items():
+            # Create a simple bar for visualization
+            bar = '#' * count
+            print(f"  Level {int(level):>2}: {count:<3} | {bar}")
+        print("\n")
+
+    print("="*50 + "\n")
     
     # --- 3. TRANSFORM RAW SCORES INTO THEORETICALLY MEANINGFUL SCORES ---
     
@@ -231,6 +260,45 @@ def analyze_vim_data(url):
 
     # --- END OF NEW BLOCK ---
 
+    # --- Section B3: Confidence Rating Analysis ---
+    print("\n" + "="*50)
+    print("--- Confidence Rating Analysis ---")
+    print("Mean confidence scores (1-7 scale).\n")
+
+    # 1. Preprocess the confidence column to ensure it's numeric
+    df_clean['confidence'] = pd.to_numeric(df_clean['confidence'], errors='coerce')
+
+    # Check if there is any confidence data to analyze
+    if not df_clean['confidence'].isnull().all():
+
+        # a) Analysis by Parameter (collapsed across conditions)
+        print("Table C1: Mean Confidence by Parameter\n")
+        confidence_by_param = df_clean.groupby('parameter')['confidence'].agg(['mean', 'std'])
+        # Reorder to match the standard parameter order for consistency
+        confidence_by_param = confidence_by_param.reindex(param_order)
+        print(confidence_by_param.to_string())
+        print("\n" + "-"*50)
+
+        # b) Analysis by Condition (collapsed across parameters)
+        print("\nTable C2: Mean Confidence by Condition\n")
+        confidence_by_cond = df_clean.groupby('condition')['confidence'].agg(['mean', 'std'])
+        print(confidence_by_cond.to_string())
+        print("\n" + "-"*50)
+
+        # c) Analysis by Parameter x Condition (the full interaction)
+        print("\nTable C3: Mean Confidence by Condition and Parameter\n")
+        confidence_by_interaction = df_clean.groupby(['condition', 'parameter'])['confidence'].mean().unstack()
+        # Reorder the columns for consistency
+        confidence_by_interaction = confidence_by_interaction[param_order]
+        print(confidence_by_interaction.to_string())
+
+    else:
+        print("No valid confidence data was found to analyze.")
+
+    print("\n" + "="*50 + "\n")
+    # --- END OF NEW BLOCK ---
+
+
     # --- Section C: VVIQ Analysis & Correlation ---
 
     df['trial_id'] = df['trial_id'].astype(str)
@@ -286,10 +354,35 @@ def analyze_vim_data(url):
         else:
             print("  Not enough complete participant data to calculate correlations.")
 
+         # --- NEW BLOCK: Correlation Analysis Part 2: Individual Parameters ---
+        print("\n\nTable 5: Pearson Correlations with VVIQ Score (Individual Parameters):\n")
+        print("(Scores for each parameter are averaged across all conditions for each participant)\n")
+
+        # 1. Get the overall mean for each parameter for each participant (collapsing conditions)
+        overall_param_means = participant_param_means.groupby(['sessionID', 'parameter'])['transformed_score'].mean().reset_index()
+
+        # 2. Pivot this data to a "wide" format
+        wide_param_means = overall_param_means.pivot(index='sessionID', columns='parameter', values='transformed_score').reset_index()
+
+        # 3. Merge with VVIQ scores
+        merged_param_corr = pd.merge(wide_param_means, vviq_scores, on='sessionID')
+
+        # 4. Loop through each parameter and calculate the correlation
+        if len(merged_param_corr) >= 2:
+            for param in all_params:
+                # Check that the column exists and has data before trying to correlate
+                if param in merged_param_corr.columns and not merged_param_corr[param].isnull().all():
+                    # Pearsonr automatically handles NaNs by ignoring pairs where either value is missing
+                    r_param, p_param = pearsonr(merged_param_corr[param], merged_param_corr['vviq_total_score'])
+                    print(f"  {param:>15}: r = {r_param:+.3f}, p = {p_param:.3f}")
+            print(f"\n  (Based on n={len(merged_param_corr)} participants with complete data)")
+        else:
+            print("  Not enough complete participant data to calculate parameter correlations.")
+        # --- END OF NEW BLOCK ---
+
     else:
         print("\n--- VVIQ Analysis ---")
         print("No VVIQ data found in the file.")
-
 
 # --- Run the analysis ---
 if __name__ == "__main__":
