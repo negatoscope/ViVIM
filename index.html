@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>ViVIM Task</title>
-    <link rel="icon" type="image/png" href="images/instructions/icon_blurriness.png">
+    <link rel="icon" type="image/png" href="images/instructions/icon_clarity.png">
     <style>
       body {
         font-family: sans-serif;
@@ -1130,7 +1130,7 @@
             "<b>Step 3: Rate Your Confidence.</b> After each adjustment, you will rate how confident you are in your choice.",
           paramIntroTitle: "How the Task Works",
           paramIntroText:
-          `<b>2. Match the Image:</b> With the mental image in mind, you will open your eyes. Your task will be to adjust an image on the screen, using buttons and a slider, until it best matches the visual qualities (like brightness, blurriness, etc.) of the image in your head. The next few screens will provide an explanation of each quality along with an interactive demonstration of each one.`,
+          `<b>2. Match the Image:</b> With the mental image in mind, you will open your eyes. Your task will be to adjust an image on the screen, using buttons and a slider, until it best matches the visual qualities (like brightness, clarity, etc.) of the image in your head. The next few screens will provide an explanation of each quality along with an interactive demonstration of each one.`,
           paramDemoTitleTemplate: "Quality {X} of 6: {paramName}",
           paramDemoTextTemplate: "This refers to {paramDescription}",
           practiceIntroTitle: "Putting It All Together: A Practice Round",
@@ -1370,20 +1370,20 @@
                         }
                     }
                 },
-                blurriness: {
-                    name: { en: "Blurriness", es: "Desenfoque" }, levels: 21, coarse: { low: 4, mid: 11, high: 18 },
+                clarity: {
+                    name: { en: "Clarity", es: "Nitidez" }, levels: 21, coarse: { low: 4, mid: 11, high: 18 },
                     instructions: {
                         demo: {
-                            en: `How <b>sharp or out-of-focus</b> the scene was in your mind. <p>In the interactive demo, notice how moving the slider changes the image from blurry (<b>High Blurriness</b>) to sharp and clear (<b>Low Blurriness</b>).</p>`,
-                            es: `Qué tan <b>nítida o desenfocada</b> estaba la escena en su mente. <p>En la demostración interactiva, observe cómo al mover el deslizador la imagen cambia de borrosa (<b>Alto Desenfoque</b>) a nítida y clara (<b>Bajo Desenfoque</b>).</p>`
+                            en: `How <b>clear and sharp</b> or <b>blurry and out-of-focus</b> the scene was in your mind. <p>In the interactive demo, notice how moving the slider changes the image from blurry and indistinct (<b>Low Clarity</b>) to sharp and perfectly focused (<b>High Clarity</b>).</p>`,
+                            es: `Qué tan <b>nítida y enfocada</b> o <b>borrosa y desenfocada</b> estaba la escena en su mente. <p>En la demostración interactiva, observe cómo al mover el deslizador la imagen cambia de borrosa e indistinta (<b>Baja Nitidez</b>) a nítida y perfectamente enfocada (<b>Alta Nitidez</b>).</p>`
                         },
                         tutorial: {
-                            coarse:   { en: "PRACTICE: First, select the button (Low, Medium, or High) that best represents the overall <b>Blurriness</b> of your mental image.", es: "PRÁCTICA: Primero, seleccione el botón (Bajo, Medio o Alto) que mejor represente el <b>Desenfoque</b> general de su imagen mental." },
-                            fineTune: { en: "PRACTICE: Great! Now, use the slider to fine-tune the <b>Blurriness</b> for a more precise match.", es: "PRÁCTICA: ¡Genial! Ahora, use el deslizador para ajustar el <b>Desenfoque</b> de forma más precisa." }
+                            coarse:   { en: "PRACTICE: First, select the button (Low, Medium, or High) that best represents the overall <b>Clarity</b> of your mental image.", es: "PRÁCTICA: Primero, seleccione el botón (Bajo, Medio o Alto) que mejor represente la <b>Nitidez</b> general de su imagen mental." },
+                            fineTune: { en: "PRACTICE: Great! Now, use the slider to fine-tune the <b>Clarity</b> for a more precise match.", es: "PRÁCTICA: ¡Genial! Ahora, use el deslizador para ajustar la <b>Nitidez</b> de forma más precisa." }
                         },
                         task: {
-                            coarse:   { en: "First, select the button (Low, Medium, or High) that best represents the overall <b>Blurriness</b> of your mental image.", es: "Primero, seleccione el botón (Bajo, Medio o Alto) que mejor represente el <b>Desenfoque</b> general de su imagen mental." },
-                            fineTune: { en: "Now, use the slider to fine-tune the <b>Blurriness</b> for a more precise match.", es: "Ahora, use el deslizador para ajustar el <b>Desenfoque</b> de forma más precisa." }
+                            coarse:   { en: "First, select the button (Low, Medium, or High) that best represents the overall <b>Clarity</b> of your mental image.", es: "Primero, seleccione el botón (Bajo, Medio o Alto) que mejor represente la <b>Nitidez</b> general de su imagen mental." },
+                            fineTune: { en: "Now, use the slider to fine-tune the <b>Clarity</b> for a more precise match.", es: "Ahora, use el deslizador para ajustar la <b>Nitidez</b> de forma más precisa." }
                         }
                     }
                 },
@@ -1626,7 +1626,7 @@
         brightness: "images/instructions/icon_brightness.png",
         contrast: "images/instructions/icon_contrast.png",
         saturation: "images/instructions/icon_saturation.png",
-        blurriness: "images/instructions/icon_blurriness.png",
+        clarity: "images/instructions/icon_clarity.png",
         detailedness: "images/instructions/icon_detailedness.png",
         precision: "images/instructions/icon_precision.png",
         //attention_check: 'images/instructions/icon_attention.png' // Assumes you have an icon for this
@@ -1903,8 +1903,8 @@
           image: getVariantImagePath("tutorial", "saturation", 11),
         },
         {
-          key: "blurriness",
-          image: getVariantImagePath("tutorial", "blurriness", 11),
+          key: "clarity",
+          image: getVariantImagePath("tutorial", "clarity", 11),
         },
         {
           key: "detailedness",
