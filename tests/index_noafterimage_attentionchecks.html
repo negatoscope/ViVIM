@@ -146,7 +146,7 @@
       .confidence-rating {
         margin-top: 20px;
       }
-      
+
       /* This is the new parent container for the scale and its labels */
       .likert-container {
         display: flex;
@@ -198,8 +198,8 @@
       .likert-labels {
         display: flex;
         justify-content: space-between;
-        max-width: 450px; /* Adjust as needed */
-        margin: 5px auto 0 auto; /* Small top margin, centered horizontally */
+        max-width: 350px;
+        margin: 0 auto;
         font-size: 14px;
         color: #555;
       }
@@ -786,10 +786,7 @@
         <div class="flex-spacer"></div>
         <input type="range" id="paramDemoSlider" min="1" max="21" value="11" />
         <div class="flex-spacer"></div>
-        <div id="demoActionButtons">
-            <button id="prevDemoBtn" data-lang-key="backButton" class="hidden">Back</button>
-            <button id="nextDemoBtn" data-lang-key="continueButton"></button>
-        </div>
+        <button id="nextDemoBtn" data-lang-key="continueButton"></button>
         <button
           class="back-button back-to-menu-btn"
           data-lang-key="backToMenuButton"
@@ -979,12 +976,6 @@
             <span id="likertLabelLow"></span>
             <span id="likertLabelHigh"></span>
           </div>
-
-          <!-- THIS IS THE NEW WRAPPER FOR THE BOTTOM BUTTONS -->
-          <div id="confidenceActionButtons" style="margin-top: 20px;">
-            <button id="backToFineTuneBtn" data-lang-key="backButton" class="hidden">Back</button>
-            <button id="confirmConfidenceBtn" data-lang-key="confirmConfidenceButton" class="hidden"></button>
-          </div>
         </div>
 
         <!-- This new spacer element pushes everything below it to the bottom -->
@@ -1090,9 +1081,6 @@
       const DEBUG_SHOW_RESULTS = false; // Set to true to show results for debugging
       const DEBUG_SKIP_BREAK_TIMER = true; // Set to false for real participants
       
-       // To re-enable all keyboard navigation and shortcuts (e.g., for testing),
-      // change this value to 'true'.
-      const KEYBOARD_INPUTS_ENABLED = false;
 
       const KEYBOARD_FOCUS_CLASS = "keyboard-focus";
       const isTouchDevice = window.matchMedia("(pointer: coarse)").matches;
@@ -2074,8 +2062,7 @@
       );
 
       let currentCoarseSelectionLevel = null;
-        let choseNoInfo = false; // <-- ADD THIS LINE
-        let sliderToActualLevelMap = [];
+      let sliderToActualLevelMap = [];
 
       const confidenceStepDiv = document.getElementById("confidenceStep");
       const likertButtons = document.querySelectorAll(".likert-button");
@@ -2940,10 +2927,6 @@
         }
 
       function setupFineTuneStepVim(coarseLevelValue) {
-            const confidenceStep = document.getElementById('confidenceStep');
-            if (confidenceStep) confidenceStep.classList.add('hidden');
-            const backToFineTuneBtn = document.getElementById('backToFineTuneBtn');
-            if (backToFineTuneBtn) backToFineTuneBtn.classList.add('hidden');
             clearAllFocus();
             currentCoarseSelectionLevel = coarseLevelValue;
             
@@ -3179,14 +3162,6 @@ document.getElementById('paramDemoTitle').textContent = `${lang === 'en' ? 'Qual
                 // --- The rest of the function is unchanged ---
                 document.getElementById('paramDemoSlider').value = 11;
                 updateDemoImage();
-                // --- ADD THIS BLOCK ---
-                // Show or hide the "Back" button based on the current demo index
-                const prevDemoBtn = document.getElementById('prevDemoBtn');
-                if (currentDemoIndex > 0) {
-                    prevDemoBtn.classList.remove('hidden');
-                } else {
-                    prevDemoBtn.classList.add('hidden');
-                }
                 showDiv(paramDemoScreen);
                 currentFocusableElements = [paramDemoSlider, document.getElementById('nextDemoBtn')];
                 updateKeyboardFocus(0);
@@ -3463,8 +3438,6 @@ document.getElementById('paramDemoTitle').textContent = `${lang === 'en' ? 'Qual
       // ADD THIS NEW FUNCTION
       function handleNoInfoSelection() {
           if (!currentTrialData || !currentParameterKey) return;
-
-          choseNoInfo = true;
 
           // Record the "no_info" response
           if (!currentTrialResponses.parameter_responses) {
@@ -4054,19 +4027,11 @@ document.getElementById('paramDemoTitle').textContent = `${lang === 'en' ? 'Qual
                 
                 // 3. REVEAL the image element now that it has a source
                 coarsePreviewImg.classList.remove("hidden"); 
-
-                // 4. Synchronize the keyboard focus state with the mouse hover
-                const buttonIndex = currentFocusableElements.indexOf(button);
-                if (buttonIndex !== -1) {
-                    updateKeyboardFocus(buttonIndex);
-                }
             });
 
             // CLICK handler for BOTH desktop and mobile
             button.addEventListener("click", () => {
                 if (!currentParameterConfig) return;
-
-                choseNoInfo = false;
 
                 const realLevel = PARAMETERS[currentParameterKey].coarse[button.dataset.levelKey];
 
@@ -4096,36 +4061,6 @@ document.getElementById('paramDemoTitle').textContent = `${lang === 'en' ? 'Qual
             });
         });
 
-                // --- ADD THIS ENTIRE BLOCK ---
-        // Add a mouseover listener specifically for the No Info button to sync focus
-        const noInfoBtn = document.getElementById('noInfoBtn');
-        if (noInfoBtn) {
-            noInfoBtn.addEventListener('mouseover', () => {
-                if (isTouchDevice) return; // Do nothing on touch devices
-                if (coarseStepDiv.classList.contains('hidden')) return;
-
-                // When hovering the "No Info" button, we should clear the preview image
-                // and show the instruction text again, as there is no image to preview.
-                const coarsePreviewImg = document.getElementById('coarsePreviewImg');
-                const coarseImageDisplayP = document.querySelector("#coarseImageDisplay p.preview-instruction");
-                
-                if (coarsePreviewImg) {
-                    coarsePreviewImg.src = '';
-                    coarsePreviewImg.classList.add('hidden');
-                }
-                if (coarseImageDisplayP) {
-                    coarseImageDisplayP.classList.remove('hidden');
-                }
-
-                // Now, update the keyboard focus to this button
-                const buttonIndex = currentFocusableElements.indexOf(noInfoBtn);
-                if (buttonIndex !== -1) {
-                    updateKeyboardFocus(buttonIndex);
-                }
-            });
-        }
-        // --- END OF NEW BLOCK ---
-
         fineTuneSlider.addEventListener("input", (event) => {
           if (currentTrialData && currentParameterKey)
             updateFineTuneImageVim(event.target.value);
@@ -4151,36 +4086,15 @@ document.getElementById('paramDemoTitle').textContent = `${lang === 'en' ? 'Qual
             confirmConfidenceBtn.disabled = false;
 
             // Update keyboard focus to the clicked button
-            const focusIndex = currentFocusableElements.indexOf(button);
-            if (focusIndex !== -1) {
-              updateKeyboardFocus(focusIndex);
+            const buttonIndex = Array.from(likertButtons).indexOf(button);
+            if (buttonIndex !== -1) {
+              updateKeyboardFocus(buttonIndex);
             }
           });
         });
 
-        // Event listener for the "Back" button on the confidence screen
-        document.getElementById('backToFineTuneBtn').addEventListener('click', () => {
-            // --- THIS IS THE NEW CONDITIONAL LOGIC ---
-            if (choseNoInfo) {
-                // If the user got here via the "No Info" button, go all the way
-                // back to the coarse selection screen.
-                setupCoarseStepVim();
-            } else {
-                // Otherwise, go back to the fine-tuning screen as normal.
-                setupFineTuneStepVim(currentCoarseSelectionLevel);
-            }
-        });
-
-        // Event listener for the new "Previous Demo" button
-        document.getElementById('prevDemoBtn').addEventListener('click', () => {
-            if (currentDemoIndex > 0) {
-                currentDemoIndex--;
-                displayDemoScreen();
-            }
-        });
-
         // --- UNIFIED KEYBOARD INPUT HANDLING ---
-        
+
         document.addEventListener("keydown", (event) => {
           // Ignore key presses if a user is typing in a text box
           if (
@@ -4321,8 +4235,7 @@ document.getElementById('paramDemoTitle').textContent = `${lang === 'en' ? 'Qual
 
         // Show the confidence UI elements
         confidenceStepDiv.classList.remove("hidden");
-        document.getElementById('backToFineTuneBtn').classList.remove('hidden');
-        confirmConfidenceBtn.classList.remove('hidden');
+        confirmConfidenceBtn.classList.remove("hidden");
         confirmConfidenceBtn.disabled = true;
 
         // Reset previous selection
@@ -4330,12 +4243,9 @@ document.getElementById('paramDemoTitle').textContent = `${lang === 'en' ? 'Qual
         likertButtons.forEach((btn) => btn.classList.remove("selected"));
 
         // Set up keyboard focus
-        currentFocusableElements = [
-          document.getElementById('backToFineTuneBtn'), // Add the back button to the list
-          ...Array.from(likertButtons), 
-          confirmConfidenceBtn
-        ];
-        updateKeyboardFocus(4); // Start focus on button '4'
+        currentFocusableElements =
+          Array.from(likertButtons).concat(confirmConfidenceBtn);
+        updateKeyboardFocus(3); // Start focus on button '4'
       }
 
       // Generic handler for simple screens with one "continue" button
@@ -4481,15 +4391,6 @@ document.getElementById('paramDemoTitle').textContent = `${lang === 'en' ? 'Qual
         }
         // --- Confidence Step ---
         else if (!confidenceStepDiv.classList.contains("hidden")) {
-          if (event.key === "Backspace") {
-            event.preventDefault(); // Prevent browser from going "back" a page
-            if (choseNoInfo) {
-                setupCoarseStepVim();
-            } else {
-                setupFineTuneStepVim(currentCoarseSelectionLevel);
-            }
-            handled = true;
-          }
           let newIndex = currentFocusedIndex;
           if (event.key === "ArrowLeft") {
             if (newIndex > 0) newIndex--;
