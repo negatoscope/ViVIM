@@ -552,13 +552,15 @@
 
       .orientation-message {
         padding: 20px;
+        text-align: center;
       }
 
       .orientation-icon {
-        width: 64px;
-        height: 64px;
+        font-size: 64px;
+        line-height: 1;
+        color: #333;
         margin-bottom: 20px;
-        fill: #333;
+        display: block; /* Add this to ensure it gets its own line */
       }
 
       /* It will only apply these styles on devices that are in portrait mode AND are narrow (like a phone) */
@@ -656,11 +658,12 @@
         }
 
         .orientation-icon {
-            width: 64px;
-            height: 64px;
-            margin-bottom: 20px;
-            fill: #333;
+          font-size: 64px;  /* Control the size with font-size */
+          line-height: 1;   /* Ensure it's centered vertically */
+          color: #333;     /* Control the color with color */
+          margin-bottom: 20px;
         }
+        
 
         /* This is the magic: It will only apply these styles on devices that are 
           in portrait mode AND are narrow (like a phone) */
@@ -1076,9 +1079,7 @@
     <div id="orientationOverlay">
         <div class="orientation-message">
             <!-- A simple "rotate" icon (SVG) -->
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="orientation-icon">
-                <path d="M16.49,4.26l-1.41,1.41c1.62,1.62,2.5,3.81,2.5,6.08c0,1.39-0.32,2.7-0.91,3.86l1.4,1.42c0.77-1.46,1.18-3.08,1.18-4.83C19.25,8.07,18.27,5.98,16.49,4.26z M17.65,2.85l1.41-1.41C21.32,3.7,22.75,6.2,22.75,9c0,2.18-0.63,4.27-1.76,6.09l-1.46-1.46C20.59,12.13,21.25,10.61,21.25,9C21.25,6.86,20.04,4.9,17.65,2.85z M4.75,9c0-2.27,0.88-4.45,2.5-6.08L5.84,1.51C3.73,3.7,2.75,6.2,2.75,9c0,2.18,0.63,4.27,1.76,6.09l1.46-1.46C5.41,12.13,4.75,10.61,4.75,9z M12,7c-2.21,0-4,1.79-4,4s1.79,4,4,4s4-1.79,4-4S14.21,7,12,7z"/>
-            </svg>
+            <span class="orientation-icon">🔄</span>
             <!-- We will use JS to show the correct language -->
             <p id="orientationText_en">For the best experience, please rotate your device to landscape mode.</p>
             <p id="orientationText_es" style="display: none;">Para una mejor experiencia, por favor gire su dispositivo a modo horizontal.</p>
@@ -1092,7 +1093,7 @@
       
        // To re-enable all keyboard navigation and shortcuts (e.g., for testing),
       // change this value to 'true'.
-      const KEYBOARD_INPUTS_ENABLED = false;
+      const KEYBOARD_INPUTS_ENABLED = true;
 
       const KEYBOARD_FOCUS_CLASS = "keyboard-focus";
       const isTouchDevice = window.matchMedia("(pointer: coarse)").matches;
@@ -2317,20 +2318,31 @@
           currentFocusableElements &&
           currentFocusableElements[currentFocusedIndex]
         ) {
+          // First, always apply our visual style
           currentFocusableElements[currentFocusedIndex].classList.add(
             KEYBOARD_FOCUS_CLASS
           );
-          currentFocusableElements[currentFocusedIndex].focus(); // Also set browser focus
+
+          // --- THIS IS THE FIX ---
+          // Only set the native browser focus if keyboard inputs are enabled
+          if (KEYBOARD_INPUTS_ENABLED) {
+            currentFocusableElements[currentFocusedIndex].focus();
+          }
         }
       }
 
       function setupMainMenuFocus() {
-        // This function now only sets the initial focus, it does not set global variables.
+        // This function sets the initial visual focus on the main menu.
         const firstButton = document.getElementById("testParameterBtn");
         if (firstButton) {
-          // Add the focus class directly
+          // Always apply our visual style
           firstButton.classList.add(KEYBOARD_FOCUS_CLASS);
-          firstButton.focus();
+
+          // --- THIS IS THE FIX ---
+          // Only set the native browser focus if keyboard inputs are enabled
+          if (KEYBOARD_INPUTS_ENABLED) {
+            firstButton.focus();
+          }
         }
       }
 
@@ -4066,10 +4078,12 @@ document.getElementById('paramDemoTitle').textContent = `${lang === 'en' ? 'Qual
             button.addEventListener("click", () => {
                 if (!currentParameterConfig) return;
 
-                choseNoInfo = false;
+                // Reset the "No Info" path tracker
+                choseNoInfo = false; 
 
                 const realLevel = PARAMETERS[currentParameterKey].coarse[button.dataset.levelKey];
 
+                // --- THIS IS THE CRITICAL LOGIC THAT WAS REMOVED ---
                 if (isTouchDevice) {
                     // --- Mobile "Tap to Preview, Tap Again to Confirm" Logic ---
                     if (button.classList.contains('selected')) {
@@ -4081,18 +4095,29 @@ document.getElementById('paramDemoTitle').textContent = `${lang === 'en' ? 'Qual
                         button.classList.add('selected');
                         
                         // Show the preview image.
+                        const coarsePreviewImg = document.getElementById('coarsePreviewImg');
+                        const coarseImageDisplayP = document.querySelector("#coarseImageDisplay p.preview-instruction");
+
                         coarsePreviewImg.src = getVariantImagePath(
                             currentTrialData.base_image_id,
                             currentParameterKey,
                             parseInt(button.dataset.level)
                         );
                         if (coarseImageDisplayP) coarseImageDisplayP.classList.add("hidden");
+                        coarsePreviewImg.classList.remove('hidden');
+                        
+                        // Also update keyboard focus to sync visual state
+                        const buttonIndex = currentFocusableElements.indexOf(button);
+                        if (buttonIndex !== -1) {
+                            updateKeyboardFocus(buttonIndex);
+                        }
                     }
                 } else {
                     // --- Desktop Logic (Simple and Direct) ---
                     // A single click always confirms the choice immediately.
                     setupFineTuneStepVim(realLevel);
                 }
+                // --- END OF CRITICAL LOGIC ---
             });
         });
 
@@ -4180,7 +4205,7 @@ document.getElementById('paramDemoTitle').textContent = `${lang === 'en' ? 'Qual
         });
 
         // --- UNIFIED KEYBOARD INPUT HANDLING ---
-        
+      if (KEYBOARD_INPUTS_ENABLED) {
         document.addEventListener("keydown", (event) => {
           // Ignore key presses if a user is typing in a text box
           if (
@@ -4294,6 +4319,7 @@ document.getElementById('paramDemoTitle').textContent = `${lang === 'en' ? 'Qual
             }
           }
         });
+        }
       });
 
       function showConfidenceStep() {
