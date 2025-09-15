@@ -106,8 +106,13 @@
         }
         #welcomeScreen > button,
         #howToScreen > button,
+        #perceptualRecallIntroScreen > button,
+        #episodicRecallIntroScreen > button,
+        #sceneImaginationIntroScreen > button,
         #paramIntroScreen > button,
         #practiceIntroScreen > button,
+        #flowIntroScreen > button,
+        #approximationIntroScreen > button, 
         #tutorialPromptScreen > button,
         #readyScreen > button,
         #conditionInstructionScreen > button,
@@ -682,6 +687,15 @@
           font-size: 48px;
           margin: 0; /* Removes default paragraph margin */
         }
+        .main-container > button {
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        #demoActionButtons {
+          text-align: center; /* This will center the buttons within the div */
+        }
     </style>
   </head>
   <body id="htmlTag" lang="en">
@@ -751,6 +765,66 @@
         Start Practice Round
       </button>
     </div>
+
+        <!-- ADD THESE THREE NEW INSTRUCTION SCREENS -->
+    <div id="perceptualRecallIntroScreen" class="main-container hidden">
+      <img src="images/instructions/icon_perceptual.png" class="header-icon" alt="Remember Photo Icon">
+      <h2 data-lang-key="perceptualIntroTitle"></h2>
+      <div class="instruction-content">
+        <p data-lang-key="perceptualIntroText"></p>
+      </div>
+      <button id="perceptualIntroContinueBtn" data-lang-key="continueButton">Continue</button>
+    </div>
+
+    <div id="episodicRecallIntroScreen" class="main-container hidden">
+      <img src="images/instructions/icon_memory.png" class="header-icon" alt="Recall Memory Icon">
+      <h2 data-lang-key="episodicIntroTitle"></h2>
+      <div class="instruction-content">
+        <p data-lang-key="episodicIntroText"></p>
+      </div>
+      <button id="episodicIntroContinueBtn" data-lang-key="continueButton">Continue</button>
+    </div>
+
+    <div id="sceneImaginationIntroScreen" class="main-container hidden">
+      <img src="images/instructions/icon_imagination.png" class="header-icon" alt="Imagine Scene Icon">
+      <h2 data-lang-key="imaginationIntroTitle"></h2>
+      <div class="instruction-content">
+        <p data-lang-key="imaginationIntroText"></p>
+      </div>
+      <button id="imaginationIntroContinueBtn" data-lang-key="continueButton">Continue</button>
+    </div>
+    <div id="flowIntroScreen" class="main-container hidden">
+      <h2 data-lang-key="flowIntroTitle"></h2>
+      <div class="instruction-content">
+        <p data-lang-key="flowIntroText"></p>
+        <!-- This is where the infographic image will go -->
+        <img id="flowDiagramImg" src="" alt="Diagram showing the rating process" class="instruction-diagram">
+      </div>
+      <button id="flowIntroContinueBtn" data-lang-key="continueButton">Continue</button>
+    </div>
+
+    <div id="approximationIntroScreen" class="main-container hidden">
+      <h2 data-lang-key="approximationIntroTitle"></h2>
+      <div class="instruction-content">
+        <p data-lang-key="approximationIntroText"></p>
+      </div>
+      <button id="approximationIntroContinueBtn" data-lang-key="continueButton">Continue</button>
+    </div>
+
+    <div id="quizScreen" class="main-container hidden">
+      <h2 data-lang-key="quizTitle"></h2>
+      <div class="instruction-content">
+        <p data-lang-key="quizInstructions"></p>
+        <!-- Quiz questions will be dynamically inserted here by JavaScript -->
+        <div id="quizQuestionsContainer"></div>
+        <!-- This is the error message, initially hidden -->
+        <p id="quizErrorMessage" class="hidden" style="color: red; font-weight: bold; margin-top: 20px;"></p>
+        <!-- THIS IS THE NEW SUCCESS MESSAGE ELEMENT -->
+        <p id="quizSuccessMessage" class="hidden" style="color: green; font-weight: bold; margin-top: 20px;"></p>
+      </div>
+      <button id="quizContinueBtn" data-lang-key="continueButton">Continue</button>
+    </div>
+    <!-- END OF NEW SCREENS -->
 
     <!-- Screen 3: Parameter Intro -->
     <div id="paramIntroScreen" class="main-container hidden">
@@ -1188,6 +1262,41 @@
             "You have completed a block of trials. You must wait 120 seconds before continuing. Use this time to look away from the display, stand and stretch, or relax. If you need more time you may extend the break up to 5 minutes. When you are ready, press Continue.",
           noInfoLabel: "I have no clear impression of this quality.",
           blinkNowPrompt: "Blink Now",
+          perceptualIntroTitle: "Source 1: Remembering a Photo",
+          perceptualIntroText: "In some trials, you will be shown a photograph for a very brief moment. Your task is to hold the <b>very first mental impression</b> of that photo in your mind after it disappears. Try to match your ratings to that initial mental image, even if your memory seems to update or change later on.",
+          episodicIntroTitle: "Source 2: Recalling a Personal Memory",
+          episodicIntroText: "In other trials, you will be asked to recall a <b>personal memory from your own life</b>. This should be an event you experienced or a place you know well. The goal is to bring a specific, personal past experience to your mind's eye.",
+          imaginationIntroTitle: "Source 3: Imagining a New Scene",
+          imaginationIntroText: "Finally, in some trials, you will be asked to <b>construct a new scene in your mind</b> that is not from a specific memory. Think of this as creating a generic or prototypical image based on the description provided.",
+          flowIntroTitle: "The Rating Process",
+          flowIntroText: "For each of the six visual qualities, you will perform a simple three-step rating to best match your mental image:",
+          approximationIntroTitle: "An Important Note",
+          approximationIntroText: "We understand that the image on the screen may not be a perfect replica of the image in your mind's eye. Your goal is not to find an exact match, but to choose the settings that feel like the <b>best possible approximation</b> of your internal experience.",
+          quizTitle: "Knowledge Check",
+          quizInstructions: "Please answer the following questions to confirm you have understood the instructions.",
+          quizErrorMessage: "One or more answers are incorrect. Please review your selections and the instructions if needed.",
+          quizSuccessMessage: "Correct! Please remember: <b>Remembering</b> is retrieving a past experience, while <b>Imagining</b> is creating a new one. Always adjust the image to match your mental impression.",
+          quizQuestions: [
+              {
+                  question: "When you are asked to recall a <b>personal memory</b>, what kind of image should you bring to mind?",
+                  options: [
+                      "A generic scene that I construct myself.",
+                      "An event I personally experienced or a place I know well.",
+                      "The photograph I was just shown by the application."
+                  ],
+                  correctAnswerIndex: 1 // The second option is correct
+              },
+              {
+                  question: "What is the main goal when adjusting the image on the screen?",
+                  options: [
+                      "To create the most beautiful or interesting image possible.",
+                      "To make a perfect, pixel-for-pixel replica of my mental image.",
+                      "To choose the settings that feel like the best possible approximation of my mental image."
+                  ],
+                  correctAnswerIndex: 2 // The third option is correct
+              }
+          ],
+        
         },
         es: {
           // --- Existing Strings ---
@@ -1275,6 +1384,41 @@
             "Ha completado un bloque de ensayos. Debe esperar 120 segundos antes de continuar. Utilice este tiempo para apartar la vista de la pantalla, ponerse de pie y estirarse, o relajarse. Si necesita más tiempo, puede ampliar la pausa hasta un máximo de 5 minutos. Cuando esté listo, pulse «Continuar».",
           noInfoLabel: "No tengo una impresión clara de esta cualidad.",
           blinkNowPrompt: "Parpadee Ahora",
+          perceptualIntroTitle: "Fuente 1: Recordar una Foto",
+          perceptualIntroText: "En algunos ensayos, se le mostrará una fotografía por un instante muy breve. Su tarea es mantener en su mente la <b>primera impresión mental</b> de esa foto después de que desaparezca. Intente que sus ajustes coincidan con esa imagen mental inicial, incluso si su memoria parece actualizarse o cambiar más tarde.",
+          episodicIntroTitle: "Fuente 2: Rememorar un Recuerdo Personal",
+          episodicIntroText: "En otros ensayos, se le pedirá que rememore un <b>recuerdo personal de su propia vida</b>. Debe ser un evento que usted experimentó o un lugar que conoce bien. El objetivo es traer a su ojo mental una experiencia pasada, específica y personal.",
+          imaginationIntroTitle: "Fuente 3: Imaginar una Escena Nueva",
+          imaginationIntroText: "Finalmente, en algunos ensayos, se le pedirá que <b>construya una escena nueva en su mente</b> que no provenga de un recuerdo específico. Piense en esto como crear una imagen genérica o prototípica basada en la descripción proporcionada.",
+          flowIntroTitle: "El Proceso de Calificación",
+          flowIntroText: "Para cada una de las seis cualidades visuales, realizará una calificación en tres sencillos pasos para que coincida lo mejor posible con su imagen mental:",
+          approximationIntroTitle: "Una Nota Importante",
+          approximationIntroText: "Entendemos que la imagen en la pantalla puede no ser una réplica perfecta de la imagen en su mente. Su objetivo no es encontrar una coincidencia exacta, sino elegir los ajustes que sienta que son la <b>mejor aproximación posible</b> a su experiencia interna.",
+          quizTitle: "Prueba de Comprensión",
+          quizInstructions: "Por favor, responda a las siguientes preguntas para confirmar que ha entendido las instrucciones.",
+          quizErrorMessage: "Una o más respuestas son incorrectas. Por favor, revise sus selecciones y las instrucciones si es necesario.",
+          quizSuccessMessage: "¡Correcto! Por favor, recuerde: <b>Rememorar</b> es recuperar una experiencia pasada, mientras que <b>Imaginar</b> es crear una nueva. Ajuste siempre la imagen para que coincida con su impresión mental.",
+          quizQuestions: [
+              {
+                  question: "Cuando se le pida que rememore un <b>recuerdo personal</b>, ¿qué tipo de imagen debe traer a su mente?",
+                  options: [
+                      "Una escena genérica que yo mismo/a construya.",
+                      "Un evento que yo experimenté personalmente o un lugar que conozco bien.",
+                      "La fotografía que la aplicación me acaba de mostrar."
+                  ],
+                  correctAnswerIndex: 1 // La segunda opción es la correcta
+              },
+              {
+                  question: "What is the main goal when adjusting the image on the screen?",
+                  options: [
+                      "Crear la imagen más bonita o interesante posible.",
+                      "Hacer una réplica perfecta, píxel por píxel, de mi imagen mental.",
+                      "Elegir los ajustes que se sientan como la mejor aproximación posible a mi imagen mental."
+                  ],
+                  correctAnswerIndex: 2 // La tercera opción es la correcta
+              }
+          ],
+        
         },
       };
 
@@ -2076,6 +2220,7 @@
 
       let currentCoarseSelectionLevel = null;
         let choseNoInfo = false; // <-- ADD THIS LINE
+        let quizPassed = false;
         let sliderToActualLevelMap = [];
 
       const confidenceStepDiv = document.getElementById("confidenceStep");
@@ -2093,7 +2238,14 @@
       const practiceIntroScreen = document.getElementById(
         "practiceIntroScreen"
       );
+      const perceptualRecallIntroScreen = document.getElementById("perceptualRecallIntroScreen");
+      const episodicRecallIntroScreen = document.getElementById("episodicRecallIntroScreen");
+      const sceneImaginationIntroScreen = document.getElementById("sceneImaginationIntroScreen");
+      const flowIntroScreen = document.getElementById("flowIntroScreen");
+      const approximationIntroScreen = document.getElementById("approximationIntroScreen");
       const breakScreen = document.getElementById("breakScreen");
+
+      const quizScreen = document.getElementById("quizScreen");
 
       // --- Utility Functions ---
 
@@ -2368,6 +2520,12 @@
           mainMenuDiv,
           welcomeScreen,
           howToScreen,
+          perceptualRecallIntroScreen, // <-- ADDED
+          episodicRecallIntroScreen,  // <-- ADDED
+          sceneImaginationIntroScreen,// <-- ADDED
+          flowIntroScreen,            // ADDED
+          approximationIntroScreen,   // ADDED
+          quizScreen,
           paramIntroScreen,
           paramDemoScreen,
           practiceIntroScreen,
@@ -2440,6 +2598,11 @@
           ) {
             el.innerHTML = LANG_STRINGS[currentLanguage][key];
           }
+        
+        const flowDiagram = document.getElementById('flowDiagramImg');
+        if (flowDiagram) {
+            flowDiagram.src = `images/instructions/rating_flow_diagram_${lang}.png`;
+        }
         });
 
         // Update the text in the orientation overlay
@@ -2474,9 +2637,52 @@
           LANG_STRINGS[lang].likertLabelLow;
         document.getElementById("likertLabelHigh").textContent =
           LANG_STRINGS[lang].likertLabelHigh;
+
+        if (quizScreen && !quizScreen.classList.contains('hidden')) {
+            populateQuizScreen();
+        }
       }
 
       // --- Core Application Logic ---
+
+      function populateQuizScreen() {
+        quizPassed = false;
+        const questionsContainer = document.getElementById('quizQuestionsContainer');
+        if (!questionsContainer) return;
+
+        questionsContainer.innerHTML = ''; // Clear previous questions
+        const lang = currentLanguage;
+        const questions = LANG_STRINGS[lang].quizQuestions;
+
+        questions.forEach((qData, qIndex) => {
+            const questionDiv = document.createElement('div');
+            questionDiv.className = 'quiz-question';
+            questionDiv.style.marginTop = '20px';
+
+            const questionText = document.createElement('p');
+            questionText.innerHTML = `<b>${qIndex + 1}.</b> ${qData.question}`;
+            questionDiv.appendChild(questionText);
+
+            const optionsDiv = document.createElement('div');
+            optionsDiv.style.marginLeft = '20px';
+            qData.options.forEach((optionText, oIndex) => {
+                const label = document.createElement('label');
+                label.style.display = 'block';
+                label.style.marginBottom = '5px';
+
+                const radio = document.createElement('input');
+                radio.type = 'radio';
+                radio.name = `quizQ${qIndex}`;
+                radio.value = oIndex;
+                
+                label.appendChild(radio);
+                label.append(` ${optionText}`); // Add a space before the text
+                optionsDiv.appendChild(label);
+            });
+            questionDiv.appendChild(optionsDiv);
+            questionsContainer.appendChild(questionDiv);
+        });
+      }
 
       function showBreakScreen(onContinueCallback) {
         const breakScreen = document.getElementById("breakScreen");
@@ -3272,31 +3478,31 @@ document.getElementById('paramDemoTitle').textContent = `${lang === 'en' ? 'Qual
 
       // This function determines which screen to show based on the current step.
       function runOnboardingStep() {
-        console.log(`RUNNING ONBOARDING STEP: ${onboardingStep}`); // For debugging
+          const currentStepName = ONBOARDING_FLOW[onboardingStep];
+          console.log(`Running Onboarding Step: ${currentStepName}`);
 
-        if (onboardingStep === 0) {
-          // Welcome
-          showDiv(welcomeScreen);
-        } else if (onboardingStep === 1) {
-          // How To
-          showDiv(howToScreen);
-        } else if (onboardingStep === 2) {
-          // Parameter Intro
-          showDiv(paramIntroScreen);
-        } else if (onboardingStep === 3) {
-          // Start Demos
-          startParameterDemos();
-        } else if (onboardingStep === 4) {
-          // Practice Trial Intro
-          showDiv(practiceIntroScreen);
-          //showPracticeIntroScreen();
-        } else if (onboardingStep === 5) {
-          // Start the actual practice ViVIM trial
-          startTutorial();
-        } else if (onboardingStep === 6) {
-          // Show the "Ready" screen
-          showReadyScreen();
-        }
+          // --- THIS IS THE NEW SPECIAL LOGIC ---
+          // Check if we are about to show the tutorial prompt screen
+          if (currentStepName === 'tutorialPromptScreen') {
+              // If so, set up the icon BEFORE showing the screen
+              const iconEl = document.getElementById('tutorialPromptIcon');
+              console.log("DEBUG: Trying to set icon. Element is:", iconEl, "Path is:", ICONS.scene_imagination);
+              iconEl.src = ICONS.scene_imagination;
+          } else if (currentStepName === 'quizScreen') {
+              populateQuizScreen(); // Populate the quiz before showing it
+              showDiv(quizScreen);
+          } else if (currentStepName.endsWith('Screen')) {
+              showDiv(document.getElementById(currentStepName));
+          } 
+          else if (currentStepName === 'preloadDemos') {
+              preloadDemoAssets(); 
+          }
+          else if (currentStepName === 'paramDemos') {
+              startParameterDemos();
+          }
+          else if (currentStepName === 'practiceTrial') {
+              startTutorial();
+          }
       }
 
       // This function is now just a helper, called by the state machine.
@@ -3560,10 +3766,17 @@ document.getElementById('paramDemoTitle').textContent = `${lang === 'en' ? 'Qual
       const ONBOARDING_FLOW = [
           'welcomeScreen',
           'howToScreen',
+          'perceptualRecallIntroScreen', // <-- ADDED
+          'episodicRecallIntroScreen',  // <-- ADDED
+          'sceneImaginationIntroScreen',// <-- ADDED
           'paramIntroScreen',
           'preloadDemos',
           'paramDemos',
           'practiceIntroScreen',
+          'flowIntroScreen',            // <-- ADDED
+          'approximationIntroScreen', 
+          'quizScreen',  // <-- ADDED
+          'tutorialPromptScreen',
           'practiceTrial',
           'readyScreen'
       ];
@@ -3583,27 +3796,27 @@ document.getElementById('paramDemoTitle').textContent = `${lang === 'en' ? 'Qual
           runOnboardingStep();
       }
 
-      function runOnboardingStep() {
-          const currentStepName = ONBOARDING_FLOW[onboardingStep];
-          console.log(`Running Onboarding Step: ${currentStepName}`);
+      // function runOnboardingStep() {
+      //     const currentStepName = ONBOARDING_FLOW[onboardingStep];
+      //     console.log(`Running Onboarding Step: ${currentStepName}`);
 
-          if (currentStepName.endsWith('Screen')) {
-              showDiv(document.getElementById(currentStepName));
-          } 
-          else if (currentStepName === 'preloadDemos') {
-              // --- THIS IS THE FIX ---
-              // When we hit this step, call the preloader function.
-              // The preloader will automatically call startParameterDemos when it's done.
-              preloadDemoAssets(); 
-          }
-          else if (currentStepName === 'paramDemos') {
-              // This step is now only entered AFTER preloading is complete.
-              startParameterDemos();
-          }
-          else if (currentStepName === 'practiceTrial') {
-              startTutorial();
-          }
-      }
+      //     if (currentStepName.endsWith('Screen')) {
+      //         showDiv(document.getElementById(currentStepName));
+      //     } 
+      //     else if (currentStepName === 'preloadDemos') {
+      //         // --- THIS IS THE FIX ---
+      //         // When we hit this step, call the preloader function.
+      //         // The preloader will automatically call startParameterDemos when it's done.
+      //         preloadDemoAssets(); 
+      //     }
+      //     else if (currentStepName === 'paramDemos') {
+      //         // This step is now only entered AFTER preloading is complete.
+      //         startParameterDemos();
+      //     }
+      //     else if (currentStepName === 'practiceTrial') {
+      //         startTutorial();
+      //     }
+      // }
       // --- End Onboarding State Machine ---
 
       // --- VVIQ-2 Module (Corrected with Event Delegation) ---
@@ -3895,22 +4108,79 @@ document.getElementById('paramDemoTitle').textContent = `${lang === 'en' ? 'Qual
         // --- Onboarding Listeners (Unified) ---
         document.getElementById('startActualTaskBtn').addEventListener('click', startOnboarding);
         document.getElementById('welcomeContinueBtn').addEventListener('click', advanceOnboarding);
+        document.getElementById('perceptualIntroContinueBtn').addEventListener('click', advanceOnboarding);
+        document.getElementById('episodicIntroContinueBtn').addEventListener('click', advanceOnboarding);
+        document.getElementById('imaginationIntroContinueBtn').addEventListener('click', advanceOnboarding);
+        document.getElementById('flowIntroContinueBtn').addEventListener('click', advanceOnboarding);
+        document.getElementById('approximationIntroContinueBtn').addEventListener('click', advanceOnboarding);
         document.getElementById('howToContinueBtn').addEventListener('click', advanceOnboarding);
         document.getElementById('paramIntroContinueBtn').addEventListener('click', advanceOnboarding);
-        document.getElementById("practiceIntroContinueBtn").addEventListener("click", () => {
-            // 1. Get a reference to the new icon element.
-            const iconEl = document.getElementById('tutorialPromptIcon');
-            
-            // 2. Set its source to the 'imagination' icon, which is a good fit for a practice trial.
-            //    We use the ICONS constant we already have.
-            iconEl.src = ICONS.scene_imagination;
-            // It now shows the new tutorial prompt screen.
-            showDiv(document.getElementById('tutorialPromptScreen'));
-        });
-        document.getElementById("tutorialStartBtn").addEventListener("click", () => {
-            startTutorial();
-        });
+        document.getElementById("practiceIntroContinueBtn").addEventListener("click", advanceOnboarding);
+        document.getElementById("tutorialStartBtn").addEventListener("click", advanceOnboarding);
         document.getElementById('startExperimentBtn').addEventListener('click', startActualTask);
+
+            // --- FINAL, CORRECTED "CONTINUE" BUTTON LOGIC ---
+        document.getElementById('quizContinueBtn').addEventListener('click', () => {
+            const continueBtn = document.getElementById('quizContinueBtn');
+            const lang = currentLanguage;
+            const questions = LANG_STRINGS[lang].quizQuestions;
+            const errorMessage = document.getElementById('quizErrorMessage');
+            let allCorrect = true;
+
+            // Check the answers
+            questions.forEach((qData, qIndex) => {
+                const selectedOption = document.querySelector(`input[name="quizQ${qIndex}"]:checked`);
+                if (!selectedOption || parseInt(selectedOption.value) !== qData.correctAnswerIndex) {
+                    allCorrect = false;
+                }
+            });
+
+            if (allCorrect) {
+                // SUCCESS
+                errorMessage.classList.add('hidden');
+                const successMessage = document.getElementById('quizSuccessMessage');
+                successMessage.innerHTML = LANG_STRINGS[lang].quizSuccessMessage;
+                successMessage.classList.remove('hidden');
+
+                // HIDE the button during the delay.
+                continueBtn.classList.add('hidden');
+
+                // After the delay, automatically advance to the next screen.
+                setTimeout(() => {
+                    advanceOnboarding();
+                    continueBtn.classList.remove('hidden');
+                }, 1000); // 3-second mandatory reading delay
+
+            } else {
+                // ERROR
+                document.getElementById('quizSuccessMessage').classList.add('hidden');
+                errorMessage.textContent = LANG_STRINGS[lang].quizErrorMessage;
+                errorMessage.classList.remove('hidden');
+                continueBtn.classList.add('hidden'); // Hide button until user changes an answer.
+            }
+        });
+
+              // --- FINAL, CORRECTED "CHANGE ANSWER" LOGIC ---
+          const quizQuestionsContainer = document.getElementById('quizQuestionsContainer');
+          if (quizQuestionsContainer) {
+              quizQuestionsContainer.addEventListener('change', () => {
+                  // As soon as the user changes an answer after an error,
+                  // hide messages and show the continue button again.
+                  document.getElementById('quizErrorMessage').classList.add('hidden');
+                  document.getElementById('quizSuccessMessage').classList.add('hidden');
+                  document.getElementById('quizContinueBtn').classList.remove('hidden');
+              });
+          }
+        
+
+        // Prevent any key presses from being registered while the loading overlay is active.
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        if (loadingOverlay) {
+            loadingOverlay.addEventListener('keydown', (event) => {
+                event.stopPropagation(); // Stop the event from bubbling up to the document
+                event.preventDefault(); // Prevent any default action
+            }, true); // Use "capture" phase to intercept the event early
+        }
 
         // The demo "next" button has its own special logic
         document.getElementById('nextDemoBtn').addEventListener('click', () => {
@@ -4207,6 +4477,15 @@ document.getElementById('paramDemoTitle').textContent = `${lang === 'en' ? 'Qual
         // --- UNIFIED KEYBOARD INPUT HANDLING ---
       if (KEYBOARD_INPUTS_ENABLED) {
         document.addEventListener("keydown", (event) => {
+          // 1. Get a reference to the loading overlay.
+          const loadingOverlay = document.getElementById('loadingOverlay');
+          // 2. If the overlay exists AND is NOT hidden, stop all processing immediately.
+          if (loadingOverlay && !loadingOverlay.classList.contains('hidden')) {
+                event.preventDefault();
+                event.stopPropagation();
+                return;
+          }
+          
           // Ignore key presses if a user is typing in a text box
           if (
             document.activeElement.tagName === "INPUT" &&
@@ -4244,7 +4523,35 @@ document.getElementById('paramDemoTitle').textContent = `${lang === 'en' ? 'Qual
               event.preventDefault();
               document.getElementById("welcomeContinueBtn").click();
             }
-          } else if (!howToScreen.classList.contains("hidden")) {
+          } 
+          else if (!document.getElementById('perceptualRecallIntroScreen').classList.contains('hidden')) {
+            if (event.key === "Enter") {
+              event.preventDefault();
+              document.getElementById('perceptualIntroContinueBtn').click();
+            }
+          } else if (!document.getElementById('episodicRecallIntroScreen').classList.contains('hidden')) {
+            if (event.key === "Enter") {
+              event.preventDefault();
+              document.getElementById('episodicIntroContinueBtn').click();
+            }
+          } else if (!document.getElementById('sceneImaginationIntroScreen').classList.contains('hidden')) {
+            if (event.key === "Enter") {
+              event.preventDefault();
+              document.getElementById('imaginationIntroContinueBtn').click();
+            }
+          }
+          else if (!document.getElementById('flowIntroScreen').classList.contains('hidden')) {
+              if (event.key === "Enter") {
+                  event.preventDefault();
+                  document.getElementById('flowIntroContinueBtn').click();
+              }
+          } else if (!document.getElementById('approximationIntroScreen').classList.contains('hidden')) {
+              if (event.key === "Enter") {
+                  event.preventDefault();
+                  document.getElementById('approximationIntroContinueBtn').click();
+              }
+          }
+          else if (!howToScreen.classList.contains("hidden")) {
             if (event.key === "Enter") {
               event.preventDefault();
               document.getElementById("howToContinueBtn").click();
@@ -4288,7 +4595,19 @@ document.getElementById('paramDemoTitle').textContent = `${lang === 'en' ? 'Qual
               event.preventDefault();
               document.getElementById("practiceIntroContinueBtn").click();
             }
-          } else if (!document.getElementById('tutorialPromptScreen').classList.contains('hidden')) {
+          } 
+          else if (!document.getElementById('flowIntroScreen').classList.contains('hidden')) {
+            if (event.key === "Enter") {
+              event.preventDefault();
+              document.getElementById('flowIntroContinueBtn').click();
+            }
+          } else if (!document.getElementById('approximationIntroScreen').classList.contains('hidden')) {
+            if (event.key === "Enter") {
+              event.preventDefault();
+              document.getElementById('approximationIntroContinueBtn').click();
+            }
+          }
+          else if (!document.getElementById('tutorialPromptScreen').classList.contains('hidden')) {
               if (event.key === "Enter") {
                   event.preventDefault();
                   document.getElementById('tutorialStartBtn').click();
