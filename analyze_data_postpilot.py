@@ -86,7 +86,7 @@ def analyze_vim_data(url):
 
     # --- Calculate Specificity Fidelity Scores (0-100 scale) ---
     # First, handle blurriness reverse-scoring directly into a temporary column
-    #df_clean['sharpness'] = df_clean.loc[df_clean['parameter'] == 'blurriness', 'selected_level'].apply(lambda x: 22 - x)
+    df_clean['sharpness'] = df_clean.loc[df_clean['parameter'] == 'clarity', 'selected_level'].apply(lambda x: 22 - x)
 
     # Now calculate fidelity for all three specificity params
     df_clean.loc[df_clean['parameter'] == 'detailedness', 'specificity_fidelity'] = (df_clean['selected_level'] - 1) / 20 * 100
@@ -161,15 +161,15 @@ def analyze_vim_data(url):
     
     # (Table 1: Raw Scores - For information only)
     # Reverse-score blurriness for this table specifically to match old output
-    # df_clean_raw = df_clean.copy()
-    # is_blurriness_raw = (df_clean_raw['parameter'] == 'blurriness')
-    # df_clean_raw.loc[is_blurriness_raw, 'selected_level'] = 22 - df_clean_raw.loc[is_blurriness_raw, 'selected_level']
-    # raw_summary = df_clean_raw.groupby(['condition', 'parameter'])['selected_level'].mean().unstack()
-    raw_summary = df_clean.groupby(['condition', 'parameter'])['selected_level'].mean().unstack()
+    df_clean_raw = df_clean.copy()
+    is_blurriness_raw = (df_clean_raw['parameter'] == 'clarity')
+    df_clean_raw.loc[is_blurriness_raw, 'selected_level'] = 22 - df_clean_raw.loc[is_blurriness_raw, 'selected_level']
+    raw_summary = df_clean_raw.groupby(['condition', 'parameter'])['selected_level'].mean().unstack()
+    # raw_summary = df_clean.groupby(['condition', 'parameter'])['selected_level'].mean().unstack()
     param_order = INTENSITY_PARAMS + SPECIFICITY_PARAMS
     print("\n--- VIM Task Results ---")
     print("Table 1: Mean Raw Scores by Condition (Scale 1-21, Informational Only):")
-    print("(Note: Blurriness is reverse-scored, where 21 = sharpest)\n")
+    # print("(Note: Blurriness is reverse-scored, where 21 = sharpest)\n")
     print(raw_summary[param_order].to_string())
 
     # (Table 2: THEORETICAL SCORES - The new primary table)
