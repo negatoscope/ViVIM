@@ -402,6 +402,8 @@ function startActualTask() {
     state.reset();
     state.currentTaskMode = "actual_task_full";
     state.sessionID = Date.now();
+    state.participantID = generateParticipantID();
+    console.log("Participant ID:", state.participantID);
 
     const requestedSet = getUrlParameter("set") || "A";
     const generated = createTrialList(requestedSet);
@@ -978,6 +980,7 @@ function handleVVIQResponse(score) {
 function collectAndFinish() {
     const finalDataObject = {
         sessionID: state.sessionID,
+        participantID: state.participantID,
         vim_results: state.allCollectedResponses,
         vviq_scores: state.vviq_scores,
         break_data: state.breakData,
@@ -1030,7 +1033,9 @@ function downloadResults() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `ViVIM_results_${state.sessionID}.json`;
+    // Use participant ID if available, otherwise session ID
+    const filenameID = state.participantID || state.sessionID;
+    a.download = `ViVIM_results_${filenameID}.json`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);

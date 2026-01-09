@@ -301,3 +301,12 @@ function updateProgressBar() {
         bar.style.width = `${percent}%`;
     }
 }
+
+function generateParticipantID(length = 6) {
+    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+    let result = "P-";
+    for (let i = 0; i < length; i++) {
+        result += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return result;
+}

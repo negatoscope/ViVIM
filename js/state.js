@@ -5,6 +5,7 @@ class TaskState {
 
     reset() {
         this.currentSessionTrials = [];
+        this.participantID = null;
         this.currentGlobalTrialIndex = 0;
         this.currentTrialData = null;
         this.currentTrialResponses = {};
