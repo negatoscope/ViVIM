@@ -187,6 +187,7 @@ function showDiv(divToShowIdOrElement) {
     const allScreenIds = [
         "mainMenu",
         "welcomeScreen",
+        "visualCalibrationScreen",
         "howToScreen",
         "perceptualRecallIntroScreen",
         "episodicRecallIntroScreen",

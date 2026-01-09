@@ -64,6 +64,8 @@ const LANG_STRINGS = {
 <p>In this task, you will be asked to generate various mental images and then use a set of visual tools to match what you experienced. You will also be asked to complete a standardized questionnaire about your imagery abilities.</p>
 <p>The entire session takes approximately 40 minutes to complete. It is very important that you complete it in one single session without major interruptions. There will be two scheduled opportunities to take a short break. Please ensure you are in a quiet environment where you can focus.</p>
 `,
+    calibrationTitle: "Screen Calibration",
+    calibrationInstructions: "To ensure the best experience, please set your screen brightness to the maximum level, or increase it until you can clearly distinguish the dark grey circle below from the black background.",
     continueButton: "Continue",
     howToTitle: "How the Task Works",
     howToStep1:
@@ -186,6 +188,8 @@ const LANG_STRINGS = {
 <p>En esta tarea, se le pedirá que genere varias imágenes mentales y que luego utilice una serie de herramientas visuales para igualar lo que ha experimentado. También se le pedirá que complete un cuestionario estandarizado sobre sus habilidades de imaginación.</p>
 <p>La sesión completa dura aproximadamente 40 minutos. Es muy importante que la complete en una única sesión sin interrupciones importantes. Habrá dos oportunidades programadas para tomar un breve descanso. Por favor, asegúrese de estar en un entorno tranquilo donde pueda concentrarse.</p>
 `,
+    calibrationTitle: "Calibración de Pantalla",
+    calibrationInstructions: "Para asegurar la mejor experiencia, por favor ajuste el brillo de su pantalla al máximo, o auméntelo hasta que pueda distinguir claramente el círculo gris oscuro de abajo del fondo negro.",
     continueButton: "Continuar",
     howToTitle: "Cómo Funciona la Tarea",
     howToStep1:

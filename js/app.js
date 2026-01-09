@@ -2,6 +2,7 @@
 const dom = {
     mainMenu: document.getElementById("mainMenu"),
     welcomeScreen: document.getElementById("welcomeScreen"),
+    visualCalibrationScreen: document.getElementById("visualCalibrationScreen"),
     howToScreen: document.getElementById("howToScreen"),
     paramIntroScreen: document.getElementById("paramIntroScreen"),
     paramDemoScreen: document.getElementById("paramDemoScreen"),
@@ -57,6 +58,7 @@ const dom = {
 // --- ONBOARDING FLOW ---
 const ONBOARDING_FLOW = [
     'welcomeScreen',
+    'visualCalibrationScreen',
     'howToScreen',
     'perceptualRecallIntroScreen',
     'episodicRecallIntroScreen',
@@ -106,7 +108,7 @@ function setupEventListeners() {
 
     // Onboarding Navigation
     const onboardingBtns = [
-        'welcomeContinueBtn', 'perceptualIntroContinueBtn', 'episodicIntroContinueBtn',
+        'welcomeContinueBtn', 'calibrationContinueBtn', 'perceptualIntroContinueBtn', 'episodicIntroContinueBtn',
         'imaginationIntroContinueBtn', 'flowIntroContinueBtn', 'approximationIntroContinueBtn',
         'howToContinueBtn', 'paramIntroContinueBtn', 'practiceIntroContinueBtn',
         'tutorialStartBtn'
@@ -998,30 +1000,31 @@ async function sendDataToGoogleSheet(dataToPost) {
     const formData = new FormData();
     formData.append("data", JSON.stringify(dataToPost));
 
-    // Use sendBeacon if available for reliability on unload
+    // 1. Try sendBeacon first for reliability and to avoid CORS issues with redirects
     if (navigator.sendBeacon) {
-        const blob = new Blob([formData], { type: 'multipart/form-data' }); // sendBeacon sends Blob or FormData
-        // Actually sendBeacon with FormData is supported in most modern browsers.
-        // But sendBeacon is POST.
+        // sendBeacon handles FormData automatically as multipart/form-data
         const success = navigator.sendBeacon(GOOGLE_SCRIPT_URL, formData);
         if (success) {
             console.log("Data sent via sendBeacon");
+            dom.saveStatus.textContent = "Data saved successfully.";
+            dom.saveStatus.style.color = "green";
+            return; // EXIT HERE to avoid double-sending
         }
     }
 
-    // Also try fetch for immediate feedback
+    // 2. Fallback to fetch if sendBeacon is not available or failed to queue
     try {
         await fetch(GOOGLE_SCRIPT_URL, {
             method: "POST",
             body: formData,
-            keepalive: true // IMPORTANT for reliability
+            keepalive: true
         });
         dom.saveStatus.textContent = "Data saved successfully.";
         dom.saveStatus.style.color = "green";
     } catch (error) {
-        dom.saveStatus.textContent = "Error saving data.";
-        dom.saveStatus.style.color = "red";
-        console.error(error);
+        dom.saveStatus.textContent = "Error saving data (check connection).";
+        dom.saveStatus.style.color = "orange"; // Use orange as data might have been sent despite network error
+        console.error("Fetch attempt failed:", error);
     }
 }
 
