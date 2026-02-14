@@ -48,6 +48,9 @@ const state = {
     // Demographics
     demographics: null,
 
+    // Breaks
+    breakData: [],
+
     // VVIQ
     vviqResponses: [],
     vviqEnabled: true,
@@ -71,7 +74,7 @@ const state = {
         this.currentParameterIndexInTask = 0;
         this.actualTaskOrder = [];
         this.hasMovedSlider = false;
-
+        this.breakData = [];
 
         // Keyboard focus state
         this.currentFocusableElements = [];
