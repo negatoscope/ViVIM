@@ -1407,7 +1407,7 @@ function startVVIQ() {
     }
 
     // Reset any stored data
-    localStorage.removeItem(LOCAL_STORAGE_KEY);
+    localStorage.removeItem(state.LOCAL_STORAGE_KEY);
     state.currentVVIQItemIndex = 0;
     state.vviqInstructionStep = 0;
     state.vviq_scores = [];
