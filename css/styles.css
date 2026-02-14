@@ -29,6 +29,54 @@ body {
   line-height: 1.5;
 }
 
+/* --- Consent Screen Styles --- */
+.scrollable-consent {
+  max-height: 50vh;
+  overflow-y: auto;
+  text-align: left;
+  padding: 1em;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background-color: #f9f9f9;
+  margin-bottom: 1.5em;
+}
+
+.scrollable-consent h3 {
+  margin-top: 0;
+  text-align: center;
+}
+
+.scrollable-consent h4 {
+  margin-top: 1.5em;
+  margin-bottom: 0.5em;
+  font-weight: 600;
+}
+
+.consent-checkboxes {
+  text-align: left;
+  max-width: 700px;
+  margin: 0 auto 1.5em auto;
+}
+
+.consent-label {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75em;
+  margin-bottom: 1em;
+  cursor: pointer;
+}
+
+.consent-label input[type="checkbox"] {
+  margin-top: 4px;
+  transform: scale(1.2);
+  cursor: pointer;
+}
+
+#consentContinueBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .split-container {
   display: flex;
   flex-direction: row;
@@ -323,6 +371,11 @@ button:hover {
   outline: 2px solid #0056b3;
 }
 
+.control-group input[type="range"] {
+  width: 100%;
+  margin-top: 10px;
+}
+
 .fine-tuning input[type="range"] {
   width: 80%;
   max-width: 400px;
@@ -489,7 +542,7 @@ button:hover {
   width: 0%;
   height: 100%;
   background-color: #007bff;
-  transition: width 0.2s ease-in-out;
+  transition: width 0.4s ease-out;
 }
 
 #globalProgressContainer {
@@ -717,21 +770,85 @@ button.disabled-button {
   width: 100%;
   height: 400px;
   background-color: #000000;
-  /* Pure black */
   display: flex;
   align-items: center;
   justify-content: center;
   margin: 20px 0;
   border: 1px solid #333;
-  /* Slight border to see edges */
   border-radius: 4px;
 }
 
-.calibration-target {
-  width: 150px;
-  height: 150px;
-  background-color: #0d0d0d;
-  /* ~5% brightness (very dark grey) */
-  border-radius: 50%;
-  /* Circle */
+.calibration-shape {
+  display: none;
+}
+
+#calibrationCanvas {
+  background-color: #000000;
+  border: 1px solid #333;
+  width: 100%;
+  max-width: 800px;
+  height: auto;
+}
+
+
+
+.calibration-prompt {
+  font-size: 18px;
+  margin: 15px 0;
+  font-weight: bold;
+}
+
+.calibration-feedback {
+  margin-top: 15px;
+  padding: 10px;
+  border-radius: 4px;
+  font-weight: 500;
+}
+
+.calibration-feedback.success {
+  color: #155724;
+  background-color: #d4edda;
+  border: 1px solid #c3e6cb;
+}
+
+.calibration-feedback.error {
+  color: #721c24;
+  background-color: #f8d7da;
+  border: 1px solid #f5c6cb;
+}
+
+.calibration-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 20px 0;
+}
+
+.calibration-choice-btn {
+  min-width: 100px;
+  background-color: #6c757d;
+}
+
+.calibration-choice-btn:hover {
+  background-color: #5a6268;
+}
+
+.calibration-feedback {
+  font-size: 16px;
+  margin: 15px 0;
+  padding: 10px;
+  border-radius: 4px;
+}
+
+.calibration-feedback.error {
+  color: #721c24;
+  background-color: #f8d7da;
+  border: 1px solid #f5c6cb;
+}
+
+.calibration-feedback.success {
+  color: #155724;
+  background-color: #d4edda;
+  border: 1px solid #c3e6cb;
 }

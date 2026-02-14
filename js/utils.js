@@ -111,17 +111,21 @@ async function preloadDemoAssets(advanceCallback) {
     }, 250);
 }
 
-async function preloadTrialAssets(trialData) {
+async function preloadTrialAssets(trialData, showOverlay = true) {
+    if (state.preloadedTrials.has(trialData.trial_id)) return Promise.resolve();
+
     const loadingOverlay = document.getElementById("loadingOverlay");
     const progressBar = document.getElementById("progressBar");
     const loadingText = document.getElementById("loadingText");
     const continueBtn = document.getElementById("startTrialFromInstructionsBtn");
 
-    // 1. Show the loading overlay and disable the continue button
-    if (continueBtn) continueBtn.disabled = true;
-    loadingOverlay.classList.remove("hidden");
-    progressBar.style.width = "0%";
-    loadingText.textContent = "Loading...";
+    // 1. Show the loading overlay and disable the continue button if requested
+    if (showOverlay) {
+        if (continueBtn) continueBtn.disabled = true;
+        loadingOverlay.classList.remove("hidden");
+        progressBar.style.width = "0%";
+        loadingText.textContent = "Loading...";
+    }
 
     // 2. Create the list of all image URLs needed for this trial
     let urlsToPreload = [];
@@ -133,27 +137,19 @@ async function preloadTrialAssets(trialData) {
         );
     }
 
-    // Add all the ViVIM variant images needed
+    // Add ALL parameter images (1-21) for all real parameters
     const realParameters = Object.keys(PARAMETERS).filter(
         (p) => p !== "attention_check"
     );
     realParameters.forEach((paramKey) => {
-        const coarseLevels = Object.values(PARAMETERS[paramKey].coarse);
-        const fineTuneCenter = coarseLevels[1];
-        let levels = [...coarseLevels];
-        for (let i = -3; i <= 3; i++) {
-            const level = fineTuneCenter + i;
-            if (level >= 1 && level <= 21) levels.push(level);
-        }
-        const uniqueLevels = [...new Set(levels)];
-        uniqueLevels.forEach((level) => {
+        for (let level = 1; level <= 21; level++) {
             urlsToPreload.push(
                 getVariantImagePath(trialData.base_image_id, paramKey, level)
             );
-        });
+        }
     });
 
-    // 3. Preload all images and update the progress bar
+    // 3. Preload all images and update the progress bar if overlay is visible
     let loadedCount = 0;
     const totalToLoad = urlsToPreload.length;
 
@@ -161,23 +157,27 @@ async function preloadTrialAssets(trialData) {
         try {
             await preloadImage(url);
             loadedCount++;
-            // Update progress bar
-            const percent = Math.round((loadedCount / totalToLoad) * 100);
-            progressBar.style.width = `${percent}%`;
+            if (showOverlay) {
+                const percent = Math.round((loadedCount / totalToLoad) * 100);
+                progressBar.style.width = `${percent}%`;
+            }
         } catch (error) {
             console.warn(`Could not preload image: ${url}`, error);
-            // Even if one image fails, we increment the count to not get stuck
             loadedCount++;
         }
     }
 
-    // 4. Hide overlay and re-enable the button
-    loadingText.textContent = "Loading complete!";
-    setTimeout(() => {
-        // A brief delay to let the user see "complete"
-        loadingOverlay.classList.add("hidden");
-        if (continueBtn) continueBtn.disabled = false;
-    }, 250);
+    // Mark as preloaded
+    state.preloadedTrials.add(trialData.trial_id);
+
+    // 4. Hide overlay and re-enable the button if overlay was shown
+    if (showOverlay) {
+        loadingText.textContent = "Loading complete!";
+        setTimeout(() => {
+            loadingOverlay.classList.add("hidden");
+            if (continueBtn) continueBtn.disabled = false;
+        }, 250);
+    }
 }
 
 // --- UI Management ---
@@ -187,7 +187,9 @@ function showDiv(divToShowIdOrElement) {
     const allScreenIds = [
         "mainMenu",
         "welcomeScreen",
+        "consentScreen",
         "visualCalibrationScreen",
+        "demographicsScreen",
         "howToScreen",
         "perceptualRecallIntroScreen",
         "episodicRecallIntroScreen",

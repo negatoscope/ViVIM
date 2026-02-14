@@ -9,12 +9,12 @@ const KEYBOARD_INPUTS_ENABLED = true;
 const KEYBOARD_FOCUS_CLASS = "keyboard-focus";
 
 // Task Settings
-const BREAK_DURATION_SECONDS = 120; // Standard break duration
-const MAX_BREAK_EXTENSION_MINUTES = 5;
+const BREAK_DURATION_SECONDS = 60; // Standard break duration
 const FINE_TUNE_RANGE = 3;
 const IMAGE_BASE_FOLDER = "images";
 const IMAGE_EXTENSION = ".webp";
 const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwkcpn2kATIjVlfgGAT6um4sN2LOcTU6Qde2vj8mKzd19VtfVxHynh3KR-qMBuNeanSkQ/exec";
+const PROLIFIC_COMPLETION_URL = "https://app.prolific.com/submissions/complete?cc=YOUR_CODE_HERE";
 
 // Language Strings
 const LANG_STRINGS = {
@@ -51,22 +51,65 @@ const LANG_STRINGS = {
     exitTaskButton: "Back to Main Menu (Exit Task)",
     exitConfirmMessage:
       "Are you sure you want to exit the current task and return to the main menu? Progress will be lost.",
-    resultsTitle: "Trial Results",
+    resultsTitle: "Task Complete",
     downloadResultsButton: "Download Results",
     confidencePrompt: "How confident are you in your selection?",
     likertLabelLow: "Not at all confident",
     likertLabelHigh: "Completely confident",
     confirmConfidenceButton: "Confirm Confidence",
+    // --- Consent Strings ---
+    consentTitle: "Participant Information Sheet",
+    consentBody: `
+<h3>PARTICIPANT INFORMATION SHEET v2</h3>
+<h4>Visual Imagery Vividness Assessment</h4>
+
+<p>You are invited to participate in a research study titled “Visual Imagery Vividness Assessment.” In this study, we seek to better understand the qualities that define our internal visual experiences, such as memories or images created with our imagination. The goal is to validate a new scientific tool that allows us to quantitatively and precisely measure characteristics such as brightness, level of detail, or sharpness of these mental images. Your participation will help us understand how the brain constructs these experiences so fundamental to human cognition.</p>
+
+<h4>Procedures</h4>
+<p>Recruitment for this study is conducted via Prolific. Before starting, you will be asked for some demographic data. Upon beginning, you will be guided through a detailed instruction phase to familiarize yourself with the task. The main experiment consists of a series of trials where you will first be asked to generate an image in your mind (e.g., remembering a photo you just saw, evoking a personal memory, or imagining a new scene). Then, with that image in mind, you will adjust an image on the screen using buttons and sliders until it matches the qualities of your internal experience (color, lighting, details, etc.) as closely as possible. After each adjustment, you will be asked to rate your confidence level.</p>
+<p>Upon completing the main task, you will answer a standardized questionnaire about your general imagery abilities (VVIQ-2) and some brief demographic questions. The study takes approximately 40 minutes in total.</p>
+
+<h4>Risks and Benefits of Participating</h4>
+<p>You will be compensated for your participation with €7.80 via Prolific, once the validity of your submission has been verified. This study includes questions to evaluate your attention and response patterns to avoid invalid data. If you do not answer the attention questions correctly, your participation will be returned.</p>
+<p>Participation in this study carries no significant risks beyond those associated with normal computer use for a similar period (possible visual fatigue or tiredness). The study includes two mandatory breaks to minimize these discomforts.</p>
+<p>If you feel any discomfort, or in any other circumstance, you may stop and/or leave the study at any time, without explanation, questioning, or consequences. Data will only be collected if you complete the study.</p>
+
+<h4>Confidentiality and Data Sharing</h4>
+<p>The information collected in this study is anonymous. Your name or any personal or behavioral information that makes your identification possible is not recorded.</p>
+<p>Data collected in this project will initially be stored on a local server accessible only to the principal investigator. In the future, this anonymized data will be deposited in online repositories to be shared with other researchers for research purposes.</p>
+<p>Please note that your data will be completely anonymous, meaning you cannot request its deletion once you have completed the study, as there will be no way to know which data is yours.</p>
+
+<h4>Voluntary Nature of the Study</h4>
+<p>Participation in this study is voluntary. Your decision to participate or not will not affect your current or future relationships with the University of Navarra. If you decide to participate, you are free not to answer any question or to leave the study at any time.</p>
+
+<h4>Contact</h4>
+<p>This study is being conducted by Dr. Luis Eudave, researcher and professor in the Department of Psychology at the School of Education and Psychology, University of Navarra. If you wish to receive more information about the project or clarify any doubts, you may write to the email address leudave@unav.es</p>
+    `,
+    consentCheck1: "I am over 18 years old and have the capacity to give consent.",
+    consentCheck2: "I understand that my participation is voluntary and anonymous. No personal data will be collected by the research team.",
+    consentCheck3: "I have read the information about the research project and have no doubts about the implications of my participation.",
+    consentCheck4: "I agree to participate in this study.",
+    consentButton: "Agree and Continue",
+
     // --- New Onboarding Strings ---
     welcomeTitle: "Instructions",
     welcomeInstructions: `
 <p>Thank you for participating in this important study on the nature of mental imagery. Our objective is to better understand the different visual qualities that make up our internal experiences, such as memories and imagination.</p>
 <p>In this task, you will be asked to generate various mental images and then use a set of visual tools to match what you experienced. You will also be asked to complete a standardized questionnaire about your imagery abilities.</p>
-<p>The entire session takes approximately 40 minutes to complete. It is very important that you complete it in one single session without major interruptions. There will be two scheduled opportunities to take a short break. Please ensure you are in a quiet environment where you can focus.</p>
+<p><b>Before we begin, please ensure you are in a quiet and dimly lit environment.</b> Lowering ambient lighting will help you focus on your mental images and reduce glare on your screen, which is essential for accurate ratings.</p>
+<p>The entire session takes approximately 40 minutes to complete. It is very important that you complete it in one single session without major interruptions. There will be two scheduled opportunities to take a short break.</p>
 `,
     calibrationTitle: "Screen Calibration",
-    calibrationInstructions: "To ensure the best experience, please set your screen brightness to the maximum level, or increase it until you can clearly distinguish the dark grey circle below from the black background.",
+    calibrationInstructions: "To ensure the best experience, please set your screen brightness to the maximum level (or near maximum) and <b>reduce ambient lighting</b>. You should increase brightness until you can clearly see the dark grey lines in the box below. Then, select which line appears longer.",
+    calibrationPrompt: "Which horizontal line is longer?",
+    topLonger: "Top line is longer",
+    bottomLonger: "Bottom line is longer",
+    bothEqual: "Both are equal",
+    retryButton: "Try Again",
     continueButton: "Continue",
+    // Failure feedback
+    calibrationFailed: "Calibration failed. You have been screened out. Please return your participation on Prolific.",
+    calibrationRetry: "Incorrect. Please increase your screen brightness significantly, reduce ambient lighting (glare), and try again. (Attempt 1 of 2)",
     howToTitle: "How the Task Works",
     howToStep1:
       `<p>In each trial, you will follow a simple two-phase process: First, you will be asked to generate an image in your mind based on a prompt. Second, you will adjust an image on the screen to try to match the qualities of your mental image, along with a rating of how confident you were in that match. Here are the details for each phase: </p>
@@ -86,11 +129,11 @@ const LANG_STRINGS = {
               Now that you are familiar with the different visual qualities, you will complete one full practice rating for <b>Brightness</b>.
           </p>
           <p>
+          <p>
               <b>1. Coarse Selection:</b> First, you will choose a general level (Low, Medium, or High).<br><br>
               <b>2. Fine-Tuning:</b> Next, you will use a slider to make a more precise match.<br><br>
               <b>3. Confidence Rating:</b> Finally, you will rate how confident you were in your match.
           </p>
-          <p>We understand that the image on the screen may not perfectly match the visual qualities of the image in your mind's eye. Your goal is not to find an exact replica, but to make the <b>best possible approximation</b>. Please choose the settings that feel closest to your internal experience.</p>
       `,
     tutorialPromptTitle: "Practice Trial: Instructions",
     tutorialPromptText: "For this practice trial, please: <b>IMAGINE a father playing with this infant son at a park.</b><br><br>Please close your eyes to form a clear and stable mental image. When you have it, open your eyes and press Continue.",
@@ -98,11 +141,11 @@ const LANG_STRINGS = {
     startPracticeButton: "Continue",
     readyTitle: "Practice Complete",
     readyText:
-      "You have completed all instructions and practice. The main experiment will now begin. There will be 12 trials, plus 3 attention checks.",
+      "You have completed all instructions and practice. The main experiment will now begin. There will be 12 trials. Some will include a brief attention check at random points throughout the session.",
     startExperimentButton: "Start Experiment",
     breakTitle: "Take a Short Break",
     breakText:
-      "You have completed a block of trials. You must wait 120 seconds before continuing. Use this time to look away from the display, stand and stretch, or relax. If you need more time you may extend the break up to 5 minutes. When you are ready, press Continue.",
+      "You have completed a block of trials. Please take at least 60 seconds to rest. Use this time to look away from the display, stand and stretch, or relax. Feel free to take longer if you need to. When you are ready, press Continue.",
     noInfoLabel: "I have no clear impression of this quality.",
     blinkNowPrompt: "Blink Now",
     perceptualIntroTitle: "Source 1: Remembering a Photo",
@@ -119,6 +162,7 @@ const LANG_STRINGS = {
     quizInstructions: "Please answer the following questions to confirm you have understood the instructions.",
     quizErrorMessage: "One or more answers are incorrect. Please review your selections and the instructions if needed.",
     quizSuccessMessage: "Correct! Please remember: <b>Remembering</b> is retrieving a past experience, while <b>Imagining</b> is creating a new one. Always adjust the image to match your mental impression.",
+    quizCheckButton: "Check Answers",
     quizQuestions: [
       {
         question: "When you are asked to recall a <b>personal memory</b>, what kind of image should you bring to mind?",
@@ -139,7 +183,38 @@ const LANG_STRINGS = {
         correctAnswerIndex: 2 // The third option is correct
       }
     ],
-    vviqCheckboxLabel: "Include VVIQ-2"
+    vviqCheckboxLabel: "Include VVIQ-2",
+    demographics: {
+      title: "Demographic Information",
+      ageLabel: "1. What is your age?",
+      genderLabel: "2. To which gender identity do you most identify?",
+      educationLabel: "3. What is the highest degree or level of school you have completed?",
+      occupationLabel: "4. Which category best describes your primary field of occupation or study?",
+      genderOptions: ["Female", "Male", "Non-binary", "Prefer not to say", "Other"],
+      educationOptions: [
+        "Less than high school",
+        "High school graduate",
+        "Some college or vocational training",
+        "Bachelor's degree",
+        "Master's degree",
+        "Doctorate (PhD, MD, etc.)",
+        "Prefer not to say"
+      ],
+      occupationOptions: [
+        "Arts, Design, Entertainment, Sports, & Media",
+        "Science, Technology, Engineering, & Mathematics (STEM)",
+        "Business, Management, & Finance",
+        "Education & Social Services",
+        "Healthcare",
+        "Legal",
+        "Trades & Manual Labor",
+        "Student (not yet specialized)",
+        "Unemployed or Retired",
+        "Other"
+      ],
+      otherPlaceholder: "Please specify",
+      continueButton: "Continue"
+    }
   },
   es: {
     // --- Existing Strings ---
@@ -175,22 +250,66 @@ const LANG_STRINGS = {
     exitTaskButton: "Volver al Menú Principal (Salir de la Tarea)",
     exitConfirmMessage:
       "¿Está seguro/a de que desea salir de la tarea actual y volver al menú principal? El progreso se perderá.",
-    resultsTitle: "Resultados de los Ensayos",
+    resultsTitle: "Tarea completada",
     downloadResultsButton: "Descargar Resultados",
     confidencePrompt: "¿Qué tan seguro/a está de su selección?",
     likertLabelLow: "Nada seguro/a",
     likertLabelHigh: "Completamente seguro/a",
     confirmConfidenceButton: "Confirmar Confianza",
-    // --- New Onboarding Strings ---
+    testParamButton: "Prueba de Parámetro (Debug)",
+
+    // --- Consent Strings (ES) ---
+    consentTitle: "Hoja de Información para el Participante",
+    consentBody: `
+<h3>HOJA DE INFORMACIÓN PARA EL PARTICIPANTE v2</h3>
+<h4>Evaluación de la Viveza de las Imágenes Mentales Visuales</h4>
+
+<p>Se le invita a participar en un estudio de investigación denominado “Evaluación de la Viveza de las Imágenes Mentales Visuales”. En este estudio buscamos comprender mejor las cualidades que definen nuestras experiencias visuales internas, como los recuerdos o las imágenes que creamos con nuestra imaginación. El objetivo es validar una nueva herramienta científica que nos permita medir de forma cuantitativa y precisa características como el brillo, el nivel de detalle o la nitidez de estas imágenes mentales. Su participación nos ayudará a entender cómo el cerebro construye estas experiencias tan fundamentales para la cognición humana.</p>
+
+<h4>Procedimientos</h4>
+<p>El reclutamiento para este estudio se llevará a cabo a través de Prolific. Antes de iniciar, se le preguntará por algunos datos demográficos. Al comenzar, se le guiará a través de una fase de instrucciones detalladas para familiarizarse con la tarea. El experimento principal consiste en una serie de pruebas en los que primero se le pedirá que genere una imagen en su mente (por ejemplo, recordar una foto que acaba de ver, evocar una memoria personal o imaginar una escena nueva). A continuación, con esa imagen en mente, ajustará una imagen en la pantalla utilizando unos botones y deslizadores hasta que coincida lo mejor posible con las cualidades de su experiencia interna (color, iluminación, detalles, etc.). Tras cada ajuste, se le pedirá que valore su nivel de confianza.</p>
+<p>Al finalizar la tarea principal, deberá responder a un cuestionario estandarizado sobre sus habilidades generales de imaginación (VVIQ-2) y a unas breves preguntas demográficas. En total, el estudio tiene una duración aproximada de 40 minutos.</p>
+
+<h4>Riesgos y beneficios de participar en el estudio</h4>
+<p>Usted será compensado por su participación con €7.80 a través de Prolific, una vez que se haya corroborado la validez del envío. Este estudio cuenta con preguntas que evaluarán su atención y su forma de contestar con el objetivo de evitar datos inválidos. En caso de no responder correctamente a las preguntas atencionales, su participación será devuelta.</p>
+<p>La participación en este estudio no conlleva riesgos significativos más allá de los asociados al uso normal de un ordenador durante un periodo de tiempo similar (posible fatiga visual o cansancio). El estudio incluye dos descansos obligatorios para minimizar estas molestias.</p>
+<p>En caso de sentir cualquier tipo de incomodidad, y en cualquier otra circunstancia, usted podrá detener y/o abandonar el estudio en cualquier momento, sin necesidad de dar explicaciones, sin cuestionamientos ni consecuencias por ello. Los datos serán recolectados únicamente si usted completa el estudio.</p>
+
+<h4>Confidencialidad e intercambio de datos</h4>
+<p>La información recolectada en este estudio es anónima. No se registra su nombre ni ninguna información personal o conductual que haga posible su identificación.</p>
+<p>Los datos recogidos en este proyecto serán almacenados en un primer momento en un servidor local al que sólo tendrá acceso el investigador principal de este estudio. En un futuro, estos datos anonimizados serán depositados en repositorios online, con la finalidad de ser compartidos con otros investigadores con fines de investigación.</p>
+<p>Tenga en cuenta que sus datos serán completamente anónimos, lo que significa que no puede solicitar que se eliminen una vez que haya completado el estudio, porque no habrá forma de saber cuáles son sus datos.</p>
+
+<h4>Naturaleza voluntaria del estudio</h4>
+<p>La participación en este estudio es voluntaria. Su decisión de participar o no participar no afectará sus relaciones actuales o futuras con la Universidad de Navarra. Si decide participar, es libre de no responder a ninguna pregunta o abandonar el estudio en cualquier momento.</p>
+
+<h4>Contacto</h4>
+<p>Este estudio está siendo realizado por el Dr. Luis Eudave, investigador y profesor del Departamento de Psicología de la Facultad de Educación y Psicología en la Universidad de Navarra. Si desea recibir más información sobre el proyecto o aclarar cualquier duda, puede escribir al correo electrónico leudave@unav.es</p>
+    `,
+    consentCheck1: "Soy mayor de 18 años y tengo la capacidad de dar consentimiento.",
+    consentCheck2: "Entiendo que mi participación es voluntaria y anónima. Ningún dato personal será recogido por el equipo de investigación.",
+    consentCheck3: "He leído la información sobre el proyecto de investigación y no tengo dudas sobre la implicación de mi participación.",
+    consentCheck4: "Acepto participar en este estudio.",
+    consentButton: "Acepto y Continúo",
+
     welcomeTitle: "Instrucciones",
     welcomeInstructions: `
 <p>Gracias por participar en este importante estudio sobre la naturaleza de la imaginación mental. Nuestro objetivo es comprender mejor las diferentes cualidades visuales que componen nuestras experiencias internas, como los recuerdos y la imaginación.</p>
 <p>En esta tarea, se le pedirá que genere varias imágenes mentales y que luego utilice una serie de herramientas visuales para igualar lo que ha experimentado. También se le pedirá que complete un cuestionario estandarizado sobre sus habilidades de imaginación.</p>
-<p>La sesión completa dura aproximadamente 40 minutos. Es muy importante que la complete en una única sesión sin interrupciones importantes. Habrá dos oportunidades programadas para tomar un breve descanso. Por favor, asegúrese de estar en un entorno tranquilo donde pueda concentrarse.</p>
+<p><b>Antes de comenzar, por favor asegúrese de estar en un entorno tranquilo y con luz tenue.</b> Reducir la iluminación ambiental le ayudará a concentrarse en sus imágenes mentales y a reducir los reflejos en la pantalla, lo cual es esencial para obtener valoraciones precisas.</p>
+<p>La sesión completa dura aproximadamente 40 minutes. Es muy importante que la complete en una única sesión sin interrupciones importantes. Habrá dos oportunidades programadas para tomar un breve descanso.</p>
 `,
     calibrationTitle: "Calibración de Pantalla",
-    calibrationInstructions: "Para asegurar la mejor experiencia, por favor ajuste el brillo de su pantalla al máximo, o auméntelo hasta que pueda distinguir claramente el círculo gris oscuro de abajo del fondo negro.",
+    calibrationInstructions: "Para asegurar la mejor experiencia, por favor ajuste el brillo de su pantalla al máximo (o cerca del máximo) y <b>reduzca la iluminación ambiental</b>. Debe aumentar el brillo hasta que pueda ver claramente las líneas gris oscuro en el recuadro de abajo. Después, seleccione qué línea parece más larga.",
+    calibrationPrompt: "¿Qué línea horizontal es más larga?",
+    topLonger: "La línea de arriba es más larga",
+    bottomLonger: "La línea de abajo es más larga",
+    bothEqual: "Ambas son iguales",
+    retryButton: "Intentar de Nuevo",
     continueButton: "Continuar",
+    // Failure feedback
+    calibrationFailed: "Calibración fallida. Ha sido descartado del estudio. Por favor devuelva su participación en Prolific.",
+    calibrationRetry: "Incorrecto. Por favor aumenta significativamente el brillo de tu pantalla, reduce la iluminación ambiental (reflejos) e intenta de nuevo. (Intento 1 de 2)",
     howToTitle: "Cómo Funciona la Tarea",
     howToStep1:
       `<p>En cada ensayo, seguirá un sencillo proceso de dos fases: Primero, se le pedirá que genere una imagen en su mente basándose en una instrucción. Segundo, ajustará una imagen en la pantalla para intentar que coincida con las cualidades de su imagen mental, incluyendo una valoración sobre qué tan seguro/a está de su decisión. Aquí están los detalles de cada paso: </p>
@@ -222,11 +341,11 @@ const LANG_STRINGS = {
     startPracticeButton: "Continuar",
     readyTitle: "Práctica Completada",
     readyText:
-      "Ha completado las instrucciones y la práctica. El experimento principal comenzará ahora. Habrá 12 ensayos, más 3 pruebas de atención.",
+      "Ha completado las instrucciones y la práctica. El experimento principal comenzará ahora. Habrá 12 ensayos. Algunos incluirán una breve prueba de atención en puntos aleatorios a lo largo de la sesión.",
     startExperimentButton: "Comenzar Experimento",
     breakTitle: "Tome un Breve Descanso",
     breakText:
-      "Ha completado un bloque de ensayos. Debe esperar 120 segundos antes de continuar. Utilice este tiempo para apartar la vista de la pantalla, ponerse de pie y estirarse, o relajarse. Si necesita más tiempo, puede ampliar la pausa hasta un máximo de 5 minutos. Cuando esté listo, pulse «Continuar».",
+      "Ha completado un bloque de ensayos. Por favor, descanse al menos 60 segundos. Utilice este tiempo para apartar la vista de la pantalla, ponerse de pie y estirarse, o relajarse. Si lo necesita, puede tomarse más tiempo. Cuando esté listo/a, pulse «Continuar».",
     noInfoLabel: "No tengo una impresión clara de esta cualidad.",
     blinkNowPrompt: "Parpadee Ahora",
     perceptualIntroTitle: "Fuente 1: Recordar una Foto",
@@ -243,6 +362,7 @@ const LANG_STRINGS = {
     quizInstructions: "Por favor, responda a las siguientes preguntas para confirmar que ha entendido las instrucciones.",
     quizErrorMessage: "Una o más respuestas son incorrectas. Por favor, revise sus selecciones y las instrucciones si es necesario.",
     quizSuccessMessage: "¡Correcto! Por favor, recuerde: <b>Rememorar</b> es recuperar una experiencia pasada, mientras que <b>Imaginar</b> es crear una nueva. Ajuste siempre la imagen para que coincida con su impresión mental.",
+    quizCheckButton: "Comprobar Respuestas",
     quizQuestions: [
       {
         question: "Cuando se le pida que rememore un <b>recuerdo personal</b>, ¿qué tipo de imagen debe traer a su mente?",
@@ -254,7 +374,7 @@ const LANG_STRINGS = {
         correctAnswerIndex: 1 // La segunda opción es la correcta
       },
       {
-        question: "What is the main goal when adjusting the image on the screen?",
+        question: "¿Cuál es el objetivo principal al ajustar la imagen en la pantalla?",
         options: [
           "Crear la imagen más bonita o interesante posible.",
           "Hacer una réplica perfecta, píxel por píxel, de mi imagen mental.",
@@ -263,7 +383,38 @@ const LANG_STRINGS = {
         correctAnswerIndex: 2 // La tercera opción es la correcta
       }
     ],
-    vviqCheckboxLabel: "Incluir VVIQ-2"
+    vviqCheckboxLabel: "Incluir VVIQ-2",
+    demographics: {
+      title: "Información Demográfica",
+      ageLabel: "1. ¿Cuál es tu edad?",
+      genderLabel: "2. ¿Con qué identidad de género te identificas más?",
+      educationLabel: "3. ¿Cuál es el nivel de estudios más alto que has completado?",
+      occupationLabel: "4. ¿Qué categoría describe mejor su campo de ocupación o estudio principal?",
+      genderOptions: ["Mujer", "Hombre", "No binario", "Prefiero no decirlo", "Otro"],
+      educationOptions: [
+        "Menos de secundaria",
+        "Graduado escolar o Bachillerato",
+        "Formación profesional o estudios universitarios incompletos",
+        "Grado universitario",
+        "Máster",
+        "Doctorado",
+        "Prefiero no decirlo"
+      ],
+      occupationOptions: [
+        "Artes, Diseño, Entretenimiento, Deportes y Medios",
+        "Ciencia, Tecnología, Ingeniería y Matemáticas (STEM)",
+        "Negocios, Gestión y Finanzas",
+        "Educación y Servicios Sociales",
+        "Salud",
+        "Legal",
+        "Oficios y Trabajo Manual",
+        "Estudiante (aún sin especializar)",
+        "Desempleado o Jubilado",
+        "Otro"
+      ],
+      otherPlaceholder: "Especifique",
+      continueButton: "Continuar"
+    }
   },
 };
 
@@ -272,12 +423,12 @@ const PARAMETERS = {
     name: { en: "Brightness", es: "Brillo" }, levels: 21, coarse: { low: 4, mid: 11, high: 18 },
     instructions: {
       demo: {
-        en: `How <b>bright or dim</b> the scene appeared in your mind. <p>In the interactive demo, notice how moving the slider changes the image from dark (<b>Low Brightness</b>) to bright (<b>High Brightness</b>).</p><p>Use your mouse or arrow keys to move the slider.</p>`,
+        en: `How <b>bright or dim</b> the scene appeared in your mind. <p>In the interactive demo, notice how moving the slider changes the image from dark (<b>Low Brightness</b>) to bright (<b>High Brightness</b>).</p><p>Use your mouse to move the slider.</p>`,
         es: `Qué tan <b>brillante u oscuro</b> parecía la escena en su mente. <p>En la demostración interactiva, observe cómo al mover el deslizador la imagen cambia de oscura (<b>Bajo Brillo</b>) a brillante (<b>Alto Brillo</b>).</p>`
       },
       tutorial: {
-        coarse: { en: "Use your mouse or Arrow + Enter keys to select the button (Low, Medium, or High) that best represents the overall <b>Brightness</b> of your mental image. <p>Notice that if you have no clear impression of such quality (in this case Brightness), you may choose so.</p>", es: "Usando el ratón o las flechas del teclado y la tecla Intro, seleccione el botón (Bajo, Medio o Alto) que mejor represente el <b>Brillo</b> general de su imagen mental. <p>Si no tuviera una impresión clara de la cualidad en cuestión (en este caso Brillo), puede seleccionar la opción correspondiente.</p>" },
-        fineTune: { en: "Now, use your mouse or Arrow + Enter keys to move the slider to fine-tune the <b>Brightness</b> for a more precise match. <p>You may also go back to Coarse selection by clicking the button or pressing the Backspace key</p>", es: "Ahora, use el ratón o las flechas del teclado y la tecla Intro para mover el deslizador para ajustar el <b>Brillo</b> de forma más precisa. <p>También es posible retroceder a la selección anterior haciendo click en el botón o pulsando la tecla Retroceso.</p>" },
+        coarse: { en: "Use your mouse to select the button (Low, Medium, or High) that best represents the overall <b>Brightness</b> of your mental image. <p>Notice that if you have no clear impression of such quality (in this case Brightness), you may choose so.</p>", es: "Usando el ratón, seleccione el botón (Bajo, Medio o Alto) que mejor represente el <b>Brillo</b> general de su imagen mental. <p>Si no tuviera una impresión clara de la cualidad en cuestión (en este caso Brillo), puede seleccionar la opción correspondiente.</p>" },
+        fineTune: { en: "Now, use your mouse to move the slider to fine-tune the <b>Brightness</b> for a more precise match. <p>You may also go back to Coarse selection by clicking the button.</p>", es: "Ahora, use el ratón para mover el deslizador para ajustar el <b>Brillo</b> de forma más precisa. <p>También es posible retroceder a la selección anterior haciendo click en el botón.</p>" },
         confidence: {
           en: "Finally, please rate how confident you are that the image you adjusted is a good match for your mental image.",
           es: "Finalmente, por favor califique qué tan seguro/a está de que la imagen que ajustó se corresponde con su imagen mental."

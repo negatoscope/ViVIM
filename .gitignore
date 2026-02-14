@@ -1,0 +1,39 @@
+# === Python ===
+*.py
+__pycache__/
+*.pyc
+.venv/
+
+# === Documentation & Manuscript ===
+VIM_documentation/
+ref_paper_extracted.txt
+refs_list.txt
+
+# === Reference Management ===
+zotero_data/
+
+# === Google Apps Script ===
+VIM Data Receiver.js
+
+# === AI Context ===
+deepagent_context.md
+
+# === Test Variants ===
+tests/
+
+# === Figures ===
+figure1.pptx
+figure1_horizontal.pptx
+figure1_horizontal.png
+figure_generation.html
+
+# === Data Files ===
+metrics_normalized.csv
+
+# === Obsolete / Unused Image Dirs ===
+images/blurriness/
+images/precision2/
+
+# === Build Tools ===
+images/optimize_images.ps1
+optimize_images.ps1

@@ -36,6 +36,7 @@ const dom = {
     backToMenuFromResultsBtn: document.getElementById("backToMenuFromResultsBtn"),
     testVVIQBtn: document.getElementById("testVVIQBtn"),
     backToMenuFromTestSelectBtn: document.getElementById("backToMenuFromTestSelectBtn"),
+    testDataUploadBtn: document.getElementById("testDataUploadBtn"),
 
     // VIM Interface
     coarseStep: document.getElementById("coarseStep"),
@@ -53,12 +54,33 @@ const dom = {
     // Other
     loadingOverlay: document.getElementById("loadingOverlay"),
     saveStatus: document.getElementById("saveStatus"),
+
+    // Prolific Completion
+    // Onboarding
+    welcomeContinueBtn: document.getElementById('welcomeContinueBtn'),
+    // Consent
+    consentScreen: document.getElementById('consentScreen'),
+    consentCheckboxes: document.querySelectorAll('.consent-check'),
+    consentContinueBtn: document.getElementById('consentContinueBtn'),
+    // Prolific
+    prolificCompletionSection: document.getElementById("prolificCompletionSection"),
+    completionCodeDisplay: document.getElementById("completionCodeDisplay"),
+    countdownSeconds: document.getElementById("countdownSeconds"),
+    manualRedirectLink: document.getElementById("manualRedirectLink"),
+    loadingText: document.getElementById("loadingText"),
+    progressBar: document.getElementById("progressBar"),
+    resultsList: document.getElementById("resultsList"),
+    resultsTitle: document.querySelector('#resultsDisplay [data-lang-key="resultsTitle"]'),
+    demographicsScreen: document.getElementById("demographicsScreen"),
+    demographicsContinueBtn: document.getElementById("demographicsContinueBtn")
 };
 
 // --- ONBOARDING FLOW ---
 const ONBOARDING_FLOW = [
     'welcomeScreen',
+    'consentScreen',
     'visualCalibrationScreen',
+    'demographicsScreen',
     'howToScreen',
     'perceptualRecallIntroScreen',
     'episodicRecallIntroScreen',
@@ -79,8 +101,39 @@ const ONBOARDING_FLOW = [
 
 document.addEventListener("DOMContentLoaded", () => {
     state.reset();
+
+    // --- CHECK FOR VALID SESSION BACKUP (Crash Recovery) ---
+    const backup = state.loadFromLocalStorage();
+    if (backup) {
+        console.log('[Resume] Valid session backup found. Restoring state...');
+        state.restoreFromBackup(backup);
+
+        // Resume to the correct point in the task
+        if (state.currentSessionTrials.length > 0 && state.currentGlobalTrialIndex < state.currentSessionTrials.length) {
+            setLanguage(state.currentLanguage || "en");
+            // Resume directly to the condition instructions for the current trial
+            console.log(`[Resume] Resuming at trial ${state.currentGlobalTrialIndex + 1}/${state.currentSessionTrials.length}`);
+            showConditionInstructions(state.currentSessionTrials[state.currentGlobalTrialIndex]);
+            setupEventListeners();
+            return; // Skip the normal boot sequence
+        }
+    }
+
+    // --- PROLIFIC INTEGRATION: Parse URL Parameters ---
+    state.prolificPID = getUrlParameter("PROLIFIC_PID");
+    state.studyID = getUrlParameter("STUDY_ID");
+    state.sessionID = getUrlParameter("SESSION_ID");
+
     setLanguage("en");
-    showDiv(dom.mainMenu);
+
+    // If Prolific PID is present, bypass Main Menu
+    if (state.prolificPID) {
+        state.isProlificRun = true;
+        console.log("Prolific Participant Detected:", state.prolificPID);
+        showDiv(dom.welcomeScreen);
+    } else {
+        showDiv(dom.mainMenu);
+    }
 
     const isTouchDevice = window.matchMedia("(pointer: coarse)").matches;
     if (isTouchDevice) document.body.classList.add("touch-device");
@@ -95,6 +148,13 @@ function setupEventListeners() {
         populateParameterSelector();
         showDiv(dom.parameterSelector);
     });
+
+    // Synthetic Data Test Button
+    const testDataBtn = document.getElementById("testDataUploadBtn");
+    if (testDataBtn) {
+        testDataBtn.addEventListener("click", runSyntheticDataTest);
+    }
+
     if (dom.testVVIQBtn) {
         dom.testVVIQBtn.addEventListener('click', () => {
             startVVIQ();
@@ -104,6 +164,36 @@ function setupEventListeners() {
         dom.backToMenuFromTestSelectBtn.addEventListener('click', () => {
             showDiv(dom.mainMenu);
         });
+    }
+
+    if (dom.manualRedirectLink) {
+        dom.manualRedirectLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            window.location.href = PROLIFIC_COMPLETION_URL;
+        });
+    }
+
+    // Demographics
+    if (dom.demographicsContinueBtn) {
+        dom.demographicsContinueBtn.addEventListener('click', handleDemographicsSubmit);
+    }
+
+    // Calibration
+    // Calibration
+    document.querySelectorAll('.calibration-choice-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const response = e.target.dataset.response || e.target.parentElement.dataset.response; // Handle click on text inside button
+            handleCalibrationResponse(response);
+        });
+    });
+
+    document.getElementById('calibrationRetryBtn').addEventListener('click', () => {
+        startVisualCalibration();
+    });
+
+    const calibrationContinueBtn = document.getElementById('calibrationContinueBtn');
+    if (calibrationContinueBtn) {
+        calibrationContinueBtn.addEventListener('click', advanceOnboarding);
     }
 
     // Onboarding Navigation
@@ -116,10 +206,38 @@ function setupEventListeners() {
 
     onboardingBtns.forEach(id => {
         const btn = document.getElementById(id);
-        if (btn) btn.addEventListener('click', advanceOnboarding);
+        if (btn) {
+            btn.addEventListener('click', () => {
+                // Handle Fullscreen on Welcome Screen (User Request)
+                if (id === 'welcomeContinueBtn') {
+                    document.documentElement.requestFullscreen().catch(err => {
+                        console.log(`Error attempting to enable full - screen mode: ${err.message} `);
+                    });
+                }
+                advanceOnboarding();
+            });
+        }
     });
 
-    dom.startExperimentBtn.addEventListener('click', startActualTask);
+    // Welcome Screen - navigate to consent
+    dom.welcomeContinueBtn.addEventListener('click', () => {
+        showDiv(dom.consentScreen);
+    });
+
+    // Consent Screen
+    dom.consentCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', checkConsentStatus);
+    });
+
+    dom.consentContinueBtn.addEventListener('click', () => {
+        startVisualCalibration();
+        advanceOnboarding();
+    });
+
+    // Start Experiment Button
+    if (dom.startExperimentBtn) {
+        dom.startExperimentBtn.addEventListener('click', startActualTask);
+    }
 
     // Demo Navigation
     dom.nextDemoBtn.addEventListener('click', () => {
@@ -227,12 +345,14 @@ function setupEventListeners() {
 // --- ONBOARDING LOGIC ---
 
 function startOnboarding() {
-    document.documentElement.requestFullscreen().catch(err => {
-        console.log(`Error attempting to enable full-screen mode: ${err.message}`);
-    });
     state.onboardingStep = 0;
     state.currentDemoIndex = 0;
     runOnboardingStep();
+}
+
+function checkConsentStatus() {
+    const allChecked = Array.from(dom.consentCheckboxes).every(cb => cb.checked);
+    dom.consentContinueBtn.disabled = !allChecked;
 }
 
 function advanceOnboarding() {
@@ -242,12 +362,15 @@ function advanceOnboarding() {
 
 function runOnboardingStep() {
     const currentStepName = ONBOARDING_FLOW[state.onboardingStep];
-    console.log(`Running Onboarding Step: ${currentStepName}`);
+    console.log(`Running Onboarding Step: ${currentStepName} `);
 
     if (currentStepName === 'tutorialPromptScreen') {
         const iconEl = document.getElementById('tutorialPromptIcon');
         if (iconEl && ICONS.scene_imagination) iconEl.src = ICONS.scene_imagination;
         showDiv(dom.tutorialPromptScreen);
+    } else if (currentStepName === 'demographicsScreen') {
+        populateDemographicsScreen();
+        showDiv(dom.demographicsScreen);
     } else if (currentStepName === 'quizScreen') {
         populateQuizScreen();
         showDiv(dom.quizScreen);
@@ -260,6 +383,9 @@ function runOnboardingStep() {
     } else if (currentStepName === 'flowIntroScreen') {
         document.getElementById('flowDiagramImg').src = `images/instructions/rating_flow_diagram_${state.currentLanguage}.webp`;
         showDiv(dom.flowIntroScreen);
+    } else if (currentStepName === 'visualCalibrationScreen') {
+        startVisualCalibration();
+        showDiv(dom.visualCalibrationScreen);
     } else if (currentStepName && currentStepName.endsWith('Screen')) {
         showDiv(document.getElementById(currentStepName));
     } else if (currentStepName === 'preloadDemos') {
@@ -298,7 +424,7 @@ function displayDemoScreen() {
             paramDemoIcon.style.display = 'none';
         }
 
-        document.getElementById('paramDemoTitle').textContent = `${lang === 'en' ? 'Quality' : 'Cualidad'} ${state.currentDemoIndex + 1} ${lang === 'en' ? 'of' : 'de'} 6: ${paramConfig.name[lang]}`;
+        document.getElementById('paramDemoTitle').textContent = `${lang === 'en' ? 'Quality' : 'Cualidad'} ${state.currentDemoIndex + 1} ${lang === 'en' ? 'of' : 'de'} 6: ${paramConfig.name[lang]} `;
         document.getElementById('paramDemoText').innerHTML = paramConfig.instructions.demo[lang];
 
         dom.paramDemoSlider.value = 11;
@@ -357,7 +483,7 @@ function populateQuizScreen() {
             radio.value = oIndex;
 
             label.appendChild(radio);
-            label.append(` ${optionText}`);
+            label.append(` ${optionText} `);
             optionsDiv.appendChild(label);
         });
         questionDiv.appendChild(optionsDiv);
@@ -379,37 +505,396 @@ function handleQuizSubmit() {
     });
 
     const continueBtn = document.getElementById('quizContinueBtn');
+
+    // Check if already passed and user clicked "Continue"
+    if (state.quizPassed) {
+        advanceOnboarding();
+        return;
+    }
+
     if (allCorrect) {
+        state.quizPassed = true;
         errorMessage.classList.add('hidden');
         const successMessage = document.getElementById('quizSuccessMessage');
         successMessage.innerHTML = LANG_STRINGS[lang].quizSuccessMessage;
         successMessage.classList.remove('hidden');
-        continueBtn.classList.add('hidden');
 
-        setTimeout(() => {
-            advanceOnboarding();
-            continueBtn.classList.remove('hidden');
-        }, 1000);
+        // Change button to "Continue" manually (and ensure it stays visible)
+        continueBtn.textContent = LANG_STRINGS[lang].continueButton;
+        continueBtn.classList.remove('hidden');
     } else {
         document.getElementById('quizSuccessMessage').classList.add('hidden');
         errorMessage.textContent = LANG_STRINGS[lang].quizErrorMessage;
         errorMessage.classList.remove('hidden');
-        continueBtn.classList.add('hidden');
+
+        // Ensure button is "Check Answers"
+        continueBtn.textContent = LANG_STRINGS[lang].quizCheckButton;
+        continueBtn.classList.remove('hidden');
+    }
+}
+
+// --- DEMOGRAPHICS LOGIC ---
+
+function populateDemographicsScreen() {
+    const lang = state.currentLanguage;
+    const strings = LANG_STRINGS[lang].demographics;
+
+    // Set static text
+    document.getElementById('demoTitle').textContent = strings.title;
+    document.getElementById('demoAgeLabel').textContent = strings.ageLabel;
+    document.getElementById('demoGenderLabel').textContent = strings.genderLabel;
+    document.getElementById('demoEducationLabel').textContent = strings.educationLabel;
+    document.getElementById('demoOccupationLabel').textContent = strings.occupationLabel;
+    document.getElementById('demographicsContinueBtn').textContent = strings.continueButton;
+    document.getElementById('demoGenderOtherInput').placeholder = strings.otherPlaceholder;
+    document.getElementById('demoOccupationOtherInput').placeholder = strings.otherPlaceholder;
+
+    // Populate Selects
+    populateSelect('demoGenderSelect', strings.genderOptions);
+    populateSelect('demoEducationSelect', strings.educationOptions);
+    populateSelect('demoOccupationSelect', strings.occupationOptions);
+
+    // Add change listeners for "Other" fields
+    setupDemographicsListeners();
+}
+
+function populateSelect(elementId, options) {
+    const select = document.getElementById(elementId);
+    select.innerHTML = '<option value="" disabled selected>Select...</option>';
+
+    options.forEach(opt => {
+        const option = document.createElement('option');
+        option.value = opt;
+        option.textContent = opt;
+        select.appendChild(option);
+    });
+}
+
+function setupDemographicsListeners() {
+    // Gender Other Toggle
+    const genderSelect = document.getElementById('demoGenderSelect');
+    genderSelect.onchange = () => {
+        const val = genderSelect.value;
+        const lang = state.currentLanguage;
+        // Logic: "Other" is always the last option
+        const options = LANG_STRINGS[lang].demographics.genderOptions;
+        const otherString = options[options.length - 1];
+
+        const isOther = val === otherString || val === "Other" || val === "Otro";
+        const container = document.getElementById('demoGenderOtherContainer');
+        if (isOther) container.classList.remove('hidden');
+        else container.classList.add('hidden');
+    };
+
+    // Occupation Other Toggle
+    const occSelect = document.getElementById('demoOccupationSelect');
+    occSelect.onchange = () => {
+        const val = occSelect.value;
+        const lang = state.currentLanguage;
+        const options = LANG_STRINGS[lang].demographics.occupationOptions;
+        const otherString = options[options.length - 1];
+
+        const isOther = val === otherString || val === "Other" || val === "Otro";
+        const container = document.getElementById('demoOccupationOtherContainer');
+        if (isOther) container.classList.remove('hidden');
+        else container.classList.add('hidden');
+    };
+}
+
+function handleDemographicsSubmit() {
+    const genderSelect = document.getElementById('demoGenderSelect');
+    const genderOtherInput = document.getElementById('demoGenderOtherInput');
+    const ageInput = document.getElementById('demoAgeInput');
+    const eduSelect = document.getElementById('demoEducationSelect');
+    const occSelect = document.getElementById('demoOccupationSelect');
+    const occOtherInput = document.getElementById('demoOccupationOtherInput');
+    const errorMsg = document.getElementById('demoErrorMessage');
+
+    // Validation
+    let isValid = true;
+
+    // Age
+    if (!ageInput.value || ageInput.value < 18 || ageInput.value > 99) isValid = false;
+
+    // Gender
+    if (!genderSelect.value) isValid = false;
+    else if (!document.getElementById('demoGenderOtherContainer').classList.contains('hidden') && !genderOtherInput.value.trim()) isValid = false;
+
+    // Education
+    if (!eduSelect.value) isValid = false;
+
+    // Occupation
+    if (!occSelect.value) isValid = false;
+    else if (!document.getElementById('demoOccupationOtherContainer').classList.contains('hidden') && !occOtherInput.value.trim()) isValid = false;
+
+    if (!isValid) {
+        errorMsg.classList.remove('hidden');
+        errorMsg.textContent = state.currentLanguage === 'en' ? "Please answer all questions to continue." : "Por favor conteste todas las preguntas para continuar.";
+        return;
+    }
+
+    // Save Data
+    state.demographics = {
+        age: ageInput.value,
+        gender: document.getElementById('demoGenderOtherContainer').classList.contains('hidden') ? genderSelect.value : `Other: ${genderOtherInput.value} `,
+        education: eduSelect.value,
+        occupation: document.getElementById('demoOccupationOtherContainer').classList.contains('hidden') ? occSelect.value : `Other: ${occOtherInput.value} `
+    };
+
+    console.log("Demographics saved:", state.demographics);
+
+    // Hide error
+    errorMsg.classList.add('hidden');
+
+    advanceOnboarding();
+}
+
+// --- CALIBRATION LOGIC ---
+
+// --- CALIBRATION LOGIC ---
+
+// Replaced shape list with pure logic
+
+
+function startVisualCalibration() {
+    // Reset UI
+    const feedback = document.getElementById('calibrationFeedback');
+    const retryBtn = document.getElementById('calibrationRetryBtn');
+    const continueBtn = document.getElementById('calibrationContinueBtn');
+    const buttonsContainer = document.getElementById('calibrationButtons');
+    const canvasContainer = document.getElementById('calibrationCanvasContainer');
+
+    feedback.classList.add('hidden');
+    feedback.classList.remove('error', 'success');
+    retryBtn.classList.add('hidden');
+    continueBtn.classList.add('hidden');
+    buttonsContainer.classList.remove('hidden');
+    canvasContainer.classList.remove('hidden');
+
+    drawMullerLyer();
+}
+
+function drawMullerLyer() {
+    const canvas = document.getElementById('calibrationCanvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+
+    // Clear canvas
+    ctx.fillStyle = '#000000';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Line style - 3% Luminance
+    ctx.strokeStyle = '#080808';
+    ctx.lineWidth = 3;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+
+    // Layout
+    const centerX = canvas.width / 2;
+    const centerY = canvas.height / 2;
+    const gap = 80;
+
+    // Fixed lengths: the >---< line is ALWAYS 40% longer
+    const SHORT = 200;
+    const LONG = 280;   // SHORT * 1.4
+    const finLen = 30;
+    const finAng = Math.PI / 6; // 30 degrees
+
+    // Randomly place the LONG (>---<) line on top or bottom
+    state.isTopLonger = Math.random() >= 0.5;
+
+    const topY = centerY - gap;
+    const botY = centerY + gap;
+
+    if (state.isTopLonger) {
+        // Top = LONG with >---< fins (style_A)
+        drawCalibrationLine(ctx, centerX, topY, LONG, finLen, finAng, 'style_A');
+        // Bottom = SHORT with <---> fins (style_B)
+        drawCalibrationLine(ctx, centerX, botY, SHORT, finLen, finAng, 'style_B');
+    } else {
+        // Top = SHORT with <---> fins (style_B)
+        drawCalibrationLine(ctx, centerX, topY, SHORT, finLen, finAng, 'style_B');
+        // Bottom = LONG with >---< fins (style_A)
+        drawCalibrationLine(ctx, centerX, botY, LONG, finLen, finAng, 'style_A');
+    }
+
+    console.log('[Calibration] isTopLonger:', state.isTopLonger,
+        '| Top:', state.isTopLonger ? LONG + 'px >---<' : SHORT + 'px <--->',
+        '| Bot:', state.isTopLonger ? SHORT + 'px <--->' : LONG + 'px >---<');
+}
+
+/**
+ * Draw a horizontal line with Muller-Lyer fins.
+ * @param {'style_A'|'style_B'} finType
+ * style_A: >---< (Fins point OUT, legs away from line)
+ * style_B: <---> (Fins point IN, legs over the line)
+ */
+function drawCalibrationLine(ctx, cx, y, length, finLen, finAng, finType) {
+    const half = length / 2;
+    const x1 = cx - half;  // left endpoint
+    const x2 = cx + half;  // right endpoint
+    const dx = finLen * Math.cos(finAng);
+    const dy = finLen * Math.sin(finAng);
+
+    // Draw the main horizontal line
+    ctx.beginPath();
+    ctx.moveTo(x1, y);
+    ctx.lineTo(x2, y);
+    ctx.stroke();
+
+    if (finType === 'style_B') {
+        // <---> (Arrowheads point out, legs go INWARD)
+        // Matches user's "<--->" notation
+        // Left end "<" : fins go right (+dx)
+        ctx.beginPath();
+        ctx.moveTo(x1, y);
+        ctx.lineTo(x1 + dx, y - dy);
+        ctx.moveTo(x1, y);
+        ctx.lineTo(x1 + dx, y + dy);
+        ctx.stroke();
+        // Right end ">" : fins go left (-dx)
+        ctx.beginPath();
+        ctx.moveTo(x2, y);
+        ctx.lineTo(x2 - dx, y - dy);
+        ctx.moveTo(x2, y);
+        ctx.lineTo(x2 - dx, y + dy);
+        ctx.stroke();
+    } else {
+        // >---< (Arrowheads point in, legs go OUTWARD)
+        // Matches user's ">---<" notation
+        // Left end ">" : fins go left (-dx)
+        ctx.beginPath();
+        ctx.moveTo(x1, y);
+        ctx.lineTo(x1 - dx, y - dy);
+        ctx.moveTo(x1, y);
+        ctx.lineTo(x1 - dx, y + dy);
+        ctx.stroke();
+        // Right end "<" : fins go right (+dx)
+        ctx.beginPath();
+        ctx.moveTo(x2, y);
+        ctx.lineTo(x2 + dx, y - dy);
+        ctx.moveTo(x2, y);
+        ctx.lineTo(x2 + dx, y + dy);
+        ctx.stroke();
+    }
+}
+
+function handleCalibrationResponse(response) {
+    const feedback = document.getElementById('calibrationFeedback');
+    const retryBtn = document.getElementById('calibrationRetryBtn');
+    const continueBtn = document.getElementById('calibrationContinueBtn');
+    const buttonsContainer = document.getElementById('calibrationButtons');
+    const lang = state.currentLanguage;
+
+    // The >---< line is ALWAYS the correct (longer) answer.
+    const correctAnswer = state.isTopLonger ? 'top' : 'bottom';
+    const isCorrect = (response === correctAnswer);
+
+    // Log the attempt
+    state.calibrationLog.push({
+        attempt: state.calibrationAttempts + 1,
+        response: response,
+        correctAnswer: correctAnswer,
+        isCorrect: isCorrect,
+        isTopLonger: state.isTopLonger,
+        timestamp: Date.now()
+    });
+
+    console.log('[Calibration] User response:', response, '| Correct answer:', correctAnswer, '| Result:', isCorrect ? 'CORRECT' : 'WRONG');
+
+    if (isCorrect) {
+        state.calibrationSuccess = true;
+        feedback.textContent = lang === 'en'
+            ? 'Correct! Your screen is properly calibrated.'
+            : '¡Correcto! Tu pantalla está correctamente calibrada.';
+        feedback.classList.remove('hidden', 'error');
+        feedback.classList.add('success');
+        buttonsContainer.classList.add('hidden');
+        continueBtn.classList.remove('hidden');
+    } else {
+        state.calibrationAttempts++;
+
+        if (state.calibrationAttempts >= 2) {
+            // FINAL FAILURE - SCREENED OUT
+            state.calibrationSuccess = false;
+
+            const baseMsg = lang === 'en'
+                ? LANG_STRINGS.en.calibrationFailed
+                : (LANG_STRINGS.es.calibrationFailed || LANG_STRINGS.es.calibrationFailedSpan);
+
+            const redirectMsg = lang === 'en'
+                ? " Redirecting to Prolific..."
+                : " Redirigiendo a Prolific...";
+
+            feedback.textContent = baseMsg + redirectMsg;
+
+            feedback.classList.remove('hidden', 'success');
+            feedback.classList.add('error');
+            buttonsContainer.classList.add('hidden');
+
+            // Save data SILENTLY so we have a record of the screening failure
+            console.log('[Calibration] Screening failure. Sending data silently...');
+            sendDataToGoogleSheet(true);
+
+            // Redirect after a delay
+            setTimeout(() => {
+                window.location.href = "https://app.prolific.com/submissions/complete?cc=YOUR_CODE_HERE";
+            }, 5000);
+
+        } else {
+            // FIRST FAILURE - allow retry
+            feedback.textContent = lang === 'en'
+                ? LANG_STRINGS.en.calibrationRetry
+                : (LANG_STRINGS.es.calibrationRetry || LANG_STRINGS.es.calibrationRetrySpan);
+
+            feedback.classList.remove('hidden', 'success');
+            feedback.classList.add('error');
+            buttonsContainer.classList.add('hidden');
+            retryBtn.classList.remove('hidden');
+        }
     }
 }
 
 // --- TASK LOGIC ---
 
-function startActualTask() {
+async function startActualTask() {
+    // Prevent double-clicks
+    if (dom.startExperimentBtn) {
+        dom.startExperimentBtn.disabled = true;
+        dom.startExperimentBtn.classList.add('disabled-button');
+    }
+
     state.reset();
     state.currentTaskMode = "actual_task_full";
     state.sessionID = Date.now();
     state.participantID = generateParticipantID();
     console.log("Participant ID:", state.participantID);
 
-    const requestedSet = getUrlParameter("set") || "A";
+    // --- Fetch Latin Square Set from Backend ---
+    let requestedSet = getUrlParameter("set"); // Check URL override first
+    if (!requestedSet) {
+        try {
+            const response = await fetch(GOOGLE_SCRIPT_URL, { method: "GET" });
+            const result = await response.json();
+            requestedSet = result.set || "A";
+            console.log("Assigned Set from backend:", requestedSet);
+        } catch (error) {
+            console.warn("Could not fetch set from backend, using fallback.", error);
+            // Fallback: Use hash of Prolific PID or random
+            const pid = getUrlParameter("PROLIFIC_PID");
+            if (pid) {
+                const hash = pid.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
+                requestedSet = ["A", "B", "C"][hash % 3];
+            } else {
+                requestedSet = ["A", "B", "C"][Math.floor(Math.random() * 3)];
+            }
+            console.log("Fallback Set:", requestedSet);
+        }
+    }
+
     const generated = createTrialList(requestedSet);
-    state.currentSessionTrials = shuffleArray(generated.trials);
+    state.currentSessionTrials = constrainedShuffle(generated.trials);
+    state.assignedSet = generated.usedSet; // Store for data submission
 
     // Add attention checks
     const attentionCheckCount = 3;
@@ -419,11 +904,10 @@ function startActualTask() {
     attentionCheckIndices.forEach((index) => {
         state.currentSessionTrials[index].has_attention_check = true;
     });
-    state.currentSessionTrials = shuffleArray(state.currentSessionTrials);
+    // Note: We do NOT shuffle again after adding attention checks to preserve the constrained order.
 
     // Setup Progress
     state.completedSteps = 0;
-    state.totalSteps = 6 * 12 + 3; // 6 params * 12 trials + 3 attention checks
     state.totalSteps = 6 * 12 + 3; // 6 params * 12 trials + 3 attention checks
 
     // Check VVIQ checkbox
@@ -440,6 +924,34 @@ function startActualTask() {
 
     showConditionInstructions(state.currentSessionTrials[0]);
 }
+
+// --- Constrained Shuffle ---
+// Shuffles trials ensuring no more than 2 consecutive trials of the same condition.
+function constrainedShuffle(trials, maxAttempts = 1000) {
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+        const shuffled = shuffleArray(trials);
+        if (isValidSequence(shuffled)) {
+            console.log("Constrained shuffle succeeded on attempt:", attempt + 1);
+            return shuffled;
+        }
+    }
+    // If we couldn't find a valid sequence after maxAttempts, return a simple shuffle
+    console.warn("Constrained shuffle failed after", maxAttempts, "attempts. Returning simple shuffle.");
+    return shuffleArray(trials);
+}
+
+function isValidSequence(trials) {
+    for (let i = 2; i < trials.length; i++) {
+        if (
+            trials[i].condition === trials[i - 1].condition &&
+            trials[i].condition === trials[i - 2].condition
+        ) {
+            return false; // 3 in a row of the same condition
+        }
+    }
+    return true;
+}
+
 
 function createTrialList(set = "A") {
     const conditions = ["perceptual_recall", "episodic_recall", "scene_imagination"];
@@ -463,7 +975,7 @@ function createTrialList(set = "A") {
                 : img.prompts[condition];
 
             trialList.push({
-                trial_id: `main_${trialCounter++}`,
+                trial_id: `main_${trialCounter++} `,
                 condition: condition,
                 base_image_id: img.id,
                 original_image_filename: img.filename,
@@ -507,7 +1019,19 @@ function showConditionInstructions(trialData) {
     document.getElementById("conditionInstructionText").innerHTML = trialData.condition_instruction[lang];
 
     showDiv(dom.conditionInstructionScreen);
-    preloadTrialAssets(trialData);
+
+    // If already preloaded, we don't need to show the overlay
+    const shouldShowOverlay = !state.preloadedTrials.has(trialData.trial_id);
+    preloadTrialAssets(trialData, shouldShowOverlay);
+}
+
+function triggerNextTrialPreload() {
+    const nextTrialIndex = state.currentGlobalTrialIndex + 1;
+    if (nextTrialIndex < state.currentSessionTrials.length) {
+        const nextTrial = state.currentSessionTrials[nextTrialIndex];
+        console.log(`Starting background preload for trial: ${nextTrial.trial_id}`);
+        preloadTrialAssets(nextTrial, false); // false = showOverlay
+    }
 }
 
 function handleStartTrial() {
@@ -523,6 +1047,9 @@ function handleStartTrial() {
     } else {
         beginVimRating();
     }
+
+    // Trigger preload for the NEXT trial in background
+    triggerNextTrialPreload();
 }
 
 function startPreVimPhase(trialData) {
@@ -599,6 +1126,17 @@ function beginVimRating() {
 
     showDiv(dom.vimTaskInterface);
     state.currentParameterIndexInTask = 0;
+
+    // Initialize trial responses if not already set (fixes tutorial mode crash)
+    if (!state.currentTrialResponses) {
+        state.currentTrialResponses = {
+            trial_id: state.currentTrialData?.trial_id || 'tutorial',
+            condition: state.currentTrialData?.condition || 'tutorial',
+            image_id: state.currentTrialData?.base_image_id || 'tutorial_image',
+            parameter_responses: {}
+        };
+    }
+
     loadNextParameterInVim();
 }
 
@@ -612,6 +1150,8 @@ function loadNextParameterInVim() {
         if (state.currentTaskMode === "actual_task_full") {
             if (!state.currentTrialData.is_attention_check) {
                 state.allCollectedResponses.push({ ...state.currentTrialResponses });
+                // --- REAL-TIME SAVE: Send this completed trial to server ---
+                saveTrialToServer(state.currentTrialResponses);
             }
         }
 
@@ -834,6 +1374,7 @@ function handleConfirmConfidence() {
 
     updateProgressBar();
     state.currentParameterIndexInTask++;
+    state.saveToLocalStorage(); // Save progress after each parameter adjustment
     loadNextParameterInVim();
 }
 
@@ -855,6 +1396,18 @@ function displayFullResults() {
 // --- VVIQ LOGIC ---
 
 function startVVIQ() {
+    state.quizAttempts = 0;
+    state.calibrationAttempts = 0;
+    state.calibrationSuccess = false;
+
+    // Reset checkboxes
+    if (dom.consentCheckboxes) {
+        dom.consentCheckboxes.forEach(cb => cb.checked = false);
+        if (dom.consentContinueBtn) dom.consentContinueBtn.disabled = true;
+    }
+
+    // Reset any stored data
+    localStorage.removeItem(LOCAL_STORAGE_KEY);
     state.currentVVIQItemIndex = 0;
     state.vviqInstructionStep = 0;
     state.vviq_scores = [];
@@ -980,52 +1533,252 @@ function handleVVIQResponse(score) {
 }
 
 function collectAndFinish() {
-    const finalDataObject = {
-        sessionID: state.sessionID,
-        participantID: state.participantID,
-        vim_results: state.allCollectedResponses,
-        vviq_scores: state.vviq_scores,
-        break_data: state.breakData,
-    };
-
-    window.finalDataForDownload = finalDataObject;
+    // Clear the backup since task is complete
+    state.clearLocalStorage();
     showDiv(dom.resultsDisplay);
-    sendDataToGoogleSheet(finalDataObject);
+
+    // Manage UI based on run type
+    if (state.isProlificRun) {
+        // Hide "Task Complete / Trial Results" title if we have the Prolific success section
+        if (dom.resultsTitle) dom.resultsTitle.classList.add("hidden");
+
+        // Ensure results list is visible (user requested this stay)
+        if (dom.resultsList) dom.resultsList.classList.remove("hidden");
+
+        dom.downloadResultsBtn.disabled = true;
+        dom.downloadResultsBtn.style.display = 'none';
+    } else {
+        if (dom.resultsTitle) dom.resultsTitle.classList.remove("hidden");
+        if (dom.resultsList) dom.resultsList.classList.remove("hidden");
+
+        dom.downloadResultsBtn.disabled = false;
+        dom.downloadResultsBtn.style.display = 'inline-block';
+    }
+
+    sendDataToGoogleSheet();
 }
 
-async function sendDataToGoogleSheet(dataToPost) {
-    if (!dataToPost) return;
-    dom.saveStatus.textContent = "Saving data...";
-
-    const formData = new FormData();
-    formData.append("data", JSON.stringify(dataToPost));
-
-    // 1. Try sendBeacon first for reliability and to avoid CORS issues with redirects
-    if (navigator.sendBeacon) {
-        // sendBeacon handles FormData automatically as multipart/form-data
-        const success = navigator.sendBeacon(GOOGLE_SCRIPT_URL, formData);
-        if (success) {
-            console.log("Data sent via sendBeacon");
-            dom.saveStatus.textContent = "Data saved successfully.";
-            dom.saveStatus.style.color = "green";
-            return; // EXIT HERE to avoid double-sending
-        }
+// --- REAL-TIME TRIAL SAVING ---
+// Sends a single completed trial to the server asynchronously.
+// This is 'fire-and-forget' to avoid blocking the task flow.
+async function saveTrialToServer(trialData) {
+    if (!GOOGLE_SCRIPT_URL || GOOGLE_SCRIPT_URL === "YOUR_GOOGLE_SCRIPT_URL_HERE") {
+        console.log('[RealTimeSave] GOOGLE_SCRIPT_URL not configured. Skipping server save.');
+        return;
     }
 
-    // 2. Fallback to fetch if sendBeacon is not available or failed to queue
+    const dataToPost = {
+        participantID: state.participantID || "P-DEBUG",
+        sessionID: state.sessionID || Date.now(),
+        prolific_pid: state.prolificPID || "",
+        study_id: state.studyID || "",
+        session_id: state.sessionID || "",
+        assigned_set: state.assignedSet || "N/A",
+        is_intermediate: true, // Flag for the backend
+        vim_results: [trialData] // Send only this one trial
+    };
+
+    const params = new URLSearchParams();
+    params.append("data", JSON.stringify(dataToPost));
+
     try {
-        await fetch(GOOGLE_SCRIPT_URL, {
+        console.log(`[RealTimeSave] Sending trial ${trialData.trial_id} to server...`);
+        const response = await fetch(GOOGLE_SCRIPT_URL, {
             method: "POST",
-            body: formData,
+            body: params
+        });
+        if (response.ok) {
+            console.log(`[RealTimeSave] Trial ${trialData.trial_id} saved successfully.`);
+        } else {
+            console.warn(`[RealTimeSave] Server responded with status ${response.status}. Trial ${trialData.trial_id} may not be saved.`);
+        }
+    } catch (error) {
+        console.warn(`[RealTimeSave] Network error for trial ${trialData.trial_id}:`, error.message);
+        // Silently fail. The full dataset will be sent at the end.
+    }
+}
+
+async function sendDataToGoogleSheet(isSilent = false) {
+    const dataToPost = {
+        participantID: state.participantID || "P-DEBUG",
+        sessionID: state.sessionID || Date.now(),
+        prolific_pid: state.prolificPID || "",
+        study_id: state.studyID || "",
+        session_id: state.sessionID || "",
+        assigned_set: state.assignedSet || "N/A", // Latin Square set
+        demographics: state.demographics,
+        calibration_log: state.calibrationLog, // Calibration attempts (success/fail)
+        vim_results: state.allCollectedResponses,
+        break_data: state.breakData,
+        vviq_scores: state.vviq_scores
+    };
+
+    window.finalDataForDownload = dataToPost;
+
+    const params = new URLSearchParams();
+    params.append("data", JSON.stringify(dataToPost));
+
+    let crawlInterval;
+
+    if (!isSilent) {
+        // Show Loading Overlay with smooth progress crawl
+        dom.loadingOverlay.classList.remove("hidden");
+        dom.loadingText.textContent = "Transmitting data to secure server...";
+
+        let currentProgress = 0;
+        dom.progressBar.style.width = "0%";
+
+        // Initial jump
+        setTimeout(() => { dom.progressBar.style.width = "10%"; currentProgress = 10; }, 50);
+
+        crawlInterval = setInterval(() => {
+            if (currentProgress < 92) {
+                currentProgress += Math.random() * 4;
+                dom.progressBar.style.width = `${currentProgress}%`;
+            }
+        }, 400);
+    }
+
+    try {
+        const response = await fetch(GOOGLE_SCRIPT_URL, {
+            method: "POST",
+            body: params,
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded"
+            },
             keepalive: true
         });
-        dom.saveStatus.textContent = "Data saved successfully.";
-        dom.saveStatus.style.color = "green";
+
+        const result = await response.json();
+
+        if (result.result === "success") {
+            if (!isSilent) {
+                clearInterval(crawlInterval);
+                dom.progressBar.style.width = "100%";
+                dom.loadingText.textContent = "Success!";
+
+                setTimeout(() => {
+                    dom.loadingOverlay.classList.add("hidden");
+                    showProlificCompletion();
+                }, 1000);
+            } else {
+                console.log("[SilentSave] Data saved successfully.");
+            }
+        } else {
+            throw new Error("Server responded with error");
+        }
     } catch (error) {
-        dom.saveStatus.textContent = "Error saving data (check connection).";
-        dom.saveStatus.style.color = "orange"; // Use orange as data might have been sent despite network error
-        console.error("Fetch attempt failed:", error);
+        if (!isSilent) {
+            clearInterval(crawlInterval);
+            console.error("Data save failed:", error);
+            dom.loadingText.textContent = "Error saving data. Please download your results manually.";
+
+            // Ensure download is enabled on failure
+            dom.downloadResultsBtn.disabled = false;
+            dom.downloadResultsBtn.style.display = 'inline-block';
+
+            setTimeout(() => {
+                dom.loadingOverlay.classList.add("hidden");
+            }, 3000);
+        } else {
+            console.warn("[SilentSave] Background save failed:", error);
+        }
     }
+}
+
+function showProlificCompletion() {
+    if (!state.isProlificRun) return;
+
+    // Extract code from PROLIFIC_COMPLETION_URL
+    const codeMatch = PROLIFIC_COMPLETION_URL.match(/cc=([^&#]*)/);
+    const code = codeMatch ? codeMatch[1] : "N/A";
+
+    dom.completionCodeDisplay.textContent = code;
+    dom.manualRedirectLink.href = PROLIFIC_COMPLETION_URL;
+    dom.prolificCompletionSection.classList.remove("hidden");
+
+    let secondsLeft = 20;
+    dom.countdownSeconds.textContent = secondsLeft;
+
+    if (state.redirectionInterval) clearInterval(state.redirectionInterval);
+
+    state.redirectionInterval = setInterval(() => {
+        secondsLeft--;
+        dom.countdownSeconds.textContent = secondsLeft;
+        if (secondsLeft <= 0) {
+            clearInterval(state.redirectionInterval);
+            window.location.href = PROLIFIC_COMPLETION_URL;
+        }
+    }, 1000);
+}
+
+// --- DEBUG / TEST FUNCTIONS ---
+
+function runSyntheticDataTest() {
+    state.reset();
+    state.isProlificRun = true;
+
+    // Synthetic Demographics
+    state.demographics = {
+        age: 25,
+        gender: "Non-binary",
+        education: "Bachelor's degree",
+        occupation: "Arts, Design, Entertainment, Sports, & Media"
+    };
+
+    // Capture real Prolific IDs if present, otherwise use synthetic ones
+    state.prolificPID = getUrlParameter("PROLIFIC_PID") || "SYNTHETIC_PID_" + Math.floor(Math.random() * 1000);
+    state.studyID = getUrlParameter("STUDY_ID") || "SYNTHETIC_STUDY";
+    state.sessionID = getUrlParameter("SESSION_ID") || "SYNTHETIC_SESS_" + Date.now();
+    state.participantID = "P-SYNTHETIC";
+
+    generateSyntheticData();
+
+    // Jump straight to upload
+    collectAndFinish();
+}
+
+function generateSyntheticData() {
+    // 1. Synthetic VIM Results (15 trials)
+    const conditions = ["perceptual_recall", "episodic_recall", "scene_imagination"];
+    const params = Object.keys(PARAMETERS).filter(p => p !== "attention_check");
+
+    for (let i = 1; i <= 15; i++) {
+        const condition = conditions[i % conditions.length];
+        const trial = {
+            trial_id: `synthetic_${i}`,
+            condition: condition,
+            image_id: "image01",
+            generation_rt: 5000 + Math.random() * 5000,
+            parameter_responses: {}
+        };
+
+        params.forEach(p => {
+            trial.parameter_responses[p] = {
+                level: Math.floor(Math.random() * 21) + 1,
+                confidence: Math.floor(Math.random() * 7) + 1,
+                rt: 2000 + Math.random() * 3000
+            };
+        });
+
+        state.allCollectedResponses.push(trial);
+    }
+
+    // 2. Synthetic Break Data
+    state.breakData.push({
+        start: Date.now() - 300000,
+        end: Date.now() - 180000,
+        duration: 120000,
+        rt: 120000,
+        after_trial: 4
+    });
+
+    // 3. Synthetic VVIQ Scores (32 items)
+    for (let i = 0; i < 32; i++) {
+        state.vviq_scores.push(Math.floor(Math.random() * 5) + 1);
+    }
+
+    console.log("Synthetic data generated:", state);
 }
 
 function downloadResults() {
@@ -1101,13 +1854,13 @@ function showBreakScreen(callback) {
             start: breakStart,
             end: Date.now(),
             duration: duration,
-            rt: duration, // Add rt as alias for duration, likely expected by script
-            after_trial: state.currentGlobalTrialIndex // Context for where the break happened
+            rt: duration,
+            after_trial: state.currentGlobalTrialIndex
         });
         callback();
     };
 
-    // Skip listener
+    // Skip listener (press 'S' to skip)
     const skipListener = (e) => {
         if (e.key === 's' || e.key === 'S') {
             finishBreak();
@@ -1120,30 +1873,29 @@ function showBreakScreen(callback) {
         btn.textContent = LANG_STRINGS[state.currentLanguage].continueButton;
         timerDisplay.textContent = "DEBUG MODE: Timer Skipped";
         btn.onclick = finishBreak;
-        return;
+    } else {
+        // Normal Break Timer
+        btn.disabled = true;
+        let timeLeft = BREAK_DURATION_SECONDS;
+
+        const updateTimer = () => {
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            timerDisplay.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+
+            if (timeLeft <= 0) {
+                clearInterval(timerInterval);
+                btn.disabled = false;
+                btn.textContent = LANG_STRINGS[state.currentLanguage].continueButton;
+                timerDisplay.textContent = "0:00";
+            }
+            timeLeft--;
+        };
+
+        updateTimer(); // Initial call
+        timerInterval = setInterval(updateTimer, 1000);
+        btn.onclick = finishBreak;
     }
-
-    btn.disabled = true;
-    let timeLeft = BREAK_DURATION_SECONDS;
-
-    const updateTimer = () => {
-        const minutes = Math.floor(timeLeft / 60);
-        const seconds = timeLeft % 60;
-        timerDisplay.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
-
-        if (timeLeft <= 0) {
-            clearInterval(timerInterval);
-            btn.disabled = false;
-            btn.textContent = LANG_STRINGS[state.currentLanguage].continueButton;
-            timerDisplay.textContent = "0:00";
-        }
-        timeLeft--;
-    };
-
-    updateTimer(); // Initial call
-    timerInterval = setInterval(updateTimer, 1000);
-
-    btn.onclick = finishBreak;
 }
 
 function showReadyScreen() {

@@ -36,6 +36,35 @@
 
     <button id="startActualTaskBtn" data-lang-key="startTaskButton"></button>
     <button id="testParameterBtn" data-lang-key="testParamButton"></button>
+    <button id="testDataUploadBtn" style="margin-top: 20px; background-color: #444; color: #ccc;">Test Data Upload
+      (Debug)</button>
+  </div>
+
+  <!-- Consent Screen -->
+  <div id="consentScreen" class="main-container hidden">
+    <h1 data-lang-key="consentTitle"></h1>
+    <div class="instruction-content scrollable-consent">
+      <div data-lang-key="consentBody"></div>
+    </div>
+    <div class="consent-checkboxes">
+      <label class="consent-label">
+        <input type="checkbox" class="consent-check" id="consentCheck1">
+        <span data-lang-key="consentCheck1"></span>
+      </label>
+      <label class="consent-label">
+        <input type="checkbox" class="consent-check" id="consentCheck2">
+        <span data-lang-key="consentCheck2"></span>
+      </label>
+      <label class="consent-label">
+        <input type="checkbox" class="consent-check" id="consentCheck3">
+        <span data-lang-key="consentCheck3"></span>
+      </label>
+      <label class="consent-label">
+        <input type="checkbox" class="consent-check" id="consentCheck4">
+        <span data-lang-key="consentCheck4"></span>
+      </label>
+    </div>
+    <button id="consentContinueBtn" class="primary-btn" disabled data-lang-key="consentButton"></button>
   </div>
 
   <!-- Welcome / Instructions Screen -->
@@ -54,11 +83,77 @@
       <p data-lang-key="calibrationInstructions"></p>
     </div>
 
-    <div class="calibration-container">
-      <div class="calibration-target"></div>
+    <div id="calibrationCanvasContainer" class="calibration-container">
+      <canvas id="calibrationCanvas" width="800" height="400"></canvas>
     </div>
 
-    <button id="calibrationContinueBtn" data-lang-key="continueButton">Continue</button>
+    <p id="calibrationPrompt" class="calibration-prompt" data-lang-key="calibrationPrompt"></p>
+
+    <div id="calibrationButtons" class="calibration-buttons">
+      <button class="calibration-choice-btn" data-response="top" data-lang-key="topLonger">Top line is longer</button>
+      <button class="calibration-choice-btn" data-response="bottom" data-lang-key="bottomLonger">Bottom line is
+        longer</button>
+      <button class="calibration-choice-btn" data-response="equal" data-lang-key="bothEqual">Lines are equal</button>
+    </div>
+
+    <p id="calibrationFeedback" class="calibration-feedback hidden"></p>
+    <button id="calibrationRetryBtn" class="hidden" data-lang-key="retryButton">Try Again</button>
+    <button id="calibrationContinueBtn" class="hidden" data-lang-key="continueButton">Continue</button>
+  </div>
+
+  <!-- Demographics Screen -->
+  <div id="demographicsScreen" class="main-container hidden">
+    <h1 id="demoTitle"></h1>
+
+    <div class="form-container" style="text-align: left; max-width: 600px; margin: 0 auto;">
+
+      <!-- Q1: Age -->
+      <div class="form-group" style="margin-bottom: 20px;">
+        <label for="demoAgeInput" id="demoAgeLabel"
+          style="display: block; font-weight: bold; margin-bottom: 8px;"></label>
+        <input type="number" id="demoAgeInput" min="18" max="99" style="padding: 8px; font-size: 16px; width: 80px;">
+      </div>
+
+      <!-- Q2: Gender -->
+      <div class="form-group" style="margin-bottom: 20px;">
+        <label for="demoGenderSelect" id="demoGenderLabel"
+          style="display: block; font-weight: bold; margin-bottom: 8px;"></label>
+        <select id="demoGenderSelect" style="padding: 8px; font-size: 16px; width: 100%; max-width: 400px;">
+          <option value="" disabled selected>Select...</option>
+        </select>
+        <div id="demoGenderOtherContainer" class="hidden" style="margin-top: 10px;">
+          <input type="text" id="demoGenderOtherInput"
+            style="padding: 8px; font-size: 16px; width: 100%; max-width: 400px;">
+        </div>
+      </div>
+
+      <!-- Q3: Education -->
+      <div class="form-group" style="margin-bottom: 20px;">
+        <label for="demoEducationSelect" id="demoEducationLabel"
+          style="display: block; font-weight: bold; margin-bottom: 8px;"></label>
+        <select id="demoEducationSelect" style="padding: 8px; font-size: 16px; width: 100%; max-width: 400px;">
+          <option value="" disabled selected>Select...</option>
+        </select>
+      </div>
+
+      <!-- Q4: Occupation -->
+      <div class="form-group" style="margin-bottom: 20px;">
+        <label for="demoOccupationSelect" id="demoOccupationLabel"
+          style="display: block; font-weight: bold; margin-bottom: 8px;"></label>
+        <select id="demoOccupationSelect" style="padding: 8px; font-size: 16px; width: 100%; max-width: 400px;">
+          <option value="" disabled selected>Select...</option>
+        </select>
+        <div id="demoOccupationOtherContainer" class="hidden" style="margin-top: 10px;">
+          <input type="text" id="demoOccupationOtherInput"
+            style="padding: 8px; font-size: 16px; width: 100%; max-width: 400px;">
+        </div>
+      </div>
+
+      <p id="demoErrorMessage" class="hidden" style="color: red; font-weight: bold; margin-bottom: 15px;"></p>
+
+    </div>
+
+    <button id="demographicsContinueBtn">Continue</button>
   </div>
 
   <!-- The How-To Explanation Screen -->
@@ -111,21 +206,29 @@
   </div>
 
   <!-- Parameter Demo Screen -->
-  <div id="paramDemoScreen" class="main-container hidden">
-    <img id="paramDemoIcon" class="header-icon" src="" alt="Parameter Icon" />
-    <h2 id="paramDemoTitle"></h2>
-    <div class="instruction-content">
-      <p id="paramDemoText"></p>
+  <div id="paramDemoScreen" class="split-container hidden">
+    <div class="image-panel">
+      <div class="image-display">
+        <img id="paramDemoImg" src="" alt="Parameter Demo" />
+      </div>
     </div>
-    <div class="image-display">
-      <img id="paramDemoImg" src="" alt="Parameter Demo" />
-    </div>
-    <div style="text-align: center; margin-top: 20px;">
-      <input type="range" id="paramDemoSlider" min="1" max="21" value="11" style="width: 80%; max-width: 400px;" />
-    </div>
-    <div id="demoActionButtons" style="margin-top: 20px;">
-      <button id="prevDemoBtn" class="hidden" data-lang-key="backButton">Back</button>
-      <button id="nextDemoBtn" data-lang-key="continueButton">Next Quality</button>
+    <div class="controls-panel">
+      <img id="paramDemoIcon" class="header-icon" src="" alt="Parameter Icon" />
+      <h2 id="paramDemoTitle"></h2>
+      <div class="instruction-content">
+        <p id="paramDemoText"></p>
+      </div>
+
+      <div class="control-group" style="margin-top: 20px;">
+        <input type="range" id="paramDemoSlider" min="1" max="21" value="11" />
+      </div>
+
+      <div class="flex-spacer"></div>
+
+      <div id="demoActionButtons" class="controls-bottom">
+        <button id="prevDemoBtn" class="back-button hidden" data-lang-key="backButton">Back</button>
+        <button id="nextDemoBtn" data-lang-key="continueButton">Next Quality</button>
+      </div>
     </div>
   </div>
 
@@ -164,7 +267,7 @@
       <p id="quizErrorMessage" class="hidden" style="color: red; margin-top: 20px;"></p>
       <p id="quizSuccessMessage" class="hidden" style="color: green; margin-top: 20px;"></p>
     </div>
-    <button id="quizContinueBtn" data-lang-key="continueButton">Check Answers</button>
+    <button id="quizContinueBtn" data-lang-key="quizCheckButton">Check Answers</button>
   </div>
 
   <!-- Tutorial Prompt Screen -->
@@ -301,6 +404,19 @@
   <div id="resultsDisplay" class="main-container hidden">
     <h2 data-lang-key="resultsTitle"></h2>
     <ul id="resultsList"></ul>
+
+    <div id="prolificCompletionSection" class="hidden"
+      style="margin: 20px 0; padding: 20px; border: 1px dashed #ccc; border-radius: 8px;">
+      <h3 id="completionStatusTitle">Data Saved Successfully!</h3>
+      <p id="thankYouMessage">Thank you for your participation in this study. Your contribution is highly valued.</p>
+      <p>Completion Code: <strong id="completionCodeDisplay"
+          style="font-size: 1.2em; border: 1px solid #ccc; padding: 2px 8px; background: #eee;"></strong></p>
+      <p id="redirectCountdownText" style="margin-top: 15px;">You will be automatically redirected to Prolific in <span
+          id="countdownSeconds">20</span> seconds.</p>
+      <p><a id="manualRedirectLink" href="#" style="color: #0066cc; text-decoration: underline;">Click here to return to
+          Prolific immediately</a></p>
+    </div>
+
     <p id="saveStatus" style="font-style: italic; color: #555"></p>
     <button id="downloadResultsBtn" data-lang-key="downloadResultsButton">Download Results</button>
     <button id="backToMenuFromResultsBtn" class="back-button back-to-menu-btn"
@@ -327,10 +443,10 @@
   </div>
 
   <!-- Scripts -->
-  <script src="js/config.js"></script>
-  <script src="js/state.js"></script>
-  <script src="js/utils.js"></script>
-  <script src="js/app.js"></script>
+  <script src="js/config.js?v=mullerLyerFix2"></script>
+  <script src="js/state.js?v=mullerLyerFix2"></script>
+  <script src="js/utils.js?v=mullerLyerFix2"></script>
+  <script src="js/app.js?v=mullerLyerFix2"></script>
 </body>
 
 </html>
