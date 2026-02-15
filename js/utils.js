@@ -185,6 +185,7 @@ async function preloadTrialAssets(trialData, showOverlay = true) {
 function showDiv(divToShowIdOrElement) {
     // List of all possible screen IDs
     const allScreenIds = [
+        "accessDeniedScreen",
         "mainMenu",
         "welcomeScreen",
         "consentScreen",

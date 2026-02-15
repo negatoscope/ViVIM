@@ -8,6 +8,9 @@ const DEBUG_SKIP_BREAK_TIMER = false; // Set to false for real participants
 const KEYBOARD_INPUTS_ENABLED = true;
 const KEYBOARD_FOCUS_CLASS = "keyboard-focus";
 
+// Admin Access
+const ADMIN_KEY = "VIVIM2025"; // URL param ?admin=vivim2025 to access main menu
+
 // Task Settings
 const BREAK_DURATION_SECONDS = 60; // Standard break duration
 const FINE_TUNE_RANGE = 3;
@@ -143,6 +146,7 @@ const LANG_STRINGS = {
     readyText:
       "You have completed all instructions and practice. The main experiment will now begin. There will be 12 trials. Some will include a brief attention check at random points throughout the session.",
     startExperimentButton: "Start Experiment",
+    pleaseWait: "Please wait...",
     breakTitle: "Take a Short Break",
     breakText:
       "You have completed a block of trials. Please take at least 60 seconds to rest. Use this time to look away from the display, stand and stretch, or relax. Feel free to take longer if you need to. When you are ready, press Continue.",
@@ -343,6 +347,7 @@ const LANG_STRINGS = {
     readyText:
       "Ha completado las instrucciones y la práctica. El experimento principal comenzará ahora. Habrá 12 ensayos. Algunos incluirán una breve prueba de atención en puntos aleatorios a lo largo de la sesión.",
     startExperimentButton: "Comenzar Experimento",
+    pleaseWait: "Por favor, espere...",
     breakTitle: "Tome un Breve Descanso",
     breakText:
       "Ha completado un bloque de ensayos. Por favor, descanse al menos 60 segundos. Utilice este tiempo para apartar la vista de la pantalla, ponerse de pie y estirarse, o relajarse. Si lo necesita, puede tomarse más tiempo. Cuando esté listo/a, pulse «Continuar».",

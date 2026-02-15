@@ -1,5 +1,6 @@
 // --- DOM ELEMENTS ---
 const dom = {
+    accessDeniedScreen: document.getElementById("accessDeniedScreen"),
     mainMenu: document.getElementById("mainMenu"),
     welcomeScreen: document.getElementById("welcomeScreen"),
     visualCalibrationScreen: document.getElementById("visualCalibrationScreen"),
@@ -131,8 +132,10 @@ document.addEventListener("DOMContentLoaded", () => {
         state.isProlificRun = true;
         console.log("Prolific Participant Detected:", state.prolificPID);
         showDiv(dom.welcomeScreen);
-    } else {
+    } else if (getUrlParameter("admin") === ADMIN_KEY) {
         showDiv(dom.mainMenu);
+    } else {
+        showDiv(dom.accessDeniedScreen);
     }
 
     const isTouchDevice = window.matchMedia("(pointer: coarse)").matches;
@@ -862,6 +865,7 @@ async function startActualTask() {
     if (dom.startExperimentBtn) {
         dom.startExperimentBtn.disabled = true;
         dom.startExperimentBtn.classList.add('disabled-button');
+        dom.startExperimentBtn.textContent = LANG_STRINGS[state.currentLanguage].pleaseWait || "Please wait...";
     }
 
     state.reset();
@@ -1623,7 +1627,7 @@ async function sendDataToGoogleSheet(isSilent = false) {
     if (!isSilent) {
         // Show Loading Overlay with smooth progress crawl
         dom.loadingOverlay.classList.remove("hidden");
-        dom.loadingText.textContent = "Transmitting data to secure server...";
+        dom.loadingText.textContent = "Transferring data, please wait.";
 
         let currentProgress = 0;
         dom.progressBar.style.width = "0%";
