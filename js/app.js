@@ -1192,7 +1192,10 @@ function setupCoarseStepVim() {
     const paramConfig = PARAMETERS[state.currentParameterKey];
     const lang = state.currentLanguage;
 
-    document.getElementById('currentParamDisplay').textContent = `${lang === 'en' ? 'Quality' : 'Cualidad'}: ${paramConfig.name[lang]}`;
+    const paramDisplay = document.getElementById('currentParamDisplay');
+    paramDisplay.innerHTML = paramConfig.shortDesc
+        ? `${paramConfig.name[lang]}<br><span class="param-short-desc">${paramConfig.shortDesc[lang]}</span>`
+        : paramConfig.name[lang];
 
     let instructionText = '';
     if (state.currentTaskMode === 'tutorial') {

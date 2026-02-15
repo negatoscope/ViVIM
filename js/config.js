@@ -95,7 +95,7 @@ const LANG_STRINGS = {
     consentButton: "Agree and Continue",
 
     // --- New Onboarding Strings ---
-    welcomeTitle: "Instructions",
+    welcomeTitle: "Welcome",
     welcomeInstructions: `
 <p>Thank you for participating in this important study on the nature of mental imagery. Our objective is to better understand the different visual qualities that make up our internal experiences, such as memories and imagination.</p>
 <p>In this task, you will be asked to generate various mental images and then use a set of visual tools to match what you experienced. You will also be asked to complete a standardized questionnaire about your imagery abilities.</p>
@@ -296,7 +296,7 @@ const LANG_STRINGS = {
     consentCheck4: "Acepto participar en este estudio.",
     consentButton: "Acepto y Continúo",
 
-    welcomeTitle: "Instrucciones",
+    welcomeTitle: "Bienvenido/a",
     welcomeInstructions: `
 <p>Gracias por participar en este importante estudio sobre la naturaleza de la imaginación mental. Nuestro objetivo es comprender mejor las diferentes cualidades visuales que componen nuestras experiencias internas, como los recuerdos y la imaginación.</p>
 <p>En esta tarea, se le pedirá que genere varias imágenes mentales y que luego utilice una serie de herramientas visuales para igualar lo que ha experimentado. También se le pedirá que complete un cuestionario estandarizado sobre sus habilidades de imaginación.</p>
@@ -425,7 +425,9 @@ const LANG_STRINGS = {
 
 const PARAMETERS = {
   brightness: {
-    name: { en: "Brightness", es: "Brillo" }, levels: 21, coarse: { low: 4, mid: 11, high: 18 },
+    name: { en: "Brightness", es: "Brillo" },
+    shortDesc: { en: "How bright or dim the scene appeared", es: "Qué tan brillante u oscura pareció la escena" },
+    levels: 21, coarse: { low: 4, mid: 11, high: 18 },
     instructions: {
       demo: {
         en: `How <b>bright or dim</b> the scene appeared in your mind. <p>In the interactive demo, notice how moving the slider changes the image from dark (<b>Low Brightness</b>) to bright (<b>High Brightness</b>).</p><p>Move the slider to see the effect.</p>`,
@@ -446,7 +448,9 @@ const PARAMETERS = {
     }
   },
   contrast: {
-    name: { en: "Contrast", es: "Contraste" }, levels: 21, coarse: { low: 4, mid: 11, high: 18 },
+    name: { en: "Contrast", es: "Contraste" },
+    shortDesc: { en: "The difference between light and dark areas", es: "La diferencia entre las áreas claras y oscuras" },
+    levels: 21, coarse: { low: 4, mid: 11, high: 18 },
     instructions: {
       demo: {
         en: `The difference between the <b>light and dark</b> areas of the scene in your mind. <p>In the interactive demo, notice how moving the slider changes the image from washed out (<b>Low Contrast</b>) to stark and defined (<b>High Contrast</b>).</p>`,
@@ -463,7 +467,9 @@ const PARAMETERS = {
     }
   },
   saturation: {
-    name: { en: "Saturation", es: "Saturación" }, levels: 21, coarse: { low: 4, mid: 11, high: 18 },
+    name: { en: "Saturation", es: "Saturación" },
+    shortDesc: { en: "How colorful or muted the scene appeared", es: "Qué tan colorida o apagada pareció la escena" },
+    levels: 21, coarse: { low: 4, mid: 11, high: 18 },
     instructions: {
       demo: {
         en: `How <b>colorful or muted</b> the scene appeared in your mind. <p>In the interactive demo, notice how moving the slider changes the image from grayscale (<b>Low Saturation</b>) to intensely colorful (<b>High Saturation</b>).</p>`,
@@ -480,7 +486,9 @@ const PARAMETERS = {
     }
   },
   clarity: {
-    name: { en: "Clarity", es: "Nitidez" }, levels: 21, coarse: { low: 4, mid: 11, high: 18 },
+    name: { en: "Clarity", es: "Nitidez" },
+    shortDesc: { en: "How sharp or blurry the scene appeared", es: "Qué tan nítida o borrosa pareció la escena" },
+    levels: 21, coarse: { low: 4, mid: 11, high: 18 },
     instructions: {
       demo: {
         en: `How <b>clear and sharp</b> or <b>blurry and out-of-focus</b> the scene was in your mind. <p>In the interactive demo, notice how moving the slider changes the image from blurry and indistinct (<b>Low Clarity</b>) to sharp and perfectly focused (<b>High Clarity</b>).</p>`,
@@ -497,7 +505,9 @@ const PARAMETERS = {
     }
   },
   detailedness: {
-    name: { en: "Detailedness", es: "Nivel de Detalle" }, levels: 21, coarse: { low: 4, mid: 11, high: 18 },
+    name: { en: "Detailedness", es: "Nivel de Detalle" },
+    shortDesc: { en: "The amount of fine detail and texture present", es: "La cantidad de detalle fino y textura presente" },
+    levels: 21, coarse: { low: 4, mid: 11, high: 18 },
     instructions: {
       demo: {
         en: `The amount of <b>fine-grained detail and texture</b> present in the scene in your mind. <p>In the interactive demo, notice how moving the slider changes the image from one with less objects, outlines and little detail (<b>Low Detail</b>) to one with more objects and detailed textures (<b>High Detail</b>).</p>`,
@@ -514,7 +524,9 @@ const PARAMETERS = {
     }
   },
   precision: {
-    name: { en: "Color Precision", es: "Precisión de Color" }, levels: 21, coarse: { low: 4, mid: 11, high: 18 },
+    name: { en: "Color Precision", es: "Precisión de Color" },
+    shortDesc: { en: "How specific or ambiguous the colors were", es: "Qué tan específicos o ambiguos fueron los colores" },
+    levels: 21, coarse: { low: 4, mid: 11, high: 18 },
     instructions: {
       demo: {
         en: `How <b>specific or ambiguous</b> the colors were in your mind. <p>In the interactive demo, notice how moving the slider changes the image from having few, blocky colors (<b>Low Precision</b>) to having many subtle shades and gradients (<b>High Precision</b>).</p>`,
@@ -638,8 +650,8 @@ const IMAGE_DATA = [
         es: "<b>REMEMORA el salón de un lugar en el que has vivido.</b> <p></p>Cierre los ojos para formar una imagen clara. Cuando la tenga, abra los ojos y presione Continuar.",
       },
       scene_imagination: {
-        en: "<b>IMAGINE a cozy living room with a sofa and a table.</b> <p></p>Close your eyes to form a clear image. When you have it, open your eyes and press Continue.",
-        es: "<b>IMAGINA un salón acogedor con un sofá y una mesa.</b> <p></p>Cierre los ojos para formar una imagen clara. Cuando la tenga, abra los ojos y presione Continuar.",
+        en: "<b>IMAGINE a cozy living room with an armchair and a small table.</b> <p></p>Close your eyes to form a clear image. When you have it, open your eyes and press Continue.",
+        es: "<b>IMAGINA un salón acogedor con un sillón y una mesa pequeña.</b> <p></p>Cierre los ojos para formar una imagen clara. Cuando la tenga, abra los ojos y presione Continuar.",
       },
     },
   },
@@ -710,12 +722,12 @@ const IMAGE_DATA = [
     filename: "image07.webp",
     prompts: {
       episodic_recall: {
-        en: "<b>RECALL a time you saw someone walking in a park you know well.</b> <p></p>Close your eyes to form a clear image. When you have it, open your eyes and press Continue.",
-        es: "<b>REMEMORA una vez que viste a alguien paseando por un parque que conoces bien.</b> <p></p>Cierre los ojos para formar una imagen clara. Cuando la tenga, abra los ojos y presione Continuar.",
+        en: "<b>RECALL seeing a child walking in a park you know well.</b> <p></p>Close your eyes to form a clear image. When you have it, open your eyes and press Continue.",
+        es: "<b>REMEMORA haber visto a un niño/a caminando por un parque que conoces bien.</b> <p></p>Cierre los ojos para formar una imagen clara. Cuando la tenga, abra los ojos y presione Continuar.",
       },
       scene_imagination: {
-        en: "<b>IMAGINE a person walking through a park during autumn.</b> <p></p>Close your eyes to form a clear image. When you have it, open your eyes and press Continue.",
-        es: "<b>IMAGINA una persona caminando por un parque en otoño.</b> <p></p>Cierre los ojos para formar una imagen clara. Cuando la tenga, abra los ojos y presione Continuar.",
+        en: "<b>IMAGINE a child walking through a park during autumn.</b> <p></p>Close your eyes to form a clear image. When you have it, open your eyes and press Continue.",
+        es: "<b>IMAGINA un niño/a caminando por un parque en otoño.</b> <p></p>Cierre los ojos para formar una imagen clara. Cuando la tenga, abra los ojos y presione Continuar.",
       },
     },
   },

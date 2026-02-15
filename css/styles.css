@@ -120,6 +120,13 @@ body {
   text-align: center;
 }
 
+.param-short-desc {
+  font-size: 0.85em;
+  font-weight: normal;
+  font-style: italic;
+  opacity: 0.8;
+}
+
 .main-container p[data-lang-key="mainMenuWelcome"],
 .main-container p[data-lang-key="welcomeInstructions"] p {
   text-align: left;
