@@ -975,7 +975,7 @@ function createTrialList(set = "A") {
 
         [...indoorGroup, ...outdoorGroup].forEach((img) => {
             let instruction = condition === "perceptual_recall"
-                ? { en: "You will be shown an image...", es: "Se le mostrará una imagen..." }
+                ? { en: "You will be briefly shown a photograph. Pay close attention and try to hold the image in your mind after it disappears. Focus on your very first mental impression.", es: "Se le mostrará brevemente una fotografía. Preste mucha atención e intente retener la imagen en su mente después de que desaparezca. Concéntrese en su primera impresión mental." }
                 : img.prompts[condition];
 
             trialList.push({

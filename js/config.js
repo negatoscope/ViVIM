@@ -70,7 +70,7 @@ const LANG_STRINGS = {
 
 <h4>Procedures</h4>
 <p>Recruitment for this study is conducted via Prolific. Before starting, you will be asked for some demographic data. Upon beginning, you will be guided through a detailed instruction phase to familiarize yourself with the task. The main experiment consists of a series of trials where you will first be asked to generate an image in your mind (e.g., remembering a photo you just saw, evoking a personal memory, or imagining a new scene). Then, with that image in mind, you will adjust an image on the screen using buttons and sliders until it matches the qualities of your internal experience (color, lighting, details, etc.) as closely as possible. After each adjustment, you will be asked to rate your confidence level.</p>
-<p>Upon completing the main task, you will answer a standardized questionnaire about your general imagery abilities (VVIQ-2) and some brief demographic questions. The study takes approximately 40 minutes in total.</p>
+<p>Before starting, you will be asked some brief demographic questions. Upon completing the main task, you will answer a standardized questionnaire about your general imagery abilities (VVIQ-2). The study takes approximately 40 minutes in total.</p>
 
 <h4>Risks and Benefits of Participating</h4>
 <p>You will be compensated for your participation with €7.80 via Prolific, once the validity of your submission has been verified. This study includes questions to evaluate your attention and response patterns to avoid invalid data. If you do not answer the attention questions correctly, your participation will be returned.</p>
@@ -100,7 +100,7 @@ const LANG_STRINGS = {
 <p>Thank you for participating in this important study on the nature of mental imagery. Our objective is to better understand the different visual qualities that make up our internal experiences, such as memories and imagination.</p>
 <p>In this task, you will be asked to generate various mental images and then use a set of visual tools to match what you experienced. You will also be asked to complete a standardized questionnaire about your imagery abilities.</p>
 <p><b>Before we begin, please ensure you are in a quiet and dimly lit environment.</b> Lowering ambient lighting will help you focus on your mental images and reduce glare on your screen, which is essential for accurate ratings.</p>
-<p>The entire session takes approximately 40 minutes to complete. It is very important that you complete it in one single session without major interruptions. There will be two scheduled opportunities to take a short break.</p>
+<p>The entire session takes approximately 40 minutes to complete. It is very important that you complete it in one single session without major interruptions. There will be two short breaks spaced evenly throughout the session.</p>
 `,
     calibrationTitle: "Screen Calibration",
     calibrationInstructions: "To ensure the best experience, please set your screen brightness to the maximum level (or near maximum) and <b>reduce ambient lighting</b>. You should increase brightness until you can clearly see the dark grey lines in the box below. Then, select which line appears longer.",
@@ -116,14 +116,14 @@ const LANG_STRINGS = {
     howToTitle: "How the Task Works",
     howToStep1:
       `<p>In each trial, you will follow a simple two-phase process: First, you will be asked to generate an image in your mind based on a prompt. Second, you will adjust an image on the screen to try to match the qualities of your mental image, along with a rating of how confident you were in that match. Here are the details for each phase: </p>
-      <b>1. Generate an Image:</b> Based on the instruction, you will either remember a photo you just saw, recall a personal memory, or imagine a new scene. We encourage you to <b>close your eyes</b> for this step to help you focus. Try to form the image as you naturally would, and once you have a clear impression, <b>hold that image in your mind.</b>`,
+      <b>Generate an Image:</b> Based on the instruction, you will either remember a photo you just saw, recall a personal memory, or imagine a new scene. We encourage you to <b>close your eyes</b> for this step to help you focus. Try to form the image as you naturally would, and once you have a clear impression, <b>hold that image in your mind.</b>`,
     howToStep2:
       "<b>Step 2: Match the Image Quality.</b> You will then adjust an image on the screen to match the visual qualities of your mental image.",
     howToStep3:
       "<b>Step 3: Rate Your Confidence.</b> After each adjustment, you will rate how confident you are in your choice.",
     paramIntroTitle: "How the Task Works",
     paramIntroText:
-      `<b>2. Match the Image:</b> With the mental image in mind, you will open your eyes. Your task will be to adjust an image on the screen, using buttons and a slider, until it best matches the visual qualities (like brightness, clarity, etc.) of the image in your head. The next few screens will provide an explanation of each quality along with an interactive demonstration of each one.`,
+      `<b>Match the Image:</b> With the mental image in mind, you will open your eyes. Your task will be to adjust an image on the screen, using buttons and a slider, until it best matches the visual qualities (like brightness, clarity, etc.) of the image in your head. The next few screens will provide an explanation of each quality along with an interactive demonstration of each one.`,
     paramDemoTitleTemplate: "Quality {X} of 6: {paramName}",
     paramDemoTextTemplate: "This refers to {paramDescription}",
     practiceIntroTitle: "Putting It All Together: A Practice Round",
@@ -133,7 +133,7 @@ const LANG_STRINGS = {
           </p>
           <p>
           <p>
-              <b>1. Coarse Selection:</b> First, you will choose a general level (Low, Medium, or High).<br><br>
+              <b>1. Coarse Selection:</b> First, you will choose a general level (Low, Medium, or High). If you have no clear impression of a particular quality, you may indicate so as well.<br><br>
               <b>2. Fine-Tuning:</b> Next, you will use a slider to make a more precise match.<br><br>
               <b>3. Confidence Rating:</b> Finally, you will rate how confident you were in your match.
           </p>
@@ -157,7 +157,7 @@ const LANG_STRINGS = {
     episodicIntroTitle: "Source 2: Recalling a Personal Memory",
     episodicIntroText: "In other trials, you will be asked to recall a <b>personal memory from your own life</b>. This should be an event you experienced or a place you know well. The goal is to bring a specific, personal past experience to your mind's eye.",
     imaginationIntroTitle: "Source 3: Imagining a New Scene",
-    imaginationIntroText: "Finally, in some trials, you will be asked to <b>construct a new scene in your mind</b> that is not from a specific memory. Think of this as creating a generic or prototypical image based on the description provided.",
+    imaginationIntroText: "Finally, in some trials, you will be asked to <b>construct a new scene in your mind</b> that is not from a specific memory. Think of this as creating a generic or prototypical image based on the description provided.<br><br><b>Please note:</b> When asked to <i>recall</i>, retrieve an actual past experience. When asked to <i>imagine</i>, create a new scene — do not rely on a specific memory.",
     flowIntroTitle: "The Rating Process",
     flowIntroText: "For each of the six visual qualities, you will perform a simple three-step rating to best match your mental image:",
     approximationIntroTitle: "An Important Note",
@@ -272,7 +272,7 @@ const LANG_STRINGS = {
 
 <h4>Procedimientos</h4>
 <p>El reclutamiento para este estudio se llevará a cabo a través de Prolific. Antes de iniciar, se le preguntará por algunos datos demográficos. Al comenzar, se le guiará a través de una fase de instrucciones detalladas para familiarizarse con la tarea. El experimento principal consiste en una serie de pruebas en los que primero se le pedirá que genere una imagen en su mente (por ejemplo, recordar una foto que acaba de ver, evocar una memoria personal o imaginar una escena nueva). A continuación, con esa imagen en mente, ajustará una imagen en la pantalla utilizando unos botones y deslizadores hasta que coincida lo mejor posible con las cualidades de su experiencia interna (color, iluminación, detalles, etc.). Tras cada ajuste, se le pedirá que valore su nivel de confianza.</p>
-<p>Al finalizar la tarea principal, deberá responder a un cuestionario estandarizado sobre sus habilidades generales de imaginación (VVIQ-2) y a unas breves preguntas demográficas. En total, el estudio tiene una duración aproximada de 40 minutos.</p>
+<p>Antes de comenzar, se le harán unas breves preguntas demográficas. Al finalizar la tarea principal, deberá responder a un cuestionario estandarizado sobre sus habilidades generales de imaginación (VVIQ-2). En total, el estudio tiene una duración aproximada de 40 minutos.</p>
 
 <h4>Riesgos y beneficios de participar en el estudio</h4>
 <p>Usted será compensado por su participación con €7.80 a través de Prolific, una vez que se haya corroborado la validez del envío. Este estudio cuenta con preguntas que evaluarán su atención y su forma de contestar con el objetivo de evitar datos inválidos. En caso de no responder correctamente a las preguntas atencionales, su participación será devuelta.</p>
@@ -301,7 +301,7 @@ const LANG_STRINGS = {
 <p>Gracias por participar en este importante estudio sobre la naturaleza de la imaginación mental. Nuestro objetivo es comprender mejor las diferentes cualidades visuales que componen nuestras experiencias internas, como los recuerdos y la imaginación.</p>
 <p>En esta tarea, se le pedirá que genere varias imágenes mentales y que luego utilice una serie de herramientas visuales para igualar lo que ha experimentado. También se le pedirá que complete un cuestionario estandarizado sobre sus habilidades de imaginación.</p>
 <p><b>Antes de comenzar, por favor asegúrese de estar en un entorno tranquilo y con luz tenue.</b> Reducir la iluminación ambiental le ayudará a concentrarse en sus imágenes mentales y a reducir los reflejos en la pantalla, lo cual es esencial para obtener valoraciones precisas.</p>
-<p>La sesión completa dura aproximadamente 40 minutes. Es muy importante que la complete en una única sesión sin interrupciones importantes. Habrá dos oportunidades programadas para tomar un breve descanso.</p>
+<p>La sesión completa dura aproximadamente 40 minutes. Es muy importante que la complete en una única sesión sin interrupciones importantes. Habrá dos breves descansos distribuidos de manera uniforme a lo largo de la sesión.</p>
 `,
     calibrationTitle: "Calibración de Pantalla",
     calibrationInstructions: "Para asegurar la mejor experiencia, por favor ajuste el brillo de su pantalla al máximo (o cerca del máximo) y <b>reduzca la iluminación ambiental</b>. Debe aumentar el brillo hasta que pueda ver claramente las líneas gris oscuro en el recuadro de abajo. Después, seleccione qué línea parece más larga.",
@@ -317,14 +317,14 @@ const LANG_STRINGS = {
     howToTitle: "Cómo Funciona la Tarea",
     howToStep1:
       `<p>En cada ensayo, seguirá un sencillo proceso de dos fases: Primero, se le pedirá que genere una imagen en su mente basándose en una instrucción. Segundo, ajustará una imagen en la pantalla para intentar que coincida con las cualidades de su imagen mental, incluyendo una valoración sobre qué tan seguro/a está de su decisión. Aquí están los detalles de cada paso: </p>
-      <b>1. Generar una Imagen:</b> Basándose en la instrucción, deberá recordar una foto que acaba de ver, evocar un recuerdo personal o imaginar una escena nueva. Le animamos a <b>cerrar los ojos</b> en este paso para ayudarle a concentrarse. Intente formar la imagen de la manera más natural para usted y, una vez que tenga una impresión clara, <b>mantenga esa imagen en su mente.</b>`,
+      <b>Generar una Imagen:</b> Basándose en la instrucción, deberá recordar una foto que acaba de ver, evocar un recuerdo personal o imaginar una escena nueva. Le animamos a <b>cerrar los ojos</b> en este paso para ayudarle a concentrarse. Intente formar la imagen de la manera más natural para usted y, una vez que tenga una impresión clara, <b>mantenga esa imagen en su mente.</b>`,
     howToStep2:
       "<b>Paso 2: Igualar la Calidad de la Imagen.</b> Luego, ajustará una imagen en la pantalla para que coincida con las cualidades visuales de su imagen mental.",
     howToStep3:
       "<b>Paso 3: Calificar su Confianza.</b> Después de cada ajuste, calificará qué tan seguro/a está de su elección.",
     paramIntroTitle: "Cómo Funciona la Tarea",
     paramIntroText:
-      `<b>2. Igualar la Imagen:</b> Con la imagen mental en mente, abrirá los ojos. Su tarea será ajustar una imagen en la pantalla, usando botones y un deslizador, hasta que coincida lo mejor posible con las cualidades visuales (como el brillo, el desenfoque, etc.) de la imagen en su cabeza. A continuación se le ofrecerán una explicación y una demostración interactiva de cada una de estas cualidades.`,
+      `<b>Igualar la Imagen:</b> Con la imagen mental en mente, abrirá los ojos. Su tarea será ajustar una imagen en la pantalla, usando botones y un deslizador, hasta que coincida lo mejor posible con las cualidades visuales (como el brillo, el desenfoque, etc.) de la imagen en su cabeza. A continuación se le ofrecerán una explicación y una demostración interactiva de cada una de estas cualidades.`,
     paramDemoTitleTemplate: "Cualidad {X} de 6: {paramName}",
     paramDemoTextTemplate: "Esto se refiere a {paramDescription}",
     practiceIntroTitle: "Poniéndolo Todo Junto: Una Ronda de Práctica",
@@ -333,7 +333,7 @@ const LANG_STRINGS = {
               Ahora que se ha familiarizado con las diferentes cualidades visuales, completará una ronda de prueba completa para el parámetro de <b>Brillo</b>.
           </p>
           <p>
-              <b>1. Selección General:</b> Primero, elegirá un nivel general (Bajo, Medio o Alto).<br><br>
+              <b>1. Selección General:</b> Primero, elegirá un nivel general (Bajo, Medio o Alto). Si no tiene una impresión clara de una cualidad en particular, también puede indicarlo.<br><br>
               <b>2. Ajuste Fino:</b> Luego, usará un deslizador para hacer un ajuste más preciso.<br><br>
               <b>3. Calificación de Confianza:</b> Finalmente, calificará qué tan seguro/a estaba de su ajuste.
           </p>
@@ -358,7 +358,7 @@ const LANG_STRINGS = {
     episodicIntroTitle: "Fuente 2: Rememorar un Recuerdo Personal",
     episodicIntroText: "En otros ensayos, se le pedirá que rememore un <b>recuerdo personal de su propia vida</b>. Debe ser un evento que usted experimentó o un lugar que conoce bien. El objetivo es traer a su ojo mental una experiencia pasada, específica y personal.",
     imaginationIntroTitle: "Fuente 3: Imaginar una Escena Nueva",
-    imaginationIntroText: "Finalmente, en algunos ensayos, se le pedirá que <b>construya una escena nueva en su mente</b> que no provenga de un recuerdo específico. Piense en esto como crear una imagen genérica o prototípica basada en la descripción proporcionada.",
+    imaginationIntroText: "Finalmente, en algunos ensayos, se le pedirá que <b>construya una escena nueva en su mente</b> que no provenga de un recuerdo específico. Piense en esto como crear una imagen genérica o prototípica basada en la descripción proporcionada.<br><br><b>Nota importante:</b> Cuando se le pida <i>recordar</i>, recupere una experiencia pasada real. Cuando se le pida <i>imaginar</i>, cree una escena nueva — no se base en un recuerdo específico.",
     flowIntroTitle: "El Proceso de Calificación",
     flowIntroText: "Para cada una de las seis cualidades visuales, realizará una calificación en tres sencillos pasos para que coincida lo mejor posible con su imagen mental:",
     approximationIntroTitle: "Una Nota Importante",
@@ -428,20 +428,20 @@ const PARAMETERS = {
     name: { en: "Brightness", es: "Brillo" }, levels: 21, coarse: { low: 4, mid: 11, high: 18 },
     instructions: {
       demo: {
-        en: `How <b>bright or dim</b> the scene appeared in your mind. <p>In the interactive demo, notice how moving the slider changes the image from dark (<b>Low Brightness</b>) to bright (<b>High Brightness</b>).</p><p>Use your mouse to move the slider.</p>`,
+        en: `How <b>bright or dim</b> the scene appeared in your mind. <p>In the interactive demo, notice how moving the slider changes the image from dark (<b>Low Brightness</b>) to bright (<b>High Brightness</b>).</p><p>Move the slider to see the effect.</p>`,
         es: `Qué tan <b>brillante u oscuro</b> parecía la escena en su mente. <p>En la demostración interactiva, observe cómo al mover el deslizador la imagen cambia de oscura (<b>Bajo Brillo</b>) a brillante (<b>Alto Brillo</b>).</p>`
       },
       tutorial: {
-        coarse: { en: "Use your mouse to select the button (Low, Medium, or High) that best represents the overall <b>Brightness</b> of your mental image. <p>Notice that if you have no clear impression of such quality (in this case Brightness), you may choose so.</p>", es: "Usando el ratón, seleccione el botón (Bajo, Medio o Alto) que mejor represente el <b>Brillo</b> general de su imagen mental. <p>Si no tuviera una impresión clara de la cualidad en cuestión (en este caso Brillo), puede seleccionar la opción correspondiente.</p>" },
-        fineTune: { en: "Now, use your mouse to move the slider to fine-tune the <b>Brightness</b> for a more precise match. <p>You may also go back to Coarse selection by clicking the button.</p>", es: "Ahora, use el ratón para mover el deslizador para ajustar el <b>Brillo</b> de forma más precisa. <p>También es posible retroceder a la selección anterior haciendo click en el botón.</p>" },
+        coarse: { en: "Select the button (Low, Medium, or High) that best represents the overall <b>Brightness</b> of your mental image. <p>Notice that if you have no clear impression of such quality (in this case Brightness), you may choose so.</p>", es: "Seleccione el botón (Bajo, Medio o Alto) que mejor represente el <b>Brillo</b> general de su imagen mental. <p>Si no tuviera una impresión clara de la cualidad en cuestión (en este caso Brillo), puede seleccionar la opción correspondiente.</p>" },
+        fineTune: { en: "Now, move the slider to fine-tune the <b>Brightness</b> for a more precise match. <p>You may also go back to Coarse selection by clicking the button.</p>", es: "Ahora, mueva el deslizador para ajustar el <b>Brillo</b> de forma más precisa. <p>También es posible retroceder a la selección anterior haciendo click en el botón.</p>" },
         confidence: {
           en: "Finally, please rate how confident you are that the image you adjusted is a good match for your mental image.",
           es: "Finalmente, por favor califique qué tan seguro/a está de que la imagen que ajustó se corresponde con su imagen mental."
         }
       },
       task: {
-        coarse: { en: "First, select the button (Low, Medium, or High) that best represents the overall <b>Brightness</b> of your mental image.", es: "Primero, seleccione el botón (Bajo, Medio o Alto) que mejor represente el <b>Brillo</b> general de su imagen mental." },
-        fineTune: { en: "Now, use the slider to fine-tune the <b>Brightness</b> for a more precise match.", es: "Ahora, use el deslizador para ajustar el <b>Brillo</b> de forma más precisa." }
+        coarse: { en: "Select the overall <b>Brightness</b> of your mental image.", es: "Seleccione el <b>Brillo</b> general de su imagen mental." },
+        fineTune: { en: "Fine-tune the <b>Brightness</b>.", es: "Ajuste el <b>Brillo</b>." }
       }
     }
   },
@@ -457,8 +457,8 @@ const PARAMETERS = {
         fineTune: { en: "PRACTICE: Great! Now, use the slider to fine-tune the <b>Contrast</b> for a more precise match.", es: "PRÁCTICA: ¡Genial! Ahora, use el deslizador para ajustar el <b>Contraste</b> de forma más precisa." }
       },
       task: {
-        coarse: { en: "First, select the button (Low, Medium, or High) that best represents the overall <b>Contrast</b> of your mental image.", es: "Primero, seleccione el botón (Bajo, Medio o Alto) que mejor represente el <b>Contraste</b> general de su imagen mental." },
-        fineTune: { en: "Now, use the slider to fine-tune the <b>Contrast</b> for a more precise match.", es: "Ahora, use el deslizador para ajustar el <b>Contraste</b> de forma más precisa." }
+        coarse: { en: "Select the overall <b>Contrast</b> of your mental image.", es: "Seleccione el <b>Contraste</b> general de su imagen mental." },
+        fineTune: { en: "Fine-tune the <b>Contrast</b>.", es: "Ajuste el <b>Contraste</b>." }
       }
     }
   },
@@ -474,8 +474,8 @@ const PARAMETERS = {
         fineTune: { en: "PRACTICE: Great! Now, use the slider to fine-tune the <b>Saturation</b> for a more precise match.", es: "PRÁCTICA: ¡Genial! Ahora, use el deslizador para ajustar la <b>Saturación</b> de forma más precisa." }
       },
       task: {
-        coarse: { en: "First, select the button (Low, Medium, or High) that best represents the overall <b>Saturation</b> of your mental image.", es: "Primero, seleccione el botón (Bajo, Medio o Alto) que mejor represente la <b>Saturación</b> general de su imagen mental." },
-        fineTune: { en: "Now, use the slider to fine-tune the <b>Saturation</b> for a more precise match.", es: "Ahora, use el deslizador para ajustar la <b>Saturación</b> de forma más precisa." }
+        coarse: { en: "Select the overall <b>Saturation</b> of your mental image.", es: "Seleccione la <b>Saturación</b> general de su imagen mental." },
+        fineTune: { en: "Fine-tune the <b>Saturation</b>.", es: "Ajuste la <b>Saturación</b>." }
       }
     }
   },
@@ -491,8 +491,8 @@ const PARAMETERS = {
         fineTune: { en: "PRACTICE: Great! Now, use the slider to fine-tune the <b>Clarity</b> for a more precise match.", es: "PRÁCTICA: ¡Genial! Ahora, use el deslizador para ajustar la <b>Nitidez</b> de forma más precisa." }
       },
       task: {
-        coarse: { en: "First, select the button (Low, Medium, or High) that best represents the overall <b>Clarity</b> of your mental image.", es: "Primero, seleccione el botón (Bajo, Medio o Alto) que mejor represente la <b>Nitidez</b> general de su imagen mental." },
-        fineTune: { en: "Now, use the slider to fine-tune the <b>Clarity</b> for a more precise match.", es: "Ahora, use el deslizador para ajustar la <b>Nitidez</b> de forma más precisa." }
+        coarse: { en: "Select the overall <b>Clarity</b> of your mental image.", es: "Seleccione la <b>Nitidez</b> general de su imagen mental." },
+        fineTune: { en: "Fine-tune the <b>Clarity</b>.", es: "Ajuste la <b>Nitidez</b>." }
       }
     }
   },
@@ -508,8 +508,8 @@ const PARAMETERS = {
         fineTune: { en: "PRACTICE: Great! Now, use the slider to fine-tune the <b>Detailedness</b> for a more precise match.", es: "PRÁCTICA: ¡Genial! Ahora, use el deslizador para ajustar el <b>Nivel de Detalle</b> de forma más precisa." }
       },
       task: {
-        coarse: { en: "First, select the button (Low, Medium, or High) that best represents the overall <b>Detailedness</b> of your mental image.", es: "Primero, seleccione el botón (Bajo, Medio o Alto) que mejor represente el <b>Nivel de Detalle</b> general de su imagen mental." },
-        fineTune: { en: "Now, use the slider to fine-tune the <b>Detailedness</b> for a more precise match.", es: "Ahora, use el deslizador para ajustar el <b>Nivel de Detalle</b> de forma más precisa." }
+        coarse: { en: "Select the overall <b>Detailedness</b> of your mental image.", es: "Seleccione el <b>Nivel de Detalle</b> general de su imagen mental." },
+        fineTune: { en: "Fine-tune the <b>Detailedness</b>.", es: "Ajuste el <b>Nivel de Detalle</b>." }
       }
     }
   },
@@ -525,8 +525,8 @@ const PARAMETERS = {
         fineTune: { en: "PRACTICE: Great! Now, use the slider to fine-tune the <b>Color Precision</b> for a more precise match.", es: "PRÁCTICA: ¡Genial! Ahora, use el deslizador para ajustar la <b>Precisión de Color</b> de forma más precisa." }
       },
       task: {
-        coarse: { en: "First, select the button (Low, Medium, or High) that best represents the overall <b>Color Precision</b> of your mental image.", es: "Primero, seleccione el botón (Bajo, Medio o Alto) que mejor represente la <b>Precisión de Color</b> general de su imagen mental." },
-        fineTune: { en: "Now, use the slider to fine-tune the <b>Color Precision</b> for a more precise match.", es: "Ahora, use el deslizador para ajustar la <b>Precisión de Color</b> de forma más precisa." }
+        coarse: { en: "Select the overall <b>Color Precision</b> of your mental image.", es: "Seleccione la <b>Precisión de Color</b> general de su imagen mental." },
+        fineTune: { en: "Fine-tune the <b>Color Precision</b>.", es: "Ajuste la <b>Precisión de Color</b>." }
       }
     }
   },
