@@ -9,6 +9,7 @@ const state = {
     prolificPID: null,
     studyID: null,
     isProlificRun: false,
+    isDemoMode: false,
     assignedSet: null, // Latin Square set (A, B, or C)
 
     // Calibration

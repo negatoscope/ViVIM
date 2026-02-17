@@ -125,10 +125,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
     setLanguage("en");
 
+    // Check for demo mode
+    state.isDemoMode = getUrlParameter("mode") === "DEMO";
+
     // If Prolific PID is present, bypass Main Menu
     if (state.prolificPID) {
         state.isProlificRun = true;
         console.log("Prolific Participant Detected:", state.prolificPID);
+        showDiv(dom.welcomeScreen);
+    } else if (state.isDemoMode) {
+        console.log("Demo mode active — data submission suppressed.");
         showDiv(dom.welcomeScreen);
     } else if (getUrlParameter("admin") === ADMIN_KEY) {
         showDiv(dom.mainMenu);
@@ -829,13 +835,15 @@ function handleCalibrationResponse(response) {
             buttonsContainer.classList.add('hidden');
 
             // Save data SILENTLY so we have a record of the screening failure
-            console.log('[Calibration] Screening failure. Sending data silently...');
-            sendDataToGoogleSheet(true);
+            if (!state.isDemoMode) {
+                console.log('[Calibration] Screening failure. Sending data silently...');
+                sendDataToGoogleSheet(true);
 
-            // Redirect after a delay
-            setTimeout(() => {
-                window.location.href = "https://app.prolific.com/submissions/complete?cc=YOUR_CODE_HERE";
-            }, 5000);
+                // Redirect after a delay
+                setTimeout(() => {
+                    window.location.href = "https://app.prolific.com/submissions/complete?cc=YOUR_CODE_HERE";
+                }, 5000);
+            }
 
         } else {
             // FIRST FAILURE - allow retry
@@ -1148,7 +1156,7 @@ function loadNextParameterInVim() {
             if (!state.currentTrialData.is_attention_check) {
                 state.allCollectedResponses.push({ ...state.currentTrialResponses });
                 // --- REAL-TIME SAVE: Send this completed trial to server ---
-                saveTrialToServer(state.currentTrialResponses);
+                if (!state.isDemoMode) saveTrialToServer(state.currentTrialResponses);
             }
         }
 
@@ -1597,7 +1605,9 @@ function collectAndFinish() {
         dom.downloadResultsBtn.style.display = 'inline-block';
     }
 
-    sendDataToGoogleSheet();
+    if (!state.isDemoMode) {
+        sendDataToGoogleSheet();
+    }
 }
 
 // --- REAL-TIME TRIAL SAVING ---
@@ -1729,7 +1739,7 @@ async function sendDataToGoogleSheet(isSilent = false) {
 }
 
 function showProlificCompletion() {
-    if (!state.isProlificRun) return;
+    if (!state.isProlificRun || state.isDemoMode) return;
 
     // Extract code from PROLIFIC_COMPLETION_URL
     const codeMatch = PROLIFIC_COMPLETION_URL.match(/cc=([^&#]*)/);
