@@ -116,7 +116,8 @@ body {
 
 .main-container h1,
 .main-container h2,
-.controls-panel h2 {
+.controls-panel h2,
+#vimGeneralInstruction {
   text-align: center;
 }
 
@@ -148,7 +149,6 @@ body {
 #sceneImaginationIntroScreen>button,
 #paramIntroScreen>button,
 #practiceIntroScreen>button,
-#flowIntroScreen>button,
 #approximationIntroScreen>button,
 #tutorialPromptScreen>button,
 #readyScreen>button,

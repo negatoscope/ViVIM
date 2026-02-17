@@ -195,7 +195,6 @@ function showDiv(divToShowIdOrElement) {
         "perceptualRecallIntroScreen",
         "episodicRecallIntroScreen",
         "sceneImaginationIntroScreen",
-        "flowIntroScreen",
         "approximationIntroScreen",
         "quizScreen",
         "paramIntroScreen",

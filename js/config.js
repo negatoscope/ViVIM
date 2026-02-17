@@ -39,7 +39,7 @@ const LANG_STRINGS = {
     holdImagePrompt_imagine:
       "Once you have formed a clear mental image of the scene as instructed, press Continue.",
     vimGeneralInstruction:
-      "Please keep the image of your {sceneType} in your mind.",
+      "Please keep your {sceneType} in mind.",
     vimCoarsePrompt:
       "Select the image that best represents the overall level for",
     coarseButtonLow: "Low",
@@ -69,13 +69,13 @@ const LANG_STRINGS = {
 <p>You are invited to participate in a research study titled “Visual Imagery Vividness Assessment.” In this study, we seek to better understand the qualities that define our internal visual experiences, such as memories or images created with our imagination. The goal is to validate a new scientific tool that allows us to quantitatively and precisely measure characteristics such as brightness, level of detail, or sharpness of these mental images. Your participation will help us understand how the brain constructs these experiences so fundamental to human cognition.</p>
 
 <h4>Procedures</h4>
-<p>Recruitment for this study is conducted via Prolific. Before starting, you will be asked for some demographic data. Upon beginning, you will be guided through a detailed instruction phase to familiarize yourself with the task. The main experiment consists of a series of trials where you will first be asked to generate an image in your mind (e.g., remembering a photo you just saw, evoking a personal memory, or imagining a new scene). Then, with that image in mind, you will adjust an image on the screen using buttons and sliders until it matches the qualities of your internal experience (color, lighting, details, etc.) as closely as possible. After each adjustment, you will be asked to rate your confidence level.</p>
-<p>Before starting, you will be asked some brief demographic questions. Upon completing the main task, you will answer a standardized questionnaire about your general imagery abilities (VVIQ-2). The study takes approximately 40 minutes in total.</p>
+<p>Recruitment for this study is conducted via Prolific. Upon beginning, you will be guided through a detailed instruction phase to familiarize yourself with the task. The main experiment consists of a series of trials where you will first be asked to generate an image in your mind (e.g., remembering a photo you just saw, evoking a personal memory, or imagining a new scene). Then, with that image in mind, you will adjust an image on the screen using buttons and sliders until it matches the qualities of your internal experience (color, lighting, details, etc.) as closely as possible. After each adjustment, you will be asked to rate your confidence level.</p>
+<p>Before starting, you will be asked some brief demographic questions. Upon completing the main task, you will answer a standardized questionnaire about your general imagery abilities (VVIQ-2). The study takes approximately 45 minutes in total.</p>
 
 <h4>Risks and Benefits of Participating</h4>
-<p>You will be compensated for your participation with €7.80 via Prolific, once the validity of your submission has been verified. This study includes questions to evaluate your attention and response patterns to avoid invalid data. If you do not answer the attention questions correctly, your participation will be returned.</p>
+<p>You will be compensated for your participation with £6.75 (or its equivalent in your local currency) via Prolific, once the validity of your submission has been verified. This study includes questions to evaluate your attention and response patterns to avoid invalid data. If you do not answer the attention questions correctly, your participation will be returned.</p>
 <p>Participation in this study carries no significant risks beyond those associated with normal computer use for a similar period (possible visual fatigue or tiredness). The study includes two mandatory breaks to minimize these discomforts.</p>
-<p>If you feel any discomfort, or in any other circumstance, you may stop and/or leave the study at any time, without explanation, questioning, or consequences. Data will only be collected if you complete the study.</p>
+<p>If you feel any discomfort, or in any other circumstance, you may stop and/or leave the study at any time, without explanation, questioning, or consequences.</p>
 
 <h4>Confidentiality and Data Sharing</h4>
 <p>The information collected in this study is anonymous. Your name or any personal or behavioral information that makes your identification possible is not recorded.</p>
@@ -100,7 +100,7 @@ const LANG_STRINGS = {
 <p>Thank you for participating in this important study on the nature of mental imagery. Our objective is to better understand the different visual qualities that make up our internal experiences, such as memories and imagination.</p>
 <p>In this task, you will be asked to generate various mental images and then use a set of visual tools to match what you experienced. You will also be asked to complete a standardized questionnaire about your imagery abilities.</p>
 <p><b>Before we begin, please ensure you are in a quiet and dimly lit environment.</b> Lowering ambient lighting will help you focus on your mental images and reduce glare on your screen, which is essential for accurate ratings.</p>
-<p>The entire session takes approximately 40 minutes to complete. It is very important that you complete it in one single session without major interruptions. There will be two short breaks spaced evenly throughout the session.</p>
+<p>The entire session takes approximately 45 minutes to complete. It is very important that you complete it in one single session without major interruptions. There will be two short breaks spaced evenly throughout the session.</p>
 `,
     calibrationTitle: "Screen Calibration",
     calibrationInstructions: "To ensure the best experience, please set your screen brightness to the maximum level (or near maximum) and <b>reduce ambient lighting</b>. You should increase brightness until you can clearly see the dark grey lines in the box below. Then, select which line appears longer.",
@@ -129,9 +129,8 @@ const LANG_STRINGS = {
     practiceIntroTitle: "Putting It All Together: A Practice Round",
     practiceIntroText: `
           <p>
-              Now that you are familiar with the different visual qualities, you will complete one full practice rating for <b>Brightness</b>.
+              Now that you are familiar with the different visual qualities, let's see how a full trial works. In each trial, you will first generate a mental image based on the instructions provided. Then, you will rate it across the visual qualities using three simple steps. Let's practice with <b>Brightness</b>.
           </p>
-          <p>
           <p>
               <b>1. Coarse Selection:</b> First, you will choose a general level (Low, Medium, or High). If you have no clear impression of a particular quality, you may indicate so as well.<br><br>
               <b>2. Fine-Tuning:</b> Next, you will use a slider to make a more precise match.<br><br>
@@ -155,13 +154,11 @@ const LANG_STRINGS = {
     perceptualIntroTitle: "Source 1: Remembering a Photo",
     perceptualIntroText: "In some trials, you will be shown a photograph for a very brief moment. Your task is to hold the <b>very first mental impression</b> of that photo in your mind after it disappears. Try to match your ratings to that initial mental image, even if your memory seems to update or change later on.",
     episodicIntroTitle: "Source 2: Recalling a Personal Memory",
-    episodicIntroText: "In other trials, you will be asked to recall a <b>personal memory from your own life</b>. This should be an event you experienced or a place you know well. The goal is to bring a specific, personal past experience to your mind's eye.",
+    episodicIntroText: "In other trials, you will be asked to recall a <b>personal memory from your own life</b>. This should be an event you experienced or a place you know well. The goal is to bring a specific, personal past experience to your mind's eye. Try to hold on to your <b>very first mental impression</b> of the scene, even if it seems to shift or change as you go through the ratings.",
     imaginationIntroTitle: "Source 3: Imagining a New Scene",
-    imaginationIntroText: "Finally, in some trials, you will be asked to <b>construct a new scene in your mind</b> that is not from a specific memory. Think of this as creating a generic or prototypical image based on the description provided.<br><br><b>Please note:</b> When asked to <i>recall</i>, retrieve an actual past experience. When asked to <i>imagine</i>, create a new scene — do not rely on a specific memory.",
-    flowIntroTitle: "The Rating Process",
-    flowIntroText: "For each of the six visual qualities, you will perform a simple three-step rating to best match your mental image:",
+    imaginationIntroText: "Finally, in some trials, you will be asked to <b>construct a new scene in your mind</b> that is not from a specific memory. Think of this as creating a generic or prototypical image based on the description provided. Once you have formed the scene, try to hold on to that <b>very first mental impression</b>, even if it seems to shift or change as you go through the ratings.<br><br><b>Please note:</b> When asked to <i>recall</i>, retrieve an actual past experience. When asked to <i>imagine</i>, create a new scene — do not rely on a specific memory.",
     approximationIntroTitle: "An Important Note",
-    approximationIntroText: "We understand that the image on the screen may not be a perfect replica of the image in your mind's eye. Your goal is not to find an exact match, but to choose the settings that feel like the <b>best possible approximation</b> of your internal experience.",
+    approximationIntroText: "We understand that the image on the screen may not be a perfect replica of the image in your mind's eye. Your goal is not to find an exact match, but to choose the settings that feel like the <b>best possible approximation</b> of your internal experience. Please always refer back to the <b>first mental image</b> you formed — try not to update or revise it based on what you see on screen.",
     quizTitle: "Knowledge Check",
     quizInstructions: "Please answer the following questions to confirm you have understood the instructions.",
     quizErrorMessage: "One or more answers are incorrect. Please review your selections and the instructions if needed.",
@@ -185,6 +182,15 @@ const LANG_STRINGS = {
           "To choose the settings that feel like the best possible approximation of my mental image."
         ],
         correctAnswerIndex: 2 // The third option is correct
+      },
+      {
+        question: "As you rate each visual quality, which mental image should you refer to?",
+        options: [
+          "The image that updates as I see different options on screen.",
+          "The very first mental image I formed.",
+          "The clearest or best version of the image I can generate."
+        ],
+        correctAnswerIndex: 1 // The second option is correct
       }
     ],
     vviqCheckboxLabel: "Include VVIQ-2",
@@ -238,7 +244,7 @@ const LANG_STRINGS = {
     holdImagePrompt_imagine:
       "Una vez que haya formado una imagen mental clara de la escena como se le indicó, presione Continuar.",
     vimGeneralInstruction:
-      "Por favor, mantenga la imagen de su {sceneType} en su mente.",
+      "Por favor, mantenga su {sceneType} en mente.",
     vimCoarsePrompt:
       "Seleccione la imagen que mejor represente el nivel general para",
     coarseButtonLow: "Bajo",
@@ -271,13 +277,13 @@ const LANG_STRINGS = {
 <p>Se le invita a participar en un estudio de investigación denominado “Evaluación de la Viveza de las Imágenes Mentales Visuales”. En este estudio buscamos comprender mejor las cualidades que definen nuestras experiencias visuales internas, como los recuerdos o las imágenes que creamos con nuestra imaginación. El objetivo es validar una nueva herramienta científica que nos permita medir de forma cuantitativa y precisa características como el brillo, el nivel de detalle o la nitidez de estas imágenes mentales. Su participación nos ayudará a entender cómo el cerebro construye estas experiencias tan fundamentales para la cognición humana.</p>
 
 <h4>Procedimientos</h4>
-<p>El reclutamiento para este estudio se llevará a cabo a través de Prolific. Antes de iniciar, se le preguntará por algunos datos demográficos. Al comenzar, se le guiará a través de una fase de instrucciones detalladas para familiarizarse con la tarea. El experimento principal consiste en una serie de pruebas en los que primero se le pedirá que genere una imagen en su mente (por ejemplo, recordar una foto que acaba de ver, evocar una memoria personal o imaginar una escena nueva). A continuación, con esa imagen en mente, ajustará una imagen en la pantalla utilizando unos botones y deslizadores hasta que coincida lo mejor posible con las cualidades de su experiencia interna (color, iluminación, detalles, etc.). Tras cada ajuste, se le pedirá que valore su nivel de confianza.</p>
-<p>Antes de comenzar, se le harán unas breves preguntas demográficas. Al finalizar la tarea principal, deberá responder a un cuestionario estandarizado sobre sus habilidades generales de imaginación (VVIQ-2). En total, el estudio tiene una duración aproximada de 40 minutos.</p>
+<p>El reclutamiento para este estudio se llevará a cabo a través de Prolific. Al comenzar, se le guiará a través de una fase de instrucciones detalladas para familiarizarse con la tarea. El experimento principal consiste en una serie de pruebas en los que primero se le pedirá que genere una imagen en su mente (por ejemplo, recordar una foto que acaba de ver, evocar una memoria personal o imaginar una escena nueva). A continuación, con esa imagen en mente, ajustará una imagen en la pantalla utilizando unos botones y deslizadores hasta que coincida lo mejor posible con las cualidades de su experiencia interna (color, iluminación, detalles, etc.). Tras cada ajuste, se le pedirá que valore su nivel de confianza.</p>
+<p>Antes de comenzar, se le harán unas breves preguntas demográficas. Al finalizar la tarea principal, deberá responder a un cuestionario estandarizado sobre sus habilidades generales de imaginación (VVIQ-2). En total, el estudio tiene una duración aproximada de 45 minutos.</p>
 
 <h4>Riesgos y beneficios de participar en el estudio</h4>
-<p>Usted será compensado por su participación con €7.80 a través de Prolific, una vez que se haya corroborado la validez del envío. Este estudio cuenta con preguntas que evaluarán su atención y su forma de contestar con el objetivo de evitar datos inválidos. En caso de no responder correctamente a las preguntas atencionales, su participación será devuelta.</p>
+<p>Usted será compensado por su participación con £6.75 (o su equivalente en su moneda local) a través de Prolific, una vez que se haya corroborado la validez del envío. Este estudio cuenta con preguntas que evaluarán su atención y su forma de contestar con el objetivo de evitar datos inválidos. En caso de no responder correctamente a las preguntas atencionales, su participación será devuelta.</p>
 <p>La participación en este estudio no conlleva riesgos significativos más allá de los asociados al uso normal de un ordenador durante un periodo de tiempo similar (posible fatiga visual o cansancio). El estudio incluye dos descansos obligatorios para minimizar estas molestias.</p>
-<p>En caso de sentir cualquier tipo de incomodidad, y en cualquier otra circunstancia, usted podrá detener y/o abandonar el estudio en cualquier momento, sin necesidad de dar explicaciones, sin cuestionamientos ni consecuencias por ello. Los datos serán recolectados únicamente si usted completa el estudio.</p>
+<p>En caso de sentir cualquier tipo de incomodidad, y en cualquier otra circunstancia, usted podrá detener y/o abandonar el estudio en cualquier momento, sin necesidad de dar explicaciones, sin cuestionamientos ni consecuencias por ello.</p>
 
 <h4>Confidencialidad e intercambio de datos</h4>
 <p>La información recolectada en este estudio es anónima. No se registra su nombre ni ninguna información personal o conductual que haga posible su identificación.</p>
@@ -301,7 +307,7 @@ const LANG_STRINGS = {
 <p>Gracias por participar en este importante estudio sobre la naturaleza de la imaginación mental. Nuestro objetivo es comprender mejor las diferentes cualidades visuales que componen nuestras experiencias internas, como los recuerdos y la imaginación.</p>
 <p>En esta tarea, se le pedirá que genere varias imágenes mentales y que luego utilice una serie de herramientas visuales para igualar lo que ha experimentado. También se le pedirá que complete un cuestionario estandarizado sobre sus habilidades de imaginación.</p>
 <p><b>Antes de comenzar, por favor asegúrese de estar en un entorno tranquilo y con luz tenue.</b> Reducir la iluminación ambiental le ayudará a concentrarse en sus imágenes mentales y a reducir los reflejos en la pantalla, lo cual es esencial para obtener valoraciones precisas.</p>
-<p>La sesión completa dura aproximadamente 40 minutes. Es muy importante que la complete en una única sesión sin interrupciones importantes. Habrá dos breves descansos distribuidos de manera uniforme a lo largo de la sesión.</p>
+<p>La sesión completa dura aproximadamente 45 minutos. Es muy importante que la complete en una única sesión sin interrupciones importantes. Habrá dos breves descansos distribuidos de manera uniforme a lo largo de la sesión.</p>
 `,
     calibrationTitle: "Calibración de Pantalla",
     calibrationInstructions: "Para asegurar la mejor experiencia, por favor ajuste el brillo de su pantalla al máximo (o cerca del máximo) y <b>reduzca la iluminación ambiental</b>. Debe aumentar el brillo hasta que pueda ver claramente las líneas gris oscuro en el recuadro de abajo. Después, seleccione qué línea parece más larga.",
@@ -330,7 +336,7 @@ const LANG_STRINGS = {
     practiceIntroTitle: "Poniéndolo Todo Junto: Una Ronda de Práctica",
     practiceIntroText: `
           <p>
-              Ahora que se ha familiarizado con las diferentes cualidades visuales, completará una ronda de prueba completa para el parámetro de <b>Brillo</b>.
+              Ahora que se ha familiarizado con las diferentes cualidades visuales, veamos cómo funciona un ensayo completo. En cada ensayo, primero generará una imagen mental según las instrucciones proporcionadas. Luego, la calificará en las distintas cualidades visuales mediante tres sencillos pasos. Practiquemos con el <b>Brillo</b>.
           </p>
           <p>
               <b>1. Selección General:</b> Primero, elegirá un nivel general (Bajo, Medio o Alto). Si no tiene una impresión clara de una cualidad en particular, también puede indicarlo.<br><br>
@@ -356,13 +362,11 @@ const LANG_STRINGS = {
     perceptualIntroTitle: "Fuente 1: Recordar una Foto",
     perceptualIntroText: "En algunos ensayos, se le mostrará una fotografía por un instante muy breve. Su tarea es mantener en su mente la <b>primera impresión mental</b> de esa foto después de que desaparezca. Intente que sus ajustes coincidan con esa imagen mental inicial, incluso si su memoria parece actualizarse o cambiar más tarde.",
     episodicIntroTitle: "Fuente 2: Rememorar un Recuerdo Personal",
-    episodicIntroText: "En otros ensayos, se le pedirá que rememore un <b>recuerdo personal de su propia vida</b>. Debe ser un evento que usted experimentó o un lugar que conoce bien. El objetivo es traer a su ojo mental una experiencia pasada, específica y personal.",
+    episodicIntroText: "En otros ensayos, se le pedirá que rememore un <b>recuerdo personal de su propia vida</b>. Debe ser un evento que usted experimentó o un lugar que conoce bien. El objetivo es traer a su ojo mental una experiencia pasada, específica y personal. Intente mantener su <b>primera impresión mental</b> de la escena, incluso si parece cambiar a medida que avanza en las calificaciones.",
     imaginationIntroTitle: "Fuente 3: Imaginar una Escena Nueva",
-    imaginationIntroText: "Finalmente, en algunos ensayos, se le pedirá que <b>construya una escena nueva en su mente</b> que no provenga de un recuerdo específico. Piense en esto como crear una imagen genérica o prototípica basada en la descripción proporcionada.<br><br><b>Nota importante:</b> Cuando se le pida <i>recordar</i>, recupere una experiencia pasada real. Cuando se le pida <i>imaginar</i>, cree una escena nueva — no se base en un recuerdo específico.",
-    flowIntroTitle: "El Proceso de Calificación",
-    flowIntroText: "Para cada una de las seis cualidades visuales, realizará una calificación en tres sencillos pasos para que coincida lo mejor posible con su imagen mental:",
+    imaginationIntroText: "Finalmente, en algunos ensayos, se le pedirá que <b>construya una escena nueva en su mente</b> que no provenga de un recuerdo específico. Piense en esto como crear una imagen genérica o prototípica basada en la descripción proporcionada. Una vez que haya formado la escena, intente mantener esa <b>primera impresión mental</b>, incluso si parece cambiar a medida que avanza en las calificaciones.<br><br><b>Nota importante:</b> Cuando se le pida <i>recordar</i>, recupere una experiencia pasada real. Cuando se le pida <i>imaginar</i>, cree una escena nueva — no se base en un recuerdo específico.",
     approximationIntroTitle: "Una Nota Importante",
-    approximationIntroText: "Entendemos que la imagen en la pantalla puede no ser una réplica perfecta de la imagen en su mente. Su objetivo no es encontrar una coincidencia exacta, sino elegir los ajustes que sienta que son la <b>mejor aproximación posible</b> a su experiencia interna.",
+    approximationIntroText: "Entendemos que la imagen en la pantalla puede no ser una réplica perfecta de la imagen en su mente. Su objetivo no es encontrar una coincidencia exacta, sino elegir los ajustes que sienta que son la <b>mejor aproximación posible</b> a su experiencia interna. Por favor, refiérase siempre a la <b>primera imagen mental</b> que formó — intente no actualizarla ni revisarla en función de lo que vea en la pantalla.",
     quizTitle: "Prueba de Comprensión",
     quizInstructions: "Por favor, responda a las siguientes preguntas para confirmar que ha entendido las instrucciones.",
     quizErrorMessage: "Una o más respuestas son incorrectas. Por favor, revise sus selecciones y las instrucciones si es necesario.",
@@ -386,6 +390,15 @@ const LANG_STRINGS = {
           "Elegir los ajustes que se sientan como la mejor aproximación posible a mi imagen mental."
         ],
         correctAnswerIndex: 2 // La tercera opción es la correcta
+      },
+      {
+        question: "Al calificar cada cualidad visual, ¿a qué imagen mental debe referirse?",
+        options: [
+          "La imagen que se actualiza a medida que veo las distintas opciones en la pantalla.",
+          "La primera imagen mental que formé.",
+          "La versión más clara o mejor de la imagen que pueda generar."
+        ],
+        correctAnswerIndex: 1 // La segunda opción es la correcta
       }
     ],
     vviqCheckboxLabel: "Incluir VVIQ-2",

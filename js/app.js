@@ -23,7 +23,6 @@ const dom = {
     perceptualRecallIntroScreen: document.getElementById("perceptualRecallIntroScreen"),
     episodicRecallIntroScreen: document.getElementById("episodicRecallIntroScreen"),
     sceneImaginationIntroScreen: document.getElementById("sceneImaginationIntroScreen"),
-    flowIntroScreen: document.getElementById("flowIntroScreen"),
     approximationIntroScreen: document.getElementById("approximationIntroScreen"),
 
     // Buttons
@@ -90,7 +89,6 @@ const ONBOARDING_FLOW = [
     'preloadDemos',
     'paramDemos',
     'practiceIntroScreen',
-    'flowIntroScreen',
     'approximationIntroScreen',
     'quizScreen',
     'tutorialPromptScreen',
@@ -197,7 +195,7 @@ function setupEventListeners() {
     // Onboarding Navigation
     const onboardingBtns = [
         'welcomeContinueBtn', 'calibrationContinueBtn', 'perceptualIntroContinueBtn', 'episodicIntroContinueBtn',
-        'imaginationIntroContinueBtn', 'flowIntroContinueBtn', 'approximationIntroContinueBtn',
+        'imaginationIntroContinueBtn', 'approximationIntroContinueBtn',
         'howToContinueBtn', 'paramIntroContinueBtn', 'practiceIntroContinueBtn',
         'tutorialStartBtn'
     ];
@@ -378,9 +376,9 @@ function runOnboardingStep() {
     } else if (currentStepName === 'paramIntroScreen') {
         document.getElementById('qualitiesDiagramImg').src = `images/instructions/visual_qualities_diagram_${state.currentLanguage}.webp`;
         showDiv(dom.paramIntroScreen);
-    } else if (currentStepName === 'flowIntroScreen') {
+    } else if (currentStepName === 'practiceIntroScreen') {
         document.getElementById('flowDiagramImg').src = `images/instructions/rating_flow_diagram_${state.currentLanguage}.webp`;
-        showDiv(dom.flowIntroScreen);
+        showDiv(dom.practiceIntroScreen);
     } else if (currentStepName === 'visualCalibrationScreen') {
         startVisualCalibration();
         showDiv(dom.visualCalibrationScreen);
@@ -681,8 +679,8 @@ function drawMullerLyer() {
     ctx.fillStyle = '#000000';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Line style - 3% Luminance
-    ctx.strokeStyle = '#080808';
+    // Line style - 5% Luminance
+    ctx.strokeStyle = '#0D0D0D';
     ctx.lineWidth = 3;
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
