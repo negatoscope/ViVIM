@@ -101,6 +101,7 @@ const LANG_STRINGS = {
 <p>In this task, you will be asked to generate various mental images and then use a set of visual tools to match what you experienced. You will also be asked to complete a standardized questionnaire about your imagery abilities.</p>
 <p><b>Before we begin, please ensure you are in a quiet and dimly lit environment.</b> Lowering ambient lighting will help you focus on your mental images and reduce glare on your screen, which is essential for accurate ratings.</p>
 <p>The entire session takes approximately 45 minutes to complete. It is very important that you complete it in one single session without major interruptions. There will be two short breaks spaced evenly throughout the session.</p>
+<p>When you press Continue, your browser will enter full-screen mode.</p>
 `,
     calibrationTitle: "Screen Calibration",
     calibrationInstructions: "To ensure the best experience, please set your screen brightness to the maximum level (or near maximum) and <b>reduce ambient lighting</b>. You should increase brightness until you can clearly see the dark grey lines in the box below. Then, select which line appears longer.",
@@ -308,6 +309,7 @@ const LANG_STRINGS = {
 <p>En esta tarea, se le pedirá que genere varias imágenes mentales y que luego utilice una serie de herramientas visuales para igualar lo que ha experimentado. También se le pedirá que complete un cuestionario estandarizado sobre sus habilidades de imaginación.</p>
 <p><b>Antes de comenzar, por favor asegúrese de estar en un entorno tranquilo y con luz tenue.</b> Reducir la iluminación ambiental le ayudará a concentrarse en sus imágenes mentales y a reducir los reflejos en la pantalla, lo cual es esencial para obtener valoraciones precisas.</p>
 <p>La sesión completa dura aproximadamente 45 minutos. Es muy importante que la complete en una única sesión sin interrupciones importantes. Habrá dos breves descansos distribuidos de manera uniforme a lo largo de la sesión.</p>
+<p>Al presionar Continuar, su navegador entrará en modo de pantalla completa.</p>
 `,
     calibrationTitle: "Calibración de Pantalla",
     calibrationInstructions: "Para asegurar la mejor experiencia, por favor ajuste el brillo de su pantalla al máximo (o cerca del máximo) y <b>reduzca la iluminación ambiental</b>. Debe aumentar el brillo hasta que pueda ver claramente las líneas gris oscuro en el recuadro de abajo. Después, seleccione qué línea parece más larga.",
@@ -796,8 +798,8 @@ const VVIQ_DATA = {
       es: 'La imaginación visual se refiere a la capacidad de visualizar, es decir, la habilidad de formar imágenes mentales o de "ver con los ojos de la mente". Existen diferencias individuales marcadas en cuanto a la intensidad y claridad con que las personas experimentan estas imágenes, y dichas diferencias son de gran interés psicológico.',
     },
     inst_2: {
-      en: "The aim of this test is to determine the vividness of your visual imagery. The items of the test will possibly bring certain images to your mind. You are asked to rate the vividness of each image by reference to the five-point scale given below. For example, if your image is 'vague and dim', then give it a rating of 2.",
-      es: 'El objetivo de este cuestionario es evaluar la viveza de tu imaginación visual. Los ítems del test pueden evocarte ciertas imágenes. Se te pide que califiques la viveza de cada imagen utilizando la escala de cinco puntos que se presenta a continuación. Por ejemplo, si la imagen que formas es "vaga y borrosa", asígnale una puntuación de 2.',
+      en: "The aim of this test is to determine the vividness of your visual imagery. The items of the test will possibly bring certain images to your mind. You are asked to rate the vividness of each image by reference to the following five-point scale. For example, if your image is 'vague and dim', then give it a rating of 2.",
+      es: 'El objetivo de este cuestionario es evaluar la viveza de tu imaginación visual. Los ítems del test pueden evocarte ciertas imágenes. Se te pide que califiques la viveza de cada imagen utilizando la siguiente escala de cinco puntos. Por ejemplo, si la imagen que formas es "vaga y borrosa", asígnale una puntuación de 2.',
     },
     inst_3: {
       en: "Before you turn to the items, familiarize yourself with the different categories on the rating scale. Throughout the test, refer to the rating scale when judging the vividness of each image. Try to do each item separately, independent of how you may have done other items.",
@@ -810,9 +812,15 @@ const VVIQ_DATA = {
   },
   scale: [
     {
-      score: 5,
-      en: "Perfectly clear and as vivid as real seeing",
-      es: "Perfectamente clara y tan viva como si estuvieses viendo el objeto",
+      score: 1,
+      en: 'No image at all, you only "know" that you are thinking of the object',
+      es: 'Ninguna imagen, tú sólo "sabes" lo que estás pensando del objeto',
+    },
+    { score: 2, en: "Vague and dim", es: "Vaga y borrosa" },
+    {
+      score: 3,
+      en: "Moderately clear and vivid",
+      es: "Moderadamente clara y viva",
     },
     {
       score: 4,
@@ -820,15 +828,9 @@ const VVIQ_DATA = {
       es: "Clara y bastante viva",
     },
     {
-      score: 3,
-      en: "Moderately clear and vivid",
-      es: "Moderadamente clara y viva",
-    },
-    { score: 2, en: "Vague and dim", es: "Vaga y borrosa" },
-    {
-      score: 1,
-      en: 'No image at all, you only "know" that you are thinking of the object',
-      es: 'Ninguna imagen, tú sólo "sabes" lo que estás pensando del objeto',
+      score: 5,
+      en: "Perfectly clear and as vivid as real seeing",
+      es: "Perfectamente clara y tan viva como si estuvieses viendo el objeto",
     },
   ],
   prompts: [

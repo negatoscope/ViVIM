@@ -1396,20 +1396,8 @@ function displayFullResults() {
 // --- VVIQ LOGIC ---
 
 function startVVIQ() {
-    state.quizAttempts = 0;
-    state.calibrationAttempts = 0;
-    state.calibrationSuccess = false;
-
-    // Reset checkboxes
-    if (dom.consentCheckboxes) {
-        dom.consentCheckboxes.forEach(cb => cb.checked = false);
-        if (dom.consentContinueBtn) dom.consentContinueBtn.disabled = true;
-    }
-
-    // Reset any stored data
-    localStorage.removeItem(state.LOCAL_STORAGE_KEY);
-    state.currentVVIQItemIndex = 0;
-    state.vviqInstructionStep = 0;
+    state.currentVVIQSceneIndex = 0;
+    state.vviqInstructionStep = -1; // -1 = transition screen
     state.vviq_scores = [];
     populateVVIQScreen();
     showDiv(dom.vviqScreen);
@@ -1427,17 +1415,46 @@ function populateVVIQScreen() {
     h2.textContent = "VVIQ-2";
     screen.appendChild(h2);
 
-    // Instructions (only on first item)
-    if (state.currentVVIQItemIndex === 0) {
-        const instructionsDiv = document.createElement('div');
-        instructionsDiv.className = 'instruction-content';
+    // Transition screen (step -1): bridge between ViVIM task and VVIQ
+    if (state.vviqInstructionStep === -1) {
+        const transitionDiv = document.createElement('div');
+        transitionDiv.className = 'instruction-content';
+        const transitionText = lang === 'es'
+            ? 'Has completado la tarea principal. A continuaci\u00f3n, te pediremos que completes un breve cuestionario sobre tu capacidad de imaginaci\u00f3n visual.'
+            : 'You have completed the main task. Next, we will ask you to complete a short questionnaire about your visual imagery ability.';
+        transitionDiv.innerHTML = `<p>${transitionText}</p>`;
+        screen.appendChild(transitionDiv);
 
-        // Show only the current instruction paragraph based on step
+        const continueBtn = document.createElement('button');
+        continueBtn.textContent = LANG_STRINGS[lang].continueButton;
+        continueBtn.onclick = () => {
+            state.vviqInstructionStep = 0;
+            populateVVIQScreen();
+        };
+        screen.appendChild(continueBtn);
+        return;
+    }
+
+    // Instructions (steps 0–3, only before first scene)
+    if (state.currentVVIQSceneIndex === 0 && state.vviqInstructionStep <= 3) {
         const instKeys = ['inst_1', 'inst_2', 'inst_3', 'inst_4'];
         const currentKey = instKeys[state.vviqInstructionStep];
 
         if (currentKey) {
+            const instructionsDiv = document.createElement('div');
+            instructionsDiv.className = 'instruction-content';
             instructionsDiv.innerHTML = `<p>${vviqData.instructions[currentKey][lang]}</p>`;
+
+            // Show the rating scale table on inst_2
+            if (currentKey === 'inst_2') {
+                let tableHTML = '<table class="vviq-rating-scale-table"><tbody>';
+                vviqData.scale.forEach(s => {
+                    tableHTML += `<tr><td><b>${s.score}</b></td><td>${s[lang]}</td></tr>`;
+                });
+                tableHTML += '</tbody></table>';
+                instructionsDiv.innerHTML += tableHTML;
+            }
+
             screen.appendChild(instructionsDiv);
 
             const startBtn = document.createElement('button');
@@ -1447,89 +1464,114 @@ function populateVVIQScreen() {
                     state.vviqInstructionStep++;
                     populateVVIQScreen();
                 } else {
-                    // Start items
-                    renderVVIQItem(screen);
+                    // Start scenes
+                    renderVVIQScene(screen);
                 }
             };
             screen.appendChild(startBtn);
         } else {
-            // Fallback if something goes wrong, just start items
-            renderVVIQItem(screen);
+            renderVVIQScene(screen);
         }
     } else {
-        renderVVIQItem(screen);
+        renderVVIQScene(screen);
     }
 }
 
-function renderVVIQItem(container) {
+function renderVVIQScene(container) {
     container.innerHTML = '';
     const lang = state.currentLanguage;
+    const totalScenes = VVIQ_DATA.prompts.length;
 
-    // Calculate which block and item we are in
-    // There are 4 blocks (prompts), each has 4 items. Total 16 items? 
-    // Wait, config says 32 items? 
-    // Let's check config.js... 
-    // Config has 'prompts' array. Let's see how many.
-    // Ah, I need to check the VVIQ_DATA structure in config.js.
-    // It seems to have 4 items per prompt. If there are 8 prompts, that's 32 items.
-    // Let's assume the structure in config.js is correct and iterate through it.
-
-    let itemCounter = 0;
-    let currentPromptIndex = -1;
-    let currentItemIndexInPrompt = -1;
-
-    for (let i = 0; i < VVIQ_DATA.prompts.length; i++) {
-        const p = VVIQ_DATA.prompts[i];
-        if (state.currentVVIQItemIndex < itemCounter + p.items.length) {
-            currentPromptIndex = i;
-            currentItemIndexInPrompt = state.currentVVIQItemIndex - itemCounter;
-            break;
-        }
-        itemCounter += p.items.length;
-    }
-
-    if (currentPromptIndex === -1) {
-        // Finished
+    if (state.currentVVIQSceneIndex >= totalScenes) {
         collectAndFinish();
         return;
     }
 
-    const promptData = VVIQ_DATA.prompts[currentPromptIndex];
-    const itemText = promptData.items[currentItemIndexInPrompt][lang];
+    const promptData = VVIQ_DATA.prompts[state.currentVVIQSceneIndex];
     const promptText = promptData.prompt[lang];
 
+    // Header
     const h2 = document.createElement('h2');
-    h2.textContent = `VVIQ-2: ${state.currentVVIQItemIndex + 1} / 32`; // Assuming 32 total
+    h2.textContent = `VVIQ-2: ${lang === 'es' ? 'Escena' : 'Scene'} ${state.currentVVIQSceneIndex + 1} / ${totalScenes}`;
     container.appendChild(h2);
 
+    // Scene prompt
     const promptDiv = document.createElement('div');
-    promptDiv.className = 'instruction-content';
-    promptDiv.style.marginBottom = '20px';
-    promptDiv.innerHTML = `<p>${promptText}</p><p class="vviq-item-text-large"><b>${itemText}</b></p>`;
+    promptDiv.className = 'instruction-content vviq-scene-prompt';
+    promptDiv.innerHTML = `<p><em>${promptText}</em></p>`;
     container.appendChild(promptDiv);
 
-    // Rating Scale
-    const scaleDiv = document.createElement('div');
-    scaleDiv.className = 'vviq-scale vviq-options-container';
-    scaleDiv.style.display = 'flex';
-    scaleDiv.style.flexDirection = 'column';
-    scaleDiv.style.gap = '10px';
+    // Track selections for this scene
+    const sceneSelections = [null, null, null, null];
 
-    VVIQ_DATA.scale.forEach(scaleItem => {
-        const btn = document.createElement('button');
-        btn.className = 'vviq-option vviq-option-btn';
-        btn.innerHTML = `<b>${scaleItem.score}</b> - ${scaleItem[lang]}`;
-        btn.onclick = () => handleVVIQResponse(scaleItem.score);
-        scaleDiv.appendChild(btn);
+    // Render each item with a discrete slider
+    promptData.items.forEach((item, itemIdx) => {
+        const itemDiv = document.createElement('div');
+        itemDiv.className = 'vviq-scene-item';
+
+        // Item text
+        const itemLabel = document.createElement('p');
+        itemLabel.className = 'vviq-scene-item-text';
+        itemLabel.innerHTML = `<b>${itemIdx + 1}.</b> ${item[lang]}`;
+        itemDiv.appendChild(itemLabel);
+
+        // Glider widget
+        const gliderContainer = document.createElement('div');
+        gliderContainer.className = 'vviq-glider-container';
+
+        const track = document.createElement('div');
+        track.className = 'vviq-glider-track';
+
+        VVIQ_DATA.scale.forEach(scaleItem => {
+            const point = document.createElement('button');
+            point.type = 'button';
+            point.className = 'vviq-glider-point';
+            point.dataset.score = scaleItem.score;
+            point.setAttribute('aria-label', `${scaleItem.score} - ${scaleItem[lang]}`);
+            point.onclick = () => {
+                // Deselect siblings
+                track.querySelectorAll('.vviq-glider-point').forEach(p => p.classList.remove('selected'));
+                point.classList.add('selected');
+                sceneSelections[itemIdx] = scaleItem.score;
+                // Enable continue button if all selected
+                if (sceneSelections.every(s => s !== null)) {
+                    continueBtn.disabled = false;
+                }
+            };
+            track.appendChild(point);
+        });
+        gliderContainer.appendChild(track);
+
+        // Labels row
+        const labelsRow = document.createElement('div');
+        labelsRow.className = 'vviq-glider-labels';
+        VVIQ_DATA.scale.forEach(scaleItem => {
+            const label = document.createElement('span');
+            label.className = 'vviq-glider-label';
+            label.textContent = `${scaleItem.score} - ${scaleItem[lang]}`;
+            labelsRow.appendChild(label);
+        });
+        gliderContainer.appendChild(labelsRow);
+
+        itemDiv.appendChild(gliderContainer);
+        container.appendChild(itemDiv);
     });
-    container.appendChild(scaleDiv);
+
+    // Continue button
+    const continueBtn = document.createElement('button');
+    continueBtn.textContent = LANG_STRINGS[lang].continueButton;
+    continueBtn.disabled = true;
+    continueBtn.onclick = () => handleVVIQSceneSubmit(sceneSelections);
+    container.appendChild(continueBtn);
 }
 
-function handleVVIQResponse(score) {
-    state.vviq_scores.push(score);
-    updateProgressBar(); // Update progress
-    state.currentVVIQItemIndex++;
-    renderVVIQItem(dom.vviqScreen);
+function handleVVIQSceneSubmit(scores) {
+    scores.forEach(score => {
+        state.vviq_scores.push(score);
+        updateProgressBar();
+    });
+    state.currentVVIQSceneIndex++;
+    renderVVIQScene(dom.vviqScreen);
 }
 
 function collectAndFinish() {
