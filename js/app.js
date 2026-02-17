@@ -194,11 +194,6 @@ function setupEventListeners() {
         startVisualCalibration();
     });
 
-    const calibrationContinueBtn = document.getElementById('calibrationContinueBtn');
-    if (calibrationContinueBtn) {
-        calibrationContinueBtn.addEventListener('click', advanceOnboarding);
-    }
-
     // Onboarding Navigation
     const onboardingBtns = [
         'welcomeContinueBtn', 'calibrationContinueBtn', 'perceptualIntroContinueBtn', 'episodicIntroContinueBtn',

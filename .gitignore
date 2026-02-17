@@ -37,3 +37,9 @@ images/precision2/
 # === Build Tools ===
 images/optimize_images.ps1
 optimize_images.ps1
+
+# === LaTeX / Publishing Templates ===
+oup-authoring-template/
+
+# === Misc ===
+nul
