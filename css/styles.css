@@ -863,14 +863,16 @@ button.disabled-button {
 
 .calibration-container {
   width: 100%;
-  height: 400px;
+  height: 620px; /* Increased to fit 600px canvas + some padding */
   background-color: #000000;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   margin: 20px 0;
   border: 1px solid #333;
   border-radius: 4px;
+  overflow: visible; /* Ensure content doesn't overlap weirdly */
 }
 
 .calibration-shape {
@@ -915,9 +917,10 @@ button.disabled-button {
 .calibration-buttons {
   display: flex;
   justify-content: center;
-  gap: 10px;
+  gap: 15px;
   flex-wrap: wrap;
-  margin: 20px 0;
+  margin: 30px 0;
+  padding-bottom: 20px;
 }
 
 .calibration-choice-btn {

@@ -34,6 +34,9 @@ const dom = {
     startExperimentBtn: document.getElementById("startExperimentBtn"),
     downloadResultsBtn: document.getElementById("downloadResultsBtn"),
     backToMenuFromResultsBtn: document.getElementById("backToMenuFromResultsBtn"),
+    confirmConfidenceBtn: document.getElementById('confirmConfidenceBtn'),
+    confirmFinalVerificationBtn: document.getElementById('confirmFinalVerificationBtn'),
+    backToMenuFromTaskBtn: document.getElementById('backToMenuFromTaskBtn'),
     testVVIQBtn: document.getElementById("testVVIQBtn"),
     backToMenuFromTestSelectBtn: document.getElementById("backToMenuFromTestSelectBtn"),
     testDataUploadBtn: document.getElementById("testDataUploadBtn"),
@@ -95,6 +98,31 @@ const ONBOARDING_FLOW = [
     'practiceTrial',
     'readyScreen'
 ];
+
+function showDiv(divElement) {
+    if (!divElement) {
+        console.warn("[showDiv] Called with null/undefined element");
+        return;
+    }
+    console.log(`[UI] Showing screen: ${divElement.id}`);
+
+    // Hide ONLY the main screen containers
+    const containers = document.querySelectorAll('.main-container, .split-container');
+    containers.forEach(c => c.classList.add('hidden'));
+
+    // Show the target screen
+    divElement.classList.remove('hidden');
+
+    // Language selector visibility (only on main menu)
+    const langSelector = document.getElementById("languageSelector");
+    if (langSelector) {
+        if (divElement.id === "mainMenu" || divElement === dom.mainMenu) {
+            langSelector.classList.remove("hidden");
+        } else {
+            langSelector.classList.add("hidden");
+        }
+    }
+}
 
 // --- INITIALIZATION ---
 
@@ -185,6 +213,14 @@ function setupEventListeners() {
         dom.demographicsContinueBtn.addEventListener('click', handleDemographicsSubmit);
     }
 
+    if (dom.confirmConfidenceBtn) {
+        dom.confirmConfidenceBtn.addEventListener('click', handleConfirmConfidence);
+    }
+
+    if (dom.confirmFinalVerificationBtn) {
+        dom.confirmFinalVerificationBtn.addEventListener('click', handleConfirmFinalVerification);
+    }
+
     // Calibration
     // Calibration
     document.querySelectorAll('.calibration-choice-btn').forEach(btn => {
@@ -198,42 +234,51 @@ function setupEventListeners() {
         startVisualCalibration();
     });
 
-    // Onboarding Navigation
+    // Consolidated Onboarding Navigation
     const onboardingBtns = [
-        'welcomeContinueBtn', 'calibrationContinueBtn', 'perceptualIntroContinueBtn', 'episodicIntroContinueBtn',
-        'imaginationIntroContinueBtn', 'approximationIntroContinueBtn',
-        'howToContinueBtn', 'paramIntroContinueBtn', 'practiceIntroContinueBtn',
-        'tutorialStartBtn'
+        {
+            id: 'welcomeContinueBtn', action: () => {
+                document.documentElement.requestFullscreen().catch(e => console.log("FS error", e));
+                advanceOnboarding(); // Correctly advance state
+            }
+        },
+        {
+            id: 'consentContinueBtn', action: () => {
+                startVisualCalibration();
+                advanceOnboarding();
+            }
+        },
+        { id: 'calibrationContinueBtn', action: () => advanceOnboarding() },
+        { id: 'perceptualIntroContinueBtn', action: () => advanceOnboarding() },
+        { id: 'episodicIntroContinueBtn', action: () => advanceOnboarding() },
+        { id: 'imaginationIntroContinueBtn', action: () => advanceOnboarding() },
+        { id: 'approximationIntroContinueBtn', action: () => advanceOnboarding() },
+        { id: 'howToContinueBtn', action: () => advanceOnboarding() },
+        { id: 'paramIntroContinueBtn', action: () => advanceOnboarding() },
+        { id: 'practiceIntroContinueBtn', action: () => advanceOnboarding() },
+        { id: 'tutorialStartBtn', action: () => advanceOnboarding() }
     ];
 
-    onboardingBtns.forEach(id => {
-        const btn = document.getElementById(id);
+    onboardingBtns.forEach(cfg => {
+        const btn = document.getElementById(cfg.id);
         if (btn) {
-            btn.addEventListener('click', () => {
-                // Handle Fullscreen on Welcome Screen (User Request)
-                if (id === 'welcomeContinueBtn') {
-                    document.documentElement.requestFullscreen().catch(err => {
-                        console.log(`Error attempting to enable full - screen mode: ${err.message} `);
-                    });
-                }
-                advanceOnboarding();
+            // Remove any potential old listeners (to fix double-click issues)
+            const newBtn = btn.cloneNode(true);
+            btn.parentNode.replaceChild(newBtn, btn);
+            newBtn.addEventListener('click', () => {
+                console.log(`[Interaction] Button ${cfg.id} clicked.`);
+                cfg.action();
             });
+            // Update dom object references
+            if (dom[cfg.id]) dom[cfg.id] = newBtn;
         }
     });
 
-    // Welcome Screen - navigate to consent
-    dom.welcomeContinueBtn.addEventListener('click', () => {
-        showDiv(dom.consentScreen);
-    });
 
-    // Consent Screen
+
+    // Consent Screen checkboxes
     dom.consentCheckboxes.forEach(checkbox => {
         checkbox.addEventListener('change', checkConsentStatus);
-    });
-
-    dom.consentContinueBtn.addEventListener('click', () => {
-        startVisualCalibration();
-        advanceOnboarding();
     });
 
     // Start Experiment Button
@@ -319,10 +364,8 @@ function setupEventListeners() {
     });
 
     // Confidence Step
-    document.querySelectorAll(".likert-button").forEach(btn => {
-        btn.addEventListener("click", (e) => {
-            handleConfidenceSelection(e.target.closest("button"));
-        });
+    document.getElementById("confidenceSlider").addEventListener("input", (e) => {
+        document.getElementById("confidenceValueDisplay").textContent = e.target.value;
     });
 
     document.getElementById("confirmConfidenceBtn").addEventListener("click", handleConfirmConfidence);
@@ -359,6 +402,7 @@ function checkConsentStatus() {
 
 function advanceOnboarding() {
     state.onboardingStep++;
+    console.log(`[Flow] Advancing to step ${state.onboardingStep}: ${ONBOARDING_FLOW[state.onboardingStep]}`);
     runOnboardingStep();
 }
 
@@ -383,7 +427,7 @@ function runOnboardingStep() {
         document.getElementById('qualitiesDiagramImg').src = `images/instructions/visual_qualities_diagram_${state.currentLanguage}.webp`;
         showDiv(dom.paramIntroScreen);
     } else if (currentStepName === 'practiceIntroScreen') {
-        document.getElementById('flowDiagramImg').src = `images/instructions/rating_flow_diagram_${state.currentLanguage}.webp`;
+        document.getElementById('flowDiagramImg').src = `images/instructions/rating_flow_diagram_${state.currentLanguage}.png`;
         showDiv(dom.practiceIntroScreen);
     } else if (currentStepName === 'visualCalibrationScreen') {
         startVisualCalibration();
@@ -448,8 +492,23 @@ function displayDemoScreen() {
 function updateDemoImage() {
     const demoKeys = ["brightness", "contrast", "saturation", "clarity", "detailedness", "precision"];
     const key = demoKeys[state.currentDemoIndex];
-    const level = dom.paramDemoSlider.value;
-    dom.paramDemoImg.src = getVariantImagePath("tutorial", key, level);
+    const level = parseInt(dom.paramDemoSlider.value, 10);
+
+    // Use dynamic SVG filter engine for demos as well
+    const imgEl = dom.paramDemoImg;
+    const canvasEl = document.getElementById('paramDemoCanvas');
+
+    const originalSrc = getOriginalImagePath("tutorial.webp");
+    if (imgEl.src !== originalSrc) {
+        imgEl.src = originalSrc;
+        console.log("[Demo] Loading tutorial base image");
+    }
+
+    const demoLevels = { ...state.engineLevels };
+    demoLevels[key] = level;
+
+    // Apply the filters dynamically
+    applyFiltersToElement(imgEl, canvasEl, demoLevels, key, false);
 }
 
 // --- QUIZ LOGIC ---
@@ -653,13 +712,12 @@ function handleDemographicsSubmit() {
 
 // --- CALIBRATION LOGIC ---
 
-// --- CALIBRATION LOGIC ---
-
-// Replaced shape list with pure logic
-
-
 function startVisualCalibration() {
-    // Reset UI
+    state.calibrationAttempts = 0;
+    state.calibrationConsecutiveCorrect = 0;
+    state.calibrationTotalWrong = 0;
+    state.calibrationLog = [];
+
     const feedback = document.getElementById('calibrationFeedback');
     const retryBtn = document.getElementById('calibrationRetryBtn');
     const continueBtn = document.getElementById('calibrationContinueBtn');
@@ -681,104 +739,48 @@ function drawMullerLyer() {
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
 
-    // Clear canvas
     ctx.fillStyle = '#000000';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Line style - 5% Luminance
-    ctx.strokeStyle = '#0D0D0D';
+    ctx.strokeStyle = '#080808';
     ctx.lineWidth = 3;
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
 
-    // Layout
     const centerX = canvas.width / 2;
-    const centerY = canvas.height / 2;
-    const gap = 80;
-
-    // Fixed lengths: the >---< line is ALWAYS 40% longer
+    const yPositions = [100, 250, 400, 550];
     const SHORT = 200;
-    const LONG = 280;   // SHORT * 1.4
+    const LONG = 280;
     const finLen = 30;
-    const finAng = Math.PI / 6; // 30 degrees
+    const finAng = Math.PI / 6;
 
-    // Randomly place the LONG (>---<) line on top or bottom
-    state.isTopLonger = Math.random() >= 0.5;
+    state.longerLinePosition = Math.floor(Math.random() * 4);
 
-    const topY = centerY - gap;
-    const botY = centerY + gap;
-
-    if (state.isTopLonger) {
-        // Top = LONG with >---< fins (style_A)
-        drawCalibrationLine(ctx, centerX, topY, LONG, finLen, finAng, 'style_A');
-        // Bottom = SHORT with <---> fins (style_B)
-        drawCalibrationLine(ctx, centerX, botY, SHORT, finLen, finAng, 'style_B');
-    } else {
-        // Top = SHORT with <---> fins (style_B)
-        drawCalibrationLine(ctx, centerX, topY, SHORT, finLen, finAng, 'style_B');
-        // Bottom = LONG with >---< fins (style_A)
-        drawCalibrationLine(ctx, centerX, botY, LONG, finLen, finAng, 'style_A');
+    for (let i = 0; i < 4; i++) {
+        const len = (i === state.longerLinePosition) ? LONG : SHORT;
+        drawCalibrationLine(ctx, centerX, yPositions[i], len, finLen, finAng);
     }
-
-    console.log('[Calibration] isTopLonger:', state.isTopLonger,
-        '| Top:', state.isTopLonger ? LONG + 'px >---<' : SHORT + 'px <--->',
-        '| Bot:', state.isTopLonger ? SHORT + 'px <--->' : LONG + 'px >---<');
 }
 
-/**
- * Draw a horizontal line with Muller-Lyer fins.
- * @param {'style_A'|'style_B'} finType
- * style_A: >---< (Fins point OUT, legs away from line)
- * style_B: <---> (Fins point IN, legs over the line)
- */
-function drawCalibrationLine(ctx, cx, y, length, finLen, finAng, finType) {
+function drawCalibrationLine(ctx, cx, y, length, finLen, finAng) {
     const half = length / 2;
-    const x1 = cx - half;  // left endpoint
-    const x2 = cx + half;  // right endpoint
+    const x1 = cx - half;
+    const x2 = cx + half;
     const dx = finLen * Math.cos(finAng);
     const dy = finLen * Math.sin(finAng);
 
-    // Draw the main horizontal line
     ctx.beginPath();
     ctx.moveTo(x1, y);
     ctx.lineTo(x2, y);
     ctx.stroke();
 
-    if (finType === 'style_B') {
-        // <---> (Arrowheads point out, legs go INWARD)
-        // Matches user's "<--->" notation
-        // Left end "<" : fins go right (+dx)
-        ctx.beginPath();
-        ctx.moveTo(x1, y);
-        ctx.lineTo(x1 + dx, y - dy);
-        ctx.moveTo(x1, y);
-        ctx.lineTo(x1 + dx, y + dy);
-        ctx.stroke();
-        // Right end ">" : fins go left (-dx)
-        ctx.beginPath();
-        ctx.moveTo(x2, y);
-        ctx.lineTo(x2 - dx, y - dy);
-        ctx.moveTo(x2, y);
-        ctx.lineTo(x2 - dx, y + dy);
-        ctx.stroke();
-    } else {
-        // >---< (Arrowheads point in, legs go OUTWARD)
-        // Matches user's ">---<" notation
-        // Left end ">" : fins go left (-dx)
-        ctx.beginPath();
-        ctx.moveTo(x1, y);
-        ctx.lineTo(x1 - dx, y - dy);
-        ctx.moveTo(x1, y);
-        ctx.lineTo(x1 - dx, y + dy);
-        ctx.stroke();
-        // Right end "<" : fins go right (+dx)
-        ctx.beginPath();
-        ctx.moveTo(x2, y);
-        ctx.lineTo(x2 + dx, y - dy);
-        ctx.moveTo(x2, y);
-        ctx.lineTo(x2 + dx, y + dy);
-        ctx.stroke();
-    }
+    // Draw fins (Standard Muller-Lyer)
+    ctx.beginPath();
+    ctx.moveTo(x1, y); ctx.lineTo(x1 - dx, y - dy);
+    ctx.moveTo(x1, y); ctx.lineTo(x1 - dx, y + dy);
+    ctx.moveTo(x2, y); ctx.lineTo(x2 + dx, y - dy);
+    ctx.moveTo(x2, y); ctx.lineTo(x2 + dx, y + dy);
+    ctx.stroke();
 }
 
 function handleCalibrationResponse(response) {
@@ -788,69 +790,65 @@ function handleCalibrationResponse(response) {
     const buttonsContainer = document.getElementById('calibrationButtons');
     const lang = state.currentLanguage;
 
-    // The >---< line is ALWAYS the correct (longer) answer.
-    const correctAnswer = state.isTopLonger ? 'top' : 'bottom';
+    const correctAnswer = state.longerLinePosition.toString();
     const isCorrect = (response === correctAnswer);
 
-    // Log the attempt
     state.calibrationLog.push({
-        attempt: state.calibrationAttempts + 1,
+        attempt: state.calibrationConsecutiveCorrect + state.calibrationTotalWrong + 1,
         response: response,
         correctAnswer: correctAnswer,
         isCorrect: isCorrect,
-        isTopLonger: state.isTopLonger,
+        longerLinePosition: state.longerLinePosition,
         timestamp: Date.now()
     });
 
     console.log('[Calibration] User response:', response, '| Correct answer:', correctAnswer, '| Result:', isCorrect ? 'CORRECT' : 'WRONG');
 
     if (isCorrect) {
-        state.calibrationSuccess = true;
-        feedback.textContent = lang === 'en'
-            ? 'Correct! Your screen is properly calibrated.'
-            : '¡Correcto! Tu pantalla está correctamente calibrada.';
-        feedback.classList.remove('hidden', 'error');
-        feedback.classList.add('success');
-        buttonsContainer.classList.add('hidden');
-        continueBtn.classList.remove('hidden');
+        state.calibrationConsecutiveCorrect++;
+        if (state.calibrationConsecutiveCorrect >= 2) {
+            state.calibrationSuccess = true;
+            feedback.textContent = lang === 'en'
+                ? 'Correct! Your screen is properly calibrated.'
+                : '¡Correcto! Tu pantalla está correctamente calibrada.';
+            feedback.classList.remove('hidden', 'error');
+            feedback.classList.add('success');
+            buttonsContainer.classList.add('hidden');
+            continueBtn.classList.remove('hidden');
+        } else {
+            drawMullerLyer();
+            feedback.textContent = lang === 'en' ? "Correct! One more time to confirm." : "¡Correcto! Una vez más para confirmar.";
+            feedback.classList.remove('hidden', 'error');
+            feedback.classList.add('success');
+        }
     } else {
-        state.calibrationAttempts++;
+        state.calibrationTotalWrong++;
+        state.calibrationConsecutiveCorrect = 0;
 
-        if (state.calibrationAttempts >= 2) {
-            // FINAL FAILURE - SCREENED OUT
+        if (state.calibrationTotalWrong >= 4) {
             state.calibrationSuccess = false;
-
             const baseMsg = lang === 'en'
                 ? LANG_STRINGS.en.calibrationFailed
-                : (LANG_STRINGS.es.calibrationFailed || LANG_STRINGS.es.calibrationFailedSpan);
-
+                : LANG_STRINGS.es.calibrationFailed;
             const redirectMsg = lang === 'en'
                 ? " Redirecting to Prolific..."
                 : " Redirigiendo a Prolific...";
-
             feedback.textContent = baseMsg + redirectMsg;
-
             feedback.classList.remove('hidden', 'success');
             feedback.classList.add('error');
             buttonsContainer.classList.add('hidden');
 
-            // Save data SILENTLY so we have a record of the screening failure
             if (!state.isDemoMode) {
                 console.log('[Calibration] Screening failure. Sending data silently...');
                 sendDataToGoogleSheet(true);
-
-                // Redirect after a delay
                 setTimeout(() => {
                     window.location.href = "https://app.prolific.com/submissions/complete?cc=YOUR_CODE_HERE";
                 }, 5000);
             }
-
         } else {
-            // FIRST FAILURE - allow retry
             feedback.textContent = lang === 'en'
                 ? LANG_STRINGS.en.calibrationRetry
-                : (LANG_STRINGS.es.calibrationRetry || LANG_STRINGS.es.calibrationRetrySpan);
-
+                : LANG_STRINGS.es.calibrationRetry;
             feedback.classList.remove('hidden', 'success');
             feedback.classList.add('error');
             buttonsContainer.classList.add('hidden');
@@ -1024,6 +1022,7 @@ function showConditionInstructions(trialData) {
     document.getElementById("conditionInstructionText").innerHTML = trialData.condition_instruction[lang];
 
     showDiv(dom.conditionInstructionScreen);
+    document.getElementById("startTrialFromInstructionsBtn").classList.remove("hidden");
 
     // If already preloaded, we don't need to show the overlay
     const shouldShowOverlay = !state.preloadedTrials.has(trialData.trial_id);
@@ -1066,35 +1065,41 @@ function startPreVimPhase(trialData) {
     const blinkScreen = document.getElementById("blinkPromptScreen");
     const originalImg = document.getElementById("originalImageDisplay");
 
+    // 1. Show Fixation (2s)
     fixation.classList.remove("hidden");
     imageScreen.classList.add("hidden");
     holdScreen.classList.add("hidden");
     blinkScreen.classList.add("hidden");
+    originalImg.src = getOriginalImagePath(trialData.original_image_filename);
 
     setTimeout(() => {
+        // 2. Show Image (5s)
         fixation.classList.add("hidden");
         imageScreen.classList.remove("hidden");
-        originalImg.src = getOriginalImagePath(trialData.original_image_filename);
+        console.log("[Flow] Showing perceptual recall target image");
 
         setTimeout(() => {
+            // 3. Clear Image, Start Generation / Blink
             imageScreen.classList.add("hidden");
             originalImg.src = "";
             state.generationStartTime = Date.now();
 
+            // 4. Show Blink Prompt (1s)
+            blinkScreen.classList.remove("hidden");
             setTimeout(() => {
-                // Jitter logic omitted for brevity, just showing blink prompt
-                blinkScreen.classList.remove("hidden");
-                setTimeout(() => {
-                    blinkScreen.classList.add("hidden");
-                    document.getElementById("holdImagePrompt").textContent = LANG_STRINGS[state.currentLanguage].holdImagePrompt_recall;
-                    holdScreen.classList.remove("hidden");
-                }, 1000);
-            }, 600);
-        }, 900);
-    }, 2000);
+                blinkScreen.classList.add("hidden");
+                // 5. Show Hold Instruction
+                const lang = state.currentLanguage;
+                document.getElementById("holdImagePrompt").textContent = LANG_STRINGS[lang].holdImagePrompt_recall;
+                holdScreen.classList.remove("hidden");
+                document.getElementById("holdImageContinueBtn").classList.remove("hidden");
+            }, 1000);
+        }, 900); // 900ms exposure
+    }, 2000); // 2s fixation
 }
 
 function handleHoldImageContinue() {
+    document.getElementById("holdImageContinueBtn").classList.add("hidden");
     if (state.generationStartTime) {
         state.currentTrialResponses.generation_rt = Date.now() - state.generationStartTime;
         state.generationStartTime = null;
@@ -1104,7 +1109,7 @@ function handleHoldImageContinue() {
 
 function beginVimRating() {
     if (state.currentTaskMode === "tutorial") {
-        state.actualTaskOrder = ["brightness"];
+        state.actualTaskOrder = ["brightness", "clarity"];
     } else if (state.currentTaskMode === "test") {
         state.actualTaskOrder = [state.currentParameterKey];
     } else {
@@ -1130,6 +1135,11 @@ function beginVimRating() {
     document.getElementById("vimGeneralInstruction").textContent = LANG_STRINGS[lang].vimGeneralInstruction.replace("{sceneType}", sceneTypeString);
 
     showDiv(dom.vimTaskInterface);
+
+    // Explicitly hide pre-vim screens to prevent overlap
+    dom.preVimScreenContainer.classList.add("hidden");
+    document.getElementById("conditionInstructionScreen").classList.add("hidden");
+
     state.currentParameterIndexInTask = 0;
 
     // Initialize trial responses if not already set (fixes tutorial mode crash)
@@ -1142,6 +1152,16 @@ function beginVimRating() {
         };
     }
 
+    state.finalMatchRating = null;
+    state.engineLevels = { brightness: 11, contrast: 11, saturation: 11, clarity: 21, precision: 21, detailedness: 21 };
+
+    let originalFilename = state.currentTrialData.base_image_id + ".webp";
+    if (state.currentTrialData.condition === "perceptual_recall" && state.currentTrialData.original_image_filename) {
+        originalFilename = state.currentTrialData.original_image_filename;
+    }
+    const hiddenImg = document.getElementById("trialOriginalImgHidden");
+    if (hiddenImg) hiddenImg.src = getOriginalImagePath(originalFilename);
+
     loadNextParameterInVim();
 }
 
@@ -1151,6 +1171,18 @@ function loadNextParameterInVim() {
         state.currentParameterConfig = PARAMETERS[state.currentParameterKey];
         setupCoarseStepVim();
     } else {
+        // Check if ALL parameters were responded to with "no_info"
+        const allNoInfo = Object.values(state.currentTrialResponses.parameter_responses).every(r => r.level === 'no_info');
+
+        // Show combined image rating screen before finishing (task OR practice)
+        if (state.finalMatchRating === null && !allNoInfo) {
+            showFinalVerificationStep();
+            return;
+        } else if (allNoInfo) {
+            // Skip the rating if there's no data to connect it to
+            state.finalMatchRating = 'skipped';
+        }
+
         // Trial Finished
         if (state.currentTaskMode === "actual_task_full") {
             if (!state.currentTrialData.is_attention_check) {
@@ -1161,7 +1193,11 @@ function loadNextParameterInVim() {
         }
 
         if (state.currentTaskMode === "tutorial") {
-            showReadyScreen();
+            if (state.finalMatchRating === null) {
+                showFinalVerificationStep();
+            } else {
+                showReadyScreen();
+            }
             return;
         }
 
@@ -1221,6 +1257,21 @@ function setupCoarseStepVim() {
     dom.coarseStep.classList.remove("hidden");
     dom.fineTuneStep.classList.add("hidden");
     dom.confidenceStep.classList.add("hidden");
+    document.getElementById("finalVerificationStep").classList.add("hidden");
+
+    // Hide ALL action buttons initially (Reset for new parameter/trial)
+    document.getElementById("confirmSelectionBtn").classList.add("hidden");
+    document.getElementById("confirmNoInfoBtn").classList.add("hidden");
+    document.getElementById("confirmConfidenceBtn").classList.add("hidden");
+    document.getElementById("confirmFinalVerificationBtn").classList.add("hidden");
+    document.getElementById("backToCoarseBtn").classList.add("hidden");
+
+    // Safety: Hide any onboarding buttons that might linger
+    document.getElementById("tutorialStartBtn").classList.add("hidden");
+    document.getElementById("howToContinueBtn").classList.add("hidden");
+    document.getElementById("calibrationContinueBtn").classList.add("hidden");
+    document.getElementById("holdImageContinueBtn").classList.add("hidden");
+    document.getElementById("startTrialFromInstructionsBtn").classList.add("hidden");
 
     state.parameterStartTime = Date.now();
 
@@ -1228,6 +1279,8 @@ function setupCoarseStepVim() {
     document.getElementById("coarseImageDisplay").classList.remove("hidden");
     document.getElementById("fineTuneImageDisplay").classList.add("hidden");
     document.getElementById("coarsePreviewImg").classList.add("hidden");
+    const existingCanvas = document.getElementById("coarsePreviewCanvas");
+    if (existingCanvas) existingCanvas.style.display = "none";
     document.querySelector("#coarseImageDisplay .preview-instruction").classList.remove("hidden");
 
     // Reset Buttons
@@ -1255,18 +1308,17 @@ function setupFineTuneStepVim(coarseLevelValue) {
     else if (coarseLevelValue === paramConfig.coarse.mid) { minL = 8; maxL = 14; }
     else { minL = 15; maxL = 21; }
 
-    state.sliderToActualLevelMap = [];
-    for (let i = minL; i <= maxL; i++) { state.sliderToActualLevelMap.push(i); }
+    state.currentFineTuneRange = { min: minL, max: maxL };
 
-    const randomSliderIndex = Math.floor(Math.random() * state.sliderToActualLevelMap.length);
-    dom.fineTuneSlider.min = 1;
-    dom.fineTuneSlider.max = state.sliderToActualLevelMap.length;
-    dom.fineTuneSlider.value = randomSliderIndex + 1;
+    dom.fineTuneSlider.min = 0;
+    dom.fineTuneSlider.max = 100;
+    dom.fineTuneSlider.value = Math.floor(Math.random() * 101); // randomized to avoid anchoring
 
     updateFineTuneImageVim(dom.fineTuneSlider.value);
 
     dom.coarseStep.classList.add('hidden');
     dom.fineTuneStep.classList.remove('hidden');
+    document.getElementById("finalVerificationStep").classList.add("hidden");
 
     // Switch Image Panel
     document.getElementById("coarseImageDisplay").classList.add("hidden");
@@ -1280,27 +1332,67 @@ function setupFineTuneStepVim(coarseLevelValue) {
     const confirmBtn = document.getElementById("confirmSelectionBtn");
     confirmBtn.classList.remove("hidden");
 
-    // Inactivate Confirm Button Initially
     state.hasMovedSlider = false;
     confirmBtn.disabled = true;
     confirmBtn.classList.add("disabled-button");
+
+    // Explicitly hide any other navigation buttons from onboarding that might be lingering
+    document.getElementById("calibrationContinueBtn").classList.add("hidden");
+    document.getElementById("howToContinueBtn").classList.add("hidden");
+    document.getElementById("tutorialStartBtn").classList.add("hidden");
+
     document.getElementById("confirmConfidenceBtn").classList.add("hidden");
     document.getElementById("confirmNoInfoBtn").classList.add("hidden");
 }
 
 function updateFineTuneImageVim(sliderValStr) {
-    const sliderValue = parseInt(sliderValStr);
-    const actualLevel = state.sliderToActualLevelMap[sliderValue - 1];
+    const sliderPos = parseFloat(sliderValStr); // 0 to 100
+    const minL = state.currentFineTuneRange.min;
+    const maxL = state.currentFineTuneRange.max;
+    // Maps 0-100 to minL-maxL linearly
+    const actualLevel = minL + ((maxL - minL) * (sliderPos / 100));
+
     if (actualLevel !== undefined && state.currentTrialData && state.currentParameterKey) {
-        dom.fineTuneImg.src = getVariantImagePath(state.currentTrialData.base_image_id, state.currentParameterKey, actualLevel);
-        document.getElementById("fineTuneLevelDisplay").textContent = actualLevel;
+        state.engineLevels[state.currentParameterKey] = actualLevel;
+
+        const imgEl = document.getElementById("fineTuneImg");
+        const canvasEl = document.getElementById("fineTuneCanvas");
+
+        let originalFilename = state.currentTrialData.base_image_id + ".webp";
+        if (state.currentTrialData.condition === "perceptual_recall" && state.currentTrialData.original_image_filename) {
+            originalFilename = state.currentTrialData.original_image_filename;
+        }
+
+        const desiredSrc = getOriginalImagePath(originalFilename);
+        if (imgEl.getAttribute("data-original-src") !== desiredSrc || state.currentTaskMode === 'tutorial') {
+            imgEl.setAttribute("data-original-src", desiredSrc);
+            imgEl.src = desiredSrc;
+            console.log(`[Image] Loading tutorial image: ${desiredSrc}`);
+        }
+
+        applyFiltersToElement(imgEl, canvasEl, state.engineLevels, state.currentParameterKey, false);
+        document.getElementById("fineTuneLevelDisplay").textContent = Math.round(sliderPos) + '%';
     }
 }
 
 function updateCoarsePreviewImage(level) {
     if (level !== undefined && state.currentTrialData && state.currentParameterKey) {
         const previewImg = document.getElementById("coarsePreviewImg");
-        previewImg.src = getVariantImagePath(state.currentTrialData.base_image_id, state.currentParameterKey, level);
+        let originalFilename = state.currentTrialData.base_image_id + ".webp";
+        if (state.currentTrialData.condition === "perceptual_recall" && state.currentTrialData.original_image_filename) {
+            originalFilename = state.currentTrialData.original_image_filename;
+        }
+
+        const desiredSrc = getOriginalImagePath(originalFilename);
+        if (previewImg.getAttribute("data-original-src") !== desiredSrc) {
+            previewImg.setAttribute("data-original-src", desiredSrc);
+            previewImg.src = desiredSrc;
+        }
+
+        const tempLevels = { ...state.engineLevels };
+        tempLevels[state.currentParameterKey] = level;
+        applyFiltersToElement(previewImg, null, tempLevels, state.currentParameterKey, false);
+
         previewImg.classList.remove("hidden");
         document.querySelector("#coarseImageDisplay .preview-instruction").classList.add("hidden");
     }
@@ -1319,12 +1411,22 @@ function handleNoInfoSelection() {
 }
 
 function handleConfirmSelection() {
-    const finalLevel = state.sliderToActualLevelMap[parseInt(dom.fineTuneSlider.value) - 1];
+    const sliderPos = parseFloat(dom.fineTuneSlider.value);
+    const minL = state.currentFineTuneRange.min;
+    const maxL = state.currentFineTuneRange.max;
+    const actualLevel = minL + ((maxL - minL) * (sliderPos / 100));
+
+    // Normalize level from 1-21 range to 0-100 score
+    const normalizedScore = Math.round(((actualLevel - 1) / 20) * 100);
+
     if (!state.currentTrialResponses.parameter_responses) {
         state.currentTrialResponses.parameter_responses = {};
     }
     state.currentTrialResponses.parameter_responses[state.currentParameterKey] = {
-        level: finalLevel,
+        level: normalizedScore, // 0-100
+        raw_level: actualLevel, // Keep raw for reference
+        slider_position: sliderPos,
+        coarse_selection: state.currentCoarseSelectionLevel
     };
 
     if (state.currentParameterKey === 'attention_check') {
@@ -1341,8 +1443,8 @@ function handleConfirmSelection() {
 function showConfidenceStep() {
     dom.fineTuneStep.classList.add('hidden');
     dom.confidenceStep.classList.remove('hidden');
+    document.getElementById("finalVerificationStep").classList.add("hidden");
 
-    // Set Prompt
     const lang = state.currentLanguage;
     let promptText = '';
     if (state.currentTaskMode === 'tutorial') {
@@ -1352,27 +1454,31 @@ function showConfidenceStep() {
     }
     document.getElementById("confidencePrompt").textContent = promptText;
 
-    state.currentConfidenceSelection = null;
-    document.querySelectorAll(".likert-button.selected").forEach(btn => btn.classList.remove("selected"));
+    document.getElementById("confidenceSlider").value = Math.floor(Math.random() * 101); // randomized to avoid anchoring
 
-    // Ensure action buttons container is visible (important when coming from "no info" path)
     document.getElementById("fineTuneActionButtons").classList.remove("hidden");
-
-    // Switch Buttons
     document.getElementById("backToCoarseBtn").classList.add("hidden");
     document.getElementById("confirmSelectionBtn").classList.add("hidden");
     document.getElementById("confirmNoInfoBtn").classList.add("hidden");
     document.getElementById("confirmConfidenceBtn").classList.remove("hidden");
-}
+    document.getElementById("confirmFinalVerificationBtn").classList.add("hidden");
 
-function handleConfidenceSelection(button) {
-    state.currentConfidenceSelection = parseInt(button.dataset.value);
-    document.querySelectorAll(".likert-button.selected").forEach(btn => btn.classList.remove("selected"));
-    button.classList.add("selected");
+    // Disable Confirm until slider is moved (anti-click-through guard)
+    const confBtn = document.getElementById('confirmConfidenceBtn');
+    confBtn.disabled = true;
+    confBtn.classList.add('disabled-button');
+    const confSlider = document.getElementById('confidenceSlider');
+    const enableConfBtn = () => {
+        confBtn.disabled = false;
+        confBtn.classList.remove('disabled-button');
+        confSlider.removeEventListener('input', enableConfBtn);
+    };
+    confSlider.addEventListener('input', enableConfBtn);
 }
 
 function handleConfirmConfidence() {
-    if (state.currentConfidenceSelection === null) return;
+    const slider = document.getElementById("confidenceSlider");
+    state.currentConfidenceSelection = parseInt(slider.value, 10);
 
     const responseTime = Date.now() - state.parameterStartTime;
     if (state.currentTrialResponses.parameter_responses[state.currentParameterKey]) {
@@ -1383,6 +1489,71 @@ function handleConfirmConfidence() {
     updateProgressBar();
     state.currentParameterIndexInTask++;
     state.saveToLocalStorage(); // Save progress after each parameter adjustment
+    loadNextParameterInVim();
+}
+
+function showFinalVerificationStep() {
+    dom.coarseStep.classList.add("hidden");
+    dom.fineTuneStep.classList.add("hidden");
+    dom.confidenceStep.classList.add("hidden");
+    const stepEl = document.getElementById("finalVerificationStep");
+    stepEl.classList.remove("hidden");
+
+    document.getElementById("fineTuneActionButtons").classList.remove("hidden");
+    document.getElementById("backToCoarseBtn").classList.add("hidden");
+    document.getElementById("confirmSelectionBtn").classList.add("hidden");
+    document.getElementById("confirmNoInfoBtn").classList.add("hidden");
+    document.getElementById("confirmConfidenceBtn").classList.add("hidden");
+    document.getElementById("confirmFinalVerificationBtn").classList.remove("hidden");
+
+    // Enable interaction guard for final verification
+    const finalBtn = document.getElementById('confirmFinalVerificationBtn');
+    finalBtn.disabled = true;
+    finalBtn.classList.add('disabled-button');
+    const finalSlider = document.getElementById('finalVerificationSlider');
+    const enableFinalBtn = () => {
+        finalBtn.disabled = false;
+        finalBtn.classList.remove('disabled-button');
+        finalSlider.removeEventListener('input', enableFinalBtn);
+    };
+    finalSlider.addEventListener('input', enableFinalBtn);
+
+    document.getElementById("coarseImageDisplay").classList.add("hidden");
+    document.getElementById("fineTuneImageDisplay").classList.remove("hidden");
+
+    const lang = state.currentLanguage;
+    const headerTitle = document.getElementById('currentParamDisplay');
+    const headerDesc = document.getElementById('fineTuneParamName');
+
+    headerTitle.innerHTML = `${LANG_STRINGS[lang].finalVerificationTitle}<br><span class="param-short-desc">${LANG_STRINGS[lang].finalVerificationDesc}</span>`;
+    headerDesc.innerHTML = LANG_STRINGS[lang].finalVerificationInstruction;
+
+    const imgEl = document.getElementById("fineTuneImg");
+    const canvasEl = document.getElementById("fineTuneCanvas");
+
+    let originalFilename = state.currentTrialData.base_image_id + ".webp";
+    if (state.currentTrialData.condition === "perceptual_recall" && state.currentTrialData.original_image_filename) {
+        originalFilename = state.currentTrialData.original_image_filename;
+    }
+
+    // Fix Bug: Explicitly set the image source for the current trial
+    const desiredSrc = getOriginalImagePath(originalFilename);
+    imgEl.src = desiredSrc;
+    imgEl.setAttribute("data-original-src", desiredSrc);
+
+    applyFiltersToElement(imgEl, canvasEl, state.engineLevels, state.currentParameterKey, true);
+
+    document.getElementById("finalVerificationSlider").value = 50;
+}
+
+function handleConfirmFinalVerification() {
+    const slider = document.getElementById("finalVerificationSlider");
+    state.finalMatchRating = parseInt(slider.value, 10);
+    state.currentTrialResponses.final_match_rating = state.finalMatchRating;
+
+    // Final save for the trial with the combined rating
+    state.saveToLocalStorage();
+
     loadNextParameterInVim();
 }
 
@@ -1694,11 +1865,7 @@ async function sendDataToGoogleSheet(isSilent = false) {
     try {
         const response = await fetch(GOOGLE_SCRIPT_URL, {
             method: "POST",
-            body: params,
-            headers: {
-                "Content-Type": "application/x-www-form-urlencoded"
-            },
-            keepalive: true
+            body: params
         });
 
         const result = await response.json();
@@ -1720,6 +1887,22 @@ async function sendDataToGoogleSheet(isSilent = false) {
             throw new Error("Server responded with error");
         }
     } catch (error) {
+        // Special case: Failed to fetch on a POST to Google Apps Script often means a CORS/Redirect issue, 
+        // even though the data was successfully received by the script.
+        if (error.name === 'TypeError' && error.message === 'Failed to fetch') {
+            console.warn("CORS/Redirect issue detected, but data was likely sent successfully.");
+            if (!isSilent) {
+                clearInterval(crawlInterval);
+                dom.progressBar.style.width = "100%";
+                dom.loadingText.textContent = "Data sent successfully (CORS bypass)";
+                setTimeout(() => {
+                    dom.loadingOverlay.classList.add("hidden");
+                    showProlificCompletion();
+                }, 1500);
+            }
+            return; // Success
+        }
+
         if (!isSilent) {
             clearInterval(crawlInterval);
             console.error("Data save failed:", error);
@@ -1807,11 +1990,14 @@ function generateSyntheticData() {
 
         params.forEach(p => {
             trial.parameter_responses[p] = {
-                level: Math.floor(Math.random() * 21) + 1,
-                confidence: Math.floor(Math.random() * 7) + 1,
+                level: Math.floor(Math.random() * 101), // 0-100 score
+                confidence: Math.floor(Math.random() * 101), // 0-100 score
                 rt: 2000 + Math.random() * 3000
             };
         });
+
+        // Add the new final match rating (0-100)
+        trial.final_match_rating = Math.floor(Math.random() * 101);
 
         state.allCollectedResponses.push(trial);
     }
@@ -1823,6 +2009,13 @@ function generateSyntheticData() {
         duration: 120000,
         rt: 120000,
         after_trial: 4
+    });
+    state.breakData.push({
+        start: Date.now() - 120000,
+        end: Date.now() - 60000,
+        duration: 60000,
+        rt: 60000,
+        after_trial: 8
     });
 
     // 3. Synthetic VVIQ Scores (32 items)

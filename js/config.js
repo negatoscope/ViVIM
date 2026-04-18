@@ -4,6 +4,16 @@
 const DEBUG_SHOW_RESULTS = false; // Set to true to show results for debugging
 const DEBUG_SKIP_BREAK_TIMER = false; // Set to false for real participants
 
+const PARAM_VALUES = {
+    brightness: [-90, -78, -66, -54, -42, -30, -18, -6, 6, 18, 30, 42, 54, 66, 78, 90, 102, 114, 126, 138, 150],
+    contrast: [-90, -80, -70, -60, -50, -40, -30, -20, -10, 0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110],
+    saturation: [0, 0.08, 0.16, 0.24, 0.32, 0.40, 0.47, 0.55, 0.63, 0.79, 0.95, 1.10, 1.26, 1.42, 1.58, 1.82, 2.05, 2.29, 2.53, 2.76, 3.0],
+    clarity: [2.0, 1.9, 1.8, 1.7, 1.6, 1.5, 1.4, 1.3, 1.2, 1.1, 1.0, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1, 0],
+    precision: [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 18, 20, 22, 25, 28, 32],
+    detailedness_p1: [100, 100, 100, 100, 100, 100, 90, 80, 70, 60, 50, 45, 40, 35, 30, 25, 20, 15, 10, 5, 0],
+    detailedness_p2: [0, 10, 20, 30, 40, 50, 50, 50, 50, 50, 50, 45, 40, 35, 30, 25, 20, 15, 10, 5, 0]
+};
+
 // Keyboard Navigation
 const KEYBOARD_INPUTS_ENABLED = true;
 const KEYBOARD_FOCUS_CLASS = "keyboard-focus";
@@ -104,16 +114,17 @@ const LANG_STRINGS = {
 <p>When you press Continue, your browser will enter full-screen mode.</p>
 `,
     calibrationTitle: "Screen Calibration",
-    calibrationInstructions: "To ensure the best experience, please set your screen brightness to the maximum level (or near maximum) and <b>reduce ambient lighting</b>. You should increase brightness until you can clearly see the dark grey lines in the box below. Then, select which line appears longer.",
+    calibrationInstructions: "To ensure the best experience, please set your screen brightness to the maximum level (or near maximum) and <b>reduce ambient lighting</b>. You should increase brightness until you can clearly see the dark grey lines in the box below. Then, select which of the four lines appears longer.",
     calibrationPrompt: "Which horizontal line is longer?",
-    topLonger: "Top line is longer",
-    bottomLonger: "Bottom line is longer",
-    bothEqual: "Both are equal",
+    calibrationLine1: "Line 1 (Top) is longer",
+    calibrationLine2: "Line 2 is longer",
+    calibrationLine3: "Line 3 is longer",
+    calibrationLine4: "Line 4 (Bottom) is longer",
     retryButton: "Try Again",
     continueButton: "Continue",
     // Failure feedback
     calibrationFailed: "Calibration failed. You have been screened out. Please return your participation on Prolific.",
-    calibrationRetry: "Incorrect. Please increase your screen brightness significantly, reduce ambient lighting (glare), and try again. (Attempt 1 of 2)",
+    calibrationRetry: "Incorrect. You must get two consecutive answers correct to proceed. Please increase your screen brightness significantly, reduce ambient lighting (glare), and try again.",
     howToTitle: "How the Task Works",
     howToStep1:
       `<p>In each trial, you will follow a simple two-phase process: First, you will be asked to generate an image in your mind based on a prompt. Second, you will adjust an image on the screen to try to match the qualities of your mental image, along with a rating of how confident you were in that match. Here are the details for each phase: </p>
@@ -122,6 +133,12 @@ const LANG_STRINGS = {
       "<b>Step 2: Match the Image Quality.</b> You will then adjust an image on the screen to match the visual qualities of your mental image.",
     howToStep3:
       "<b>Step 3: Rate Your Confidence.</b> After each adjustment, you will rate how confident you are in your choice.",
+    finalVerificationTitle: "Combined Image Rating",
+    finalVerificationDesc: "Overall match of the composite image to your mental representation.",
+    finalVerificationInstruction: "Rate the overall vividness of the composite image compared to your mental representation.",
+    finalVerificationPrompt: "How closely does this final combined image match the overall vividness of your mental representation?",
+    finalVerificationLow: "No match at all",
+    finalVerificationHigh: "Perfect match",
     paramIntroTitle: "How the Task Works",
     paramIntroText:
       `<b>Match the Image:</b> With the mental image in mind, you will open your eyes. Your task will be to adjust an image on the screen, using buttons and a slider, until it best matches the visual qualities (like brightness, clarity, etc.) of the image in your head. The next few screens will provide an explanation of each quality along with an interactive demonstration of each one.`,
@@ -130,12 +147,15 @@ const LANG_STRINGS = {
     practiceIntroTitle: "Putting It All Together: A Practice Round",
     practiceIntroText: `
           <p>
-              Now that you are familiar with the different visual qualities, let's see how a full trial works. In each trial, you will first generate a mental image based on the instructions provided. Then, you will rate it across the visual qualities using three simple steps. Let's practice with <b>Brightness</b>.
+              Now that you are familiar with the different visual qualities, let's see how a full trial works. In each trial, you will first generate a mental image based on the instructions provided. Then, you will rate it across the visual qualities using three simple steps. Let's practice with <b>Brightness and Clarity</b>.
           </p>
           <p>
               <b>1. Coarse Selection:</b> First, you will choose a general level (Low, Medium, or High). If you have no clear impression of a particular quality, you may indicate so as well.<br><br>
               <b>2. Fine-Tuning:</b> Next, you will use a slider to make a more precise match.<br><br>
               <b>3. Confidence Rating:</b> Finally, you will rate how confident you were in your match.
+          </p>
+          <p>
+              <b>4. Combined Image Rating:</b> Once you have adjusted all qualities separately, you will see the final composite image and rate how closely it matches your mental representation overall.
           </p>
       `,
     tutorialPromptTitle: "Practice Trial: Instructions",
@@ -267,7 +287,6 @@ const LANG_STRINGS = {
     likertLabelLow: "Nada seguro/a",
     likertLabelHigh: "Completamente seguro/a",
     confirmConfidenceButton: "Confirmar Confianza",
-    testParamButton: "Prueba de Parámetro (Debug)",
 
     // --- Consent Strings (ES) ---
     consentTitle: "Hoja de Información para el Participante",
@@ -314,14 +333,15 @@ const LANG_STRINGS = {
     calibrationTitle: "Calibración de Pantalla",
     calibrationInstructions: "Para asegurar la mejor experiencia, por favor ajuste el brillo de su pantalla al máximo (o cerca del máximo) y <b>reduzca la iluminación ambiental</b>. Debe aumentar el brillo hasta que pueda ver claramente las líneas gris oscuro en el recuadro de abajo. Después, seleccione qué línea parece más larga.",
     calibrationPrompt: "¿Qué línea horizontal es más larga?",
-    topLonger: "La línea de arriba es más larga",
-    bottomLonger: "La línea de abajo es más larga",
-    bothEqual: "Ambas son iguales",
+    calibrationLine1: "La línea 1 (Arriba) es más larga",
+    calibrationLine2: "La línea 2 es más larga",
+    calibrationLine3: "La línea 3 es más larga",
+    calibrationLine4: "La línea 4 (Abajo) es más larga",
     retryButton: "Intentar de Nuevo",
     continueButton: "Continuar",
     // Failure feedback
     calibrationFailed: "Calibración fallida. Ha sido descartado del estudio. Por favor devuelva su participación en Prolific.",
-    calibrationRetry: "Incorrecto. Por favor aumenta significativamente el brillo de tu pantalla, reduce la iluminación ambiental (reflejos) e intenta de nuevo. (Intento 1 de 2)",
+    calibrationRetry: "Incorrecto. Debe acertar dos veces consecutivas para avanzar. Por favor aumenta significativamente el brillo de tu pantalla, reduce la iluminación ambiental (reflejos) e intenta de nuevo.",
     howToTitle: "Cómo Funciona la Tarea",
     howToStep1:
       `<p>En cada ensayo, seguirá un sencillo proceso de dos fases: Primero, se le pedirá que genere una imagen en su mente basándose en una instrucción. Segundo, ajustará una imagen en la pantalla para intentar que coincida con las cualidades de su imagen mental, incluyendo una valoración sobre qué tan seguro/a está de su decisión. Aquí están los detalles de cada paso: </p>
@@ -330,6 +350,12 @@ const LANG_STRINGS = {
       "<b>Paso 2: Igualar la Calidad de la Imagen.</b> Luego, ajustará una imagen en la pantalla para que coincida con las cualidades visuales de su imagen mental.",
     howToStep3:
       "<b>Paso 3: Calificar su Confianza.</b> Después de cada ajuste, calificará qué tan seguro/a está de su elección.",
+    finalVerificationTitle: "Valoración de Imagen Combinada",
+    finalVerificationDesc: "Coincidencia general de la imagen compuesta con su representación mental.",
+    finalVerificationInstruction: "Califique la vividez general de la imagen combinada comparada con su representación mental.",
+    finalVerificationPrompt: "¿Qué tanto se parece esta imagen final combinada a la vividez general de su representación mental?",
+    finalVerificationLow: "No se parece en nada",
+    finalVerificationHigh: "Coincidencia perfecta",
     paramIntroTitle: "Cómo Funciona la Tarea",
     paramIntroText:
       `<b>Igualar la Imagen:</b> Con la imagen mental en mente, abrirá los ojos. Su tarea será ajustar una imagen en la pantalla, usando botones y un deslizador, hasta que coincida lo mejor posible con las cualidades visuales (como el brillo, el desenfoque, etc.) de la imagen en su cabeza. A continuación se le ofrecerán una explicación y una demostración interactiva de cada una de estas cualidades.`,
@@ -338,14 +364,16 @@ const LANG_STRINGS = {
     practiceIntroTitle: "Poniéndolo Todo Junto: Una Ronda de Práctica",
     practiceIntroText: `
           <p>
-              Ahora que se ha familiarizado con las diferentes cualidades visuales, veamos cómo funciona un ensayo completo. En cada ensayo, primero generará una imagen mental según las instrucciones proporcionadas. Luego, la calificará en las distintas cualidades visuales mediante tres sencillos pasos. Practiquemos con el <b>Brillo</b>.
+              Ahora que está familiarizado/a con las diferentes cualidades visuales, vea cómo funciona un ensayo completo. En cada ensayo, primero generará una imagen mental según las instrucciones proporcionadas. Luego, la calificará a través de las cualidades visuales siguiendo tres sencillos pasos. Practiquemos con el <b>Brillo y la Nitidez</b>. 
           </p>
           <p>
-              <b>1. Selección General:</b> Primero, elegirá un nivel general (Bajo, Medio o Alto). Si no tiene una impresión clara de una cualidad en particular, también puede indicarlo.<br><br>
-              <b>2. Ajuste Fino:</b> Luego, usará un deslizador para hacer un ajuste más preciso.<br><br>
-              <b>3. Calificación de Confianza:</b> Finalmente, calificará qué tan seguro/a estaba de su ajuste.
+              <b>1. Selección General:</b> Primero, elegirá un nivel general (Bajo, Medio o Alto). Si no tuviera una impresión clara de una cualidad en particular, puede indicarlo también.<br><br>
+              <b>2. Ajuste Fino:</b> A continuación, usará un deslizador para realizar un ajuste de mayor precisión.<br><br>
+              <b>3. Valoración de Confianza:</b> Finalmente, calificará qué tan seguro/a ha estado de su ajuste.
           </p>
-          <p>Entendemos que la imagen en la pantalla puede no coincidir perfectamente con las cualidades visuales de la imagen en su mente. Su objetivo no es encontrar una réplica exacta, sino realizar la <b>mejor aproximación posible</b>. Por favor, elija los ajustes que sienta más cercanos a su experiencia interna.</p>
+          <p>
+              <b>4. Valoración de Imagen Combinada:</b> Una vez que haya ajustado todas las cualidades por separado, verá la imagen final combinada y calificará qué tanto se aproxima a su representación mental en general. 
+          </p>
       `,
     tutorialPromptTitle: "Ensayo de Práctica: Instrucciones",
     tutorialPromptText: "Para este ensayo de práctica, por favor: <b>IMAGINE un padre jugando con su hijo pequeño en un parque.</b><br><br>Por favor, cierre los ojos para formar una imagen clara y estable. Cuando la tenga, abra los ojos y presione Continuar.",
@@ -473,7 +501,11 @@ const PARAMETERS = {
       },
       tutorial: {
         coarse: { en: "PRACTICE: First, select the button (Low, Medium, or High) that best represents the overall <b>Contrast</b> of your mental image.", es: "PRÁCTICA: Primero, seleccione el botón (Bajo, Medio o Alto) que mejor represente el <b>Contraste</b> general de su imagen mental." },
-        fineTune: { en: "PRACTICE: Great! Now, use the slider to fine-tune the <b>Contrast</b> for a more precise match.", es: "PRÁCTICA: ¡Genial! Ahora, use el deslizador para ajustar el <b>Contraste</b> de forma más precisa." }
+        fineTune: { en: "PRACTICE: Great! Now, use the slider to fine-tune the <b>Contrast</b> for a more precise match.", es: "PRÁCTICA: ¡Genial! Ahora, use el deslizador para ajustar el <b>Contraste</b> de forma más precisa." },
+        confidence: {
+          en: "Finally, please rate how confident you are that the image you adjusted is a good match for your mental image.",
+          es: "Finalmente, por favor califique qué tan seguro/a está de que la imagen que ajustó se corresponde con su imagen mental."
+        }
       },
       task: {
         coarse: { en: "Select the overall <b>Contrast</b> of your mental image.", es: "Seleccione el <b>Contraste</b> general de su imagen mental." },
@@ -492,7 +524,11 @@ const PARAMETERS = {
       },
       tutorial: {
         coarse: { en: "PRACTICE: First, select the button (Low, Medium, or High) that best represents the overall <b>Saturation</b> of your mental image.", es: "PRÁCTICA: Primero, seleccione el botón (Bajo, Medio o Alto) que mejor represente la <b>Saturación</b> general de su imagen mental." },
-        fineTune: { en: "PRACTICE: Great! Now, use the slider to fine-tune the <b>Saturation</b> for a more precise match.", es: "PRÁCTICA: ¡Genial! Ahora, use el deslizador para ajustar la <b>Saturación</b> de forma más precisa." }
+        fineTune: { en: "PRACTICE: Great! Now, use the slider to fine-tune the <b>Saturation</b> for a more precise match.", es: "PRÁCTICA: ¡Genial! Ahora, use el deslizador para ajustar la <b>Saturación</b> de forma más precisa." },
+        confidence: {
+          en: "Finally, please rate how confident you are that the image you adjusted is a good match for your mental image.",
+          es: "Finalmente, por favor califique qué tan seguro/a está de que la imagen que ajustó se corresponde con su imagen mental."
+        }
       },
       task: {
         coarse: { en: "Select the overall <b>Saturation</b> of your mental image.", es: "Seleccione la <b>Saturación</b> general de su imagen mental." },
@@ -510,8 +546,12 @@ const PARAMETERS = {
         es: `Qué tan <b>nítida y enfocada</b> o <b>borrosa y desenfocada</b> estaba la escena en su mente. <p>En la demostración interactiva, observe cómo al mover el deslizador la imagen cambia de borrosa e indistinta (<b>Baja Nitidez</b>) a nítida y perfectamente enfocada (<b>Alta Nitidez</b>).</p>`
       },
       tutorial: {
-        coarse: { en: "PRACTICE: First, select the button (Low, Medium, or High) that best represents the overall <b>Clarity</b> of your mental image.", es: "PRÁCTICA: Primero, seleccione el botón (Bajo, Medio o Alto) que mejor represente la <b>Nitidez</b> general de su imagen mental." },
-        fineTune: { en: "PRACTICE: Great! Now, use the slider to fine-tune the <b>Clarity</b> for a more precise match.", es: "PRÁCTICA: ¡Genial! Ahora, use el deslizador para ajustar la <b>Nitidez</b> de forma más precisa." }
+        coarse: { en: "First, select the button (Low, Medium, or High) that best represents the overall <b>Clarity</b> of your mental image. <p>Notice that if you have no clear impression of such quality (in this case Clarity), you may choose so.</p>", es: "Primero, seleccione el botón (Bajo, Medio o Alto) que mejor represente la <b>Nitidez</b> general de su imagen mental. <p>Si no tuviera una impresión clara de la cualidad en cuestión (en este caso Nitidez), puede seleccionar la opción correspondiente.</p>" },
+        fineTune: { en: "Great! Now, move the slider to fine-tune the <b>Clarity</b> for a more precise match. <p>You may also go back to Coarse selection by clicking the button.</p>", es: "¡Genial! Ahora, mueva el deslizador para ajustar la <b>Nitidez</b> de forma más precisa. <p>También es posible retroceder a la selección anterior haciendo click en el botón.</p>" },
+        confidence: {
+          en: "Finally, please rate how confident you are that the image you adjusted is a good match for your mental image.",
+          es: "Finalmente, por favor califique qué tan seguro/a está de que la imagen que ajustó se corresponde con su imagen mental."
+        }
       },
       task: {
         coarse: { en: "Select the overall <b>Clarity</b> of your mental image.", es: "Seleccione la <b>Nitidez</b> general de su imagen mental." },
@@ -530,7 +570,11 @@ const PARAMETERS = {
       },
       tutorial: {
         coarse: { en: "PRACTICE: First, select the button (Low, Medium, or High) that best represents the overall <b>Detailedness</b> of your mental image.", es: "PRÁCTICA: Primero, seleccione el botón (Bajo, Medio o Alto) que mejor represente el <b>Nivel de Detalle</b> general de su imagen mental." },
-        fineTune: { en: "PRACTICE: Great! Now, use the slider to fine-tune the <b>Detailedness</b> for a more precise match.", es: "PRÁCTICA: ¡Genial! Ahora, use el deslizador para ajustar el <b>Nivel de Detalle</b> de forma más precisa." }
+        fineTune: { en: "PRACTICE: Great! Now, use the slider to fine-tune the <b>Detailedness</b> for a more precise match.", es: "PRÁCTICA: ¡Genial! Ahora, use el deslizador para ajustar el <b>Nivel de Detalle</b> de forma más precisa." },
+        confidence: {
+          en: "Finally, please rate how confident you are that the image you adjusted is a good match for your mental image.",
+          es: "Finalmente, por favor califique qué tan seguro/a está de que la imagen que ajustó se corresponde con su imagen mental."
+        }
       },
       task: {
         coarse: { en: "Select the overall <b>Detailedness</b> of your mental image.", es: "Seleccione el <b>Nivel de Detalle</b> general de su imagen mental." },
@@ -549,7 +593,11 @@ const PARAMETERS = {
       },
       tutorial: {
         coarse: { en: "PRACTICE: First, select the button (Low, Medium, or High) that best represents the overall <b>Color Precision</b> of your mental image.", es: "PRÁCTICA: Primero, seleccione el botón (Bajo, Medio o Alto) que mejor represente la <b>Precisión de Color</b> general de su imagen mental." },
-        fineTune: { en: "PRACTICE: Great! Now, use the slider to fine-tune the <b>Color Precision</b> for a more precise match.", es: "PRÁCTICA: ¡Genial! Ahora, use el deslizador para ajustar la <b>Precisión de Color</b> de forma más precisa." }
+        fineTune: { en: "PRACTICE: Great! Now, use the slider to fine-tune the <b>Color Precision</b> for a more precise match.", es: "PRÁCTICA: ¡Genial! Ahora, use el deslizador para ajustar la <b>Precisión de Color</b> de forma más precisa." },
+        confidence: {
+          en: "Finally, please rate how confident you are that the image you adjusted is a good match for your mental image.",
+          es: "Finalmente, por favor califique qué tan seguro/a está de que la imagen que ajustó se corresponde con su imagen mental."
+        }
       },
       task: {
         coarse: { en: "Select the overall <b>Color Precision</b> of your mental image.", es: "Seleccione la <b>Precisión de Color</b> general de su imagen mental." },
@@ -829,8 +877,8 @@ const VVIQ_DATA = {
     },
     {
       score: 5,
-      en: "Perfectly clear and as vivid as real seeing",
-      es: "Perfectamente clara y tan viva como si estuvieses viendo el objeto",
+      en: "Perfectly clear and as vivid as normal vision",
+      es: "Perfectamente clara y tan vívida como la visión normal",
     },
   ],
   prompts: [

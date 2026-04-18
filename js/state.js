@@ -13,8 +13,9 @@ const state = {
     assignedSet: null, // Latin Square set (A, B, or C)
 
     // Calibration
-    calibrationAttempts: 0,
-    currentCalibrationShape: null,
+    calibrationConsecutiveCorrect: 0,
+    calibrationTotalWrong: 0,
+    longerLinePosition: null,
     calibrationLog: [], // Track all attempts for data analysis
 
     // Onboarding
@@ -28,6 +29,8 @@ const state = {
     currentTrialData: null,
     currentTrialResponses: null,
     allCollectedResponses: [],
+    finalMatchRating: null,
+    engineLevels: {},
 
     // Parameter
     currentParameterKey: null,
@@ -53,15 +56,16 @@ const state = {
     breakData: [],
 
     // VVIQ
-    vviqResponses: [],
+    vviq_scores: [],
     vviqEnabled: true,
 
     reset() {
         this.sessionID = null;
         this.participantID = null;
         this.currentTaskMode = null;
-        this.calibrationAttempts = 0;
-        this.currentCalibrationShape = null;
+        this.calibrationConsecutiveCorrect = 0;
+        this.calibrationTotalWrong = 0;
+        this.longerLinePosition = null;
         this.assignedSet = null;
         this.onboardingStep = 0;
         this.currentDemoIndex = 0;
@@ -71,11 +75,14 @@ const state = {
         this.currentTrialData = null;
         this.currentTrialResponses = null;
         this.allCollectedResponses = [];
+        this.finalMatchRating = null;
+        this.engineLevels = {};
         this.currentParameterKey = null;
         this.currentParameterIndexInTask = 0;
         this.actualTaskOrder = [];
         this.hasMovedSlider = false;
         this.breakData = [];
+        this.vviq_scores = [];
 
         // Keyboard focus state
         this.currentFocusableElements = [];
@@ -117,6 +124,8 @@ const state = {
             currentTrialData: this.currentTrialData,
             currentTrialResponses: this.currentTrialResponses,
             allCollectedResponses: this.allCollectedResponses,
+            finalMatchRating: this.finalMatchRating,
+            engineLevels: this.engineLevels,
             currentParameterKey: this.currentParameterKey,
             currentParameterIndexInTask: this.currentParameterIndexInTask,
             actualTaskOrder: this.actualTaskOrder,
@@ -166,6 +175,8 @@ const state = {
         this.currentTrialData = backup.currentTrialData;
         this.currentTrialResponses = backup.currentTrialResponses;
         this.allCollectedResponses = backup.allCollectedResponses;
+        this.finalMatchRating = backup.finalMatchRating;
+        this.engineLevels = backup.engineLevels || {};
         this.currentParameterKey = backup.currentParameterKey;
         this.currentParameterIndexInTask = backup.currentParameterIndexInTask;
         this.actualTaskOrder = backup.actualTaskOrder;

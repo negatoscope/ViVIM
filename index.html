@@ -92,16 +92,16 @@
     </div>
 
     <div id="calibrationCanvasContainer" class="calibration-container">
-      <canvas id="calibrationCanvas" width="800" height="400"></canvas>
+      <canvas id="calibrationCanvas" width="800" height="600"></canvas>
     </div>
 
     <p id="calibrationPrompt" class="calibration-prompt" data-lang-key="calibrationPrompt"></p>
 
     <div id="calibrationButtons" class="calibration-buttons">
-      <button class="calibration-choice-btn" data-response="top" data-lang-key="topLonger">Top line is longer</button>
-      <button class="calibration-choice-btn" data-response="bottom" data-lang-key="bottomLonger">Bottom line is
-        longer</button>
-      <button class="calibration-choice-btn" data-response="equal" data-lang-key="bothEqual">Lines are equal</button>
+      <button class="calibration-choice-btn" data-response="0" data-lang-key="calibrationLine1">Line 1 (Top) is longer</button>
+      <button class="calibration-choice-btn" data-response="1" data-lang-key="calibrationLine2">Line 2 is longer</button>
+      <button class="calibration-choice-btn" data-response="2" data-lang-key="calibrationLine3">Line 3 is longer</button>
+      <button class="calibration-choice-btn" data-response="3" data-lang-key="calibrationLine4">Line 4 (Bottom) is longer</button>
     </div>
 
     <p id="calibrationFeedback" class="calibration-feedback hidden"></p>
@@ -342,6 +342,7 @@
       </div>
       <div class="image-display hidden" id="fineTuneImageDisplay">
         <img id="fineTuneImg" src="" alt="Fine-tuned image" />
+        <canvas id="fineTuneCanvas" style="max-width:100%;max-height:100%;object-fit:contain;display:none;"></canvas>
       </div>
     </div>
     <div class="controls-panel">
@@ -364,26 +365,32 @@
           <span data-lang-key="fineTunePrompt" class="hidden"></span>
           <span id="fineTuneParamName"></span>
         </p>
-        <input type="range" id="fineTuneSlider" min="1" max="7" value="4" />
-        <p class="slider-value-display"><span id="fineTuneLevelDisplay"></span></p>
+        <div style="margin-top: 15px;">
+          <input type="range" id="fineTuneSlider" min="0" max="100" value="50" style="width: 100%; height: 25px; margin: 15px 0;" />
+        </div>
+        <p class="slider-value-display hidden"><span id="fineTuneLevelDisplay"></span></p>
       </div>
       <div id="confidenceStep" class="confidence-rating control-group hidden">
         <p id="confidencePrompt"></p>
-        <div class="likert-scale">
-          <button class="likert-button" data-value="1">1</button>
-          <button class="likert-button" data-value="2">2</button>
-          <button class="likert-button" data-value="3">3</button>
-          <button class="likert-button" data-value="4">4</button>
-          <button class="likert-button" data-value="5">5</button>
-          <button class="likert-button" data-value="6">6</button>
-          <button class="likert-button" data-value="7">7</button>
+        <div style="margin-top: 15px;">
+           <input type="range" id="confidenceSlider" class="confidence-slider" min="0" max="100" value="50" style="width: 100%; height: 25px; margin: 15px 0;">
         </div>
-        <div class="likert-labels">
-          <span id="likertLabelLow"></span>
-          <span id="likertLabelHigh"></span>
+        <div class="likert-labels" style="display: flex; justify-content: space-between; font-weight: bold; color: #555;">
+          <span data-lang-key="likertLabelLow">Not at all confident</span>
+          <span data-lang-key="likertLabelHigh">Completely confident</span>
         </div>
         <div id="confidenceActionButtons" style="margin-top: 20px;">
           <button id="backToFineTuneBtn" data-lang-key="backButton" class="hidden">Back</button>
+        </div>
+      </div>
+      <div id="finalVerificationStep" class="final-verification control-group hidden">
+        <p data-lang-key="finalVerificationPrompt" style="font-weight: bold; margin-bottom: 15px; font-size: 1.1em;"></p>
+        <div style="margin-top: 15px;">
+           <input type="range" id="finalVerificationSlider" class="confidence-slider" min="0" max="100" value="50" style="width: 100%; height: 25px; margin: 15px 0;">
+        </div>
+        <div class="likert-labels" style="display: flex; justify-content: space-between; font-weight: bold; color: #555;">
+          <span data-lang-key="finalVerificationLow">Not a match at all</span>
+          <span data-lang-key="finalVerificationHigh">A perfect visual replica</span>
         </div>
       </div>
       <div class="flex-spacer"></div>
@@ -393,6 +400,7 @@
           <button id="confirmSelectionBtn" data-lang-key="confirmLevelButton"></button>
           <button id="confirmNoInfoBtn" class="hidden" data-lang-key="continueButton"></button>
           <button id="confirmConfidenceBtn" data-lang-key="confirmConfidenceButton" class="hidden"></button>
+          <button id="confirmFinalVerificationBtn" data-lang-key="continueButton" class="hidden"></button>
         </div>
         <button id="backToMenuFromTaskBtn" class="back-button back-to-menu-btn" data-lang-key="exitTaskButton"></button>
       </div>
@@ -441,6 +449,9 @@
       <p>Please rotate your device to landscape mode.</p>
     </div>
   </div>
+
+  <!-- Hidden original image used as canvas source for HSV quantization -->
+  <img id="trialOriginalImgHidden" src="" style="display:none;" crossorigin="anonymous">
 
   <!-- Scripts -->
   <script src="js/config.js?v=promptfix1"></script>

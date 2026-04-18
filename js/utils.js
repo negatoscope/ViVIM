@@ -18,20 +18,15 @@ function getUrlParameter(name) {
         : decodeURIComponent(results[1].replace(/\+/g, " ")).toUpperCase();
 }
 
-function getVariantImagePath(baseImageId, paramKey, level) {
-    // If the parameter is an attention check, we need to get an image from a REAL parameter's folder.
-    // We can just default to using the 'brightness' folder for this purpose.
-    const folderParam =
-        paramKey === "attention_check" ? "brightness" : paramKey;
-
-    const levelStr = level < 10 ? "0" + level : level.toString();
-
-    // Construct the path using the corrected folder parameter.
-    return `${IMAGE_BASE_FOLDER}/${folderParam}/${baseImageId}_${folderParam}_${levelStr}${IMAGE_EXTENSION}`;
-}
+// Removing old variant image path logic
 
 function getOriginalImagePath(originalFilename) {
     return `${IMAGE_BASE_FOLDER}/originals/${originalFilename}`;
+}
+
+function getVariantImagePath(baseId, paramKey, level) {
+    const paddedLevel = level.toString().padStart(2, '0');
+    return `${IMAGE_BASE_FOLDER}/${paramKey}/${baseId}_${paramKey}_${paddedLevel}.webp`;
 }
 
 // --- Smart Preloader Module ---
@@ -51,62 +46,22 @@ async function preloadDemoAssets(advanceCallback) {
     const loadingText = document.getElementById("loadingText");
     const continueBtn = document.getElementById('startDemosBtn');
 
-    // 1. Show the loading overlay and disable the continue button
     if (continueBtn) continueBtn.disabled = true;
     loadingOverlay.classList.remove('hidden');
     progressBar.style.width = '0%';
     loadingText.textContent = "Loading Demos...";
 
-    // 2. Create the list of all image URLs needed for the demos
-    let urlsToPreload = [];
-    // We need to access DEMO_PARAMS. Since it was defined in index.html, we need to make sure it's available.
-    // It was NOT in config.js. I need to add it to config.js or define it here.
-    // It relies on getVariantImagePath, so it fits here or in config.js.
-    // I'll assume it's in config.js (I missed it in the previous step, I will add it).
-
-    // Wait, I missed DEMO_PARAMS in config.js. I need to add it.
-    // For now I will define it locally or assume it's global.
-    // I'll fix config.js in a moment.
-
-    // RE-DEFINING DEMO_PARAMS HERE TEMPORARILY OR GLOBALLY IF IT WAS MISSED
-    const DEMO_PARAMS_LOCAL = [
-        { key: "brightness", image: getVariantImagePath("tutorial", "brightness", 11) },
-        { key: "contrast", image: getVariantImagePath("tutorial", "contrast", 11) },
-        { key: "saturation", image: getVariantImagePath("tutorial", "saturation", 11) },
-        { key: "clarity", image: getVariantImagePath("tutorial", "clarity", 11) },
-        { key: "detailedness", image: getVariantImagePath("tutorial", "detailedness", 11) },
-        { key: "precision", image: getVariantImagePath("tutorial", "precision", 11) },
-    ];
-
-    DEMO_PARAMS_LOCAL.forEach(demo => {
-        // For each demo, we need all 21 variants for its slider
-        for (let level = 1; level <= 21; level++) {
-            urlsToPreload.push(getVariantImagePath('tutorial', demo.key, level));
-        }
-    });
-
-    // 3. Preload all images and update the progress bar
-    let loadedCount = 0;
-    const totalToLoad = urlsToPreload.length;
-
-    for (const url of urlsToPreload) {
-        try {
-            await preloadImage(url);
-            loadedCount++;
-            const percent = Math.round((loadedCount / totalToLoad) * 100);
-            progressBar.style.width = `${percent}%`;
-        } catch (error) {
-            console.warn(`Could not preload demo image: ${url}`, error);
-            loadedCount++; // Increment anyway to not get stuck
-        }
+    try {
+        await preloadImage(getOriginalImagePath("tutorial.webp"));
+        progressBar.style.width = `100%`;
+    } catch (error) {
+        console.warn(`Could not preload demo image`, error);
     }
 
-    // 4. Hide overlay and proceed to the first demo
     loadingText.textContent = "Loading complete!";
     setTimeout(() => {
         loadingOverlay.classList.add('hidden');
         if (continueBtn) continueBtn.disabled = false;
-        // Now that everything is loaded, start the demos
         if (advanceCallback) advanceCallback();
     }, 250);
 }
@@ -119,7 +74,6 @@ async function preloadTrialAssets(trialData, showOverlay = true) {
     const loadingText = document.getElementById("loadingText");
     const continueBtn = document.getElementById("startTrialFromInstructionsBtn");
 
-    // 1. Show the loading overlay and disable the continue button if requested
     if (showOverlay) {
         if (continueBtn) continueBtn.disabled = true;
         loadingOverlay.classList.remove("hidden");
@@ -127,39 +81,20 @@ async function preloadTrialAssets(trialData, showOverlay = true) {
         loadingText.textContent = "Loading...";
     }
 
-    // 2. Create the list of all image URLs needed for this trial
     let urlsToPreload = [];
-
-    // For perceptual recall, the original image is the most important
-    if (trialData.condition === "perceptual_recall") {
-        urlsToPreload.push(
-            getOriginalImagePath(trialData.original_image_filename)
-        );
+    if (trialData.condition === "perceptual_recall" && trialData.original_image_filename) {
+        urlsToPreload.push(getOriginalImagePath(trialData.original_image_filename));
+    } else {
+        urlsToPreload.push(getOriginalImagePath(`${trialData.base_image_id}.webp`));
     }
 
-    // Add ALL parameter images (1-21) for all real parameters
-    const realParameters = Object.keys(PARAMETERS).filter(
-        (p) => p !== "attention_check"
-    );
-    realParameters.forEach((paramKey) => {
-        for (let level = 1; level <= 21; level++) {
-            urlsToPreload.push(
-                getVariantImagePath(trialData.base_image_id, paramKey, level)
-            );
-        }
-    });
-
-    // 3. Preload all images and update the progress bar if overlay is visible
     let loadedCount = 0;
-    const totalToLoad = urlsToPreload.length;
-
     for (const url of urlsToPreload) {
         try {
             await preloadImage(url);
             loadedCount++;
             if (showOverlay) {
-                const percent = Math.round((loadedCount / totalToLoad) * 100);
-                progressBar.style.width = `${percent}%`;
+                progressBar.style.width = `${Math.round((loadedCount / urlsToPreload.length) * 100)}%`;
             }
         } catch (error) {
             console.warn(`Could not preload image: ${url}`, error);
@@ -167,10 +102,8 @@ async function preloadTrialAssets(trialData, showOverlay = true) {
         }
     }
 
-    // Mark as preloaded
     state.preloadedTrials.add(trialData.trial_id);
 
-    // 4. Hide overlay and re-enable the button if overlay was shown
     if (showOverlay) {
         loadingText.textContent = "Loading complete!";
         setTimeout(() => {
@@ -180,91 +113,120 @@ async function preloadTrialAssets(trialData, showOverlay = true) {
     }
 }
 
+// --- ENGINE LOGIC ---
+
+function setupSVGPosterizeFilter(N) {
+    // Use a persistent inline SVG directly in the document for reliable filter id resolution
+    const filterId = `svg-posterize-${N}`;
+    if (document.getElementById(filterId)) {
+        return `url(#${filterId})`;
+    }
+
+    let svgEl = document.getElementById("svgFiltersContainer");
+    if (!svgEl) {
+        svgEl = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+        svgEl.id = "svgFiltersContainer";
+        svgEl.setAttribute("width", "0");
+        svgEl.setAttribute("height", "0");
+        svgEl.style.position = "absolute";
+        svgEl.style.overflow = "hidden";
+        document.body.insertBefore(svgEl, document.body.firstChild);
+    }
+
+    if (N >= 256) return false; // Full precision: no filter needed
+
+    const step = 1.0 / (N - 1);
+    const tableValues = [];
+    for (let i = 0; i < N; i++) {
+        tableValues.push((i * step).toFixed(4));
+    }
+    const tableStr = tableValues.join(" ");
+
+    const filterEl = document.createElementNS("http://www.w3.org/2000/svg", "filter");
+    filterEl.id = filterId;
+
+    const transfer = document.createElementNS("http://www.w3.org/2000/svg", "feComponentTransfer");
+    ["feFuncR", "feFuncG", "feFuncB"].forEach(tag => {
+        const fn = document.createElementNS("http://www.w3.org/2000/svg", tag);
+        fn.setAttribute("type", "discrete");
+        fn.setAttribute("tableValues", tableStr);
+        transfer.appendChild(fn);
+    });
+    filterEl.appendChild(transfer);
+    svgEl.appendChild(filterEl);
+
+    return `url(#${filterId})`;
+}
+
+function getInterpolatedValue(paramArray, levelFloat) {
+    const clamped = Math.max(1, Math.min(21, levelFloat));
+    const lowerIdx = Math.floor(clamped) - 1;
+    let upperIdx = Math.ceil(clamped) - 1;
+    if (upperIdx >= paramArray.length) upperIdx = paramArray.length - 1;
+    
+    const weight = clamped - Math.floor(clamped);
+    if (lowerIdx === upperIdx) return paramArray[lowerIdx];
+    return paramArray[lowerIdx] * (1 - weight) + paramArray[upperIdx] * weight;
+}
+
+function applyFiltersToElement(imgEl, canvasEl, levels, activeParam, combinedMode) {
+    // Provide a default config if any level is missing
+    const defaultLevels = { brightness: 11, contrast: 11, saturation: 11, clarity: 21, precision: 21, detailedness: 21 };
+    const cur = { ...defaultLevels, ...levels };
+
+    const bValRaw = getInterpolatedValue(PARAM_VALUES.brightness, cur.brightness);
+    const cValRaw = getInterpolatedValue(PARAM_VALUES.contrast, cur.contrast);
+    const sVal = getInterpolatedValue(PARAM_VALUES.saturation, cur.saturation);
+    const blurVal = getInterpolatedValue(PARAM_VALUES.clarity, cur.clarity);
+    const dP1 = getInterpolatedValue(PARAM_VALUES.detailedness_p1, cur.detailedness);
+    const dP2 = getInterpolatedValue(PARAM_VALUES.detailedness_p2, cur.detailedness);
+
+    // Apply necessary mathematical scaling matching filter_test.html
+    const bVal = 1 + (bValRaw / 100);
+    const cVal = 1 + (cValRaw / 100);
+    const dBri = 1 + (dP1 / 33);
+    const dCon = 1 + (dP2 / 100);
+
+    imgEl.style.display = 'block';
+    if (canvasEl) canvasEl.style.display = 'none';
+
+    let filterString = 'none';
+    
+    // Core Engine values
+    const filterB = `brightness(${bVal.toFixed(3)})`;
+    const filterC = `contrast(${cVal.toFixed(3)})`;
+    const filterS = `saturate(${sVal})`;
+    const filterBlur = `blur(${blurVal}px)`;
+    const filterD = `brightness(${dBri.toFixed(3)}) contrast(${dCon.toFixed(3)})`;
+
+    let filterP = '';
+    const N = Math.round(getInterpolatedValue(PARAM_VALUES.precision, cur.precision));
+    const svgUrl = setupSVGPosterizeFilter(N);
+    if (svgUrl) {
+        filterP = svgUrl;
+    }
+
+    if (combinedMode) {
+        // Apply all filters linearly
+        filterString = `${filterB} ${filterC} ${filterS} ${filterBlur} ${filterD}`;
+        if (filterP) filterString += ` ${filterP}`;
+    } else {
+        if (activeParam === 'brightness')        filterString = filterB;
+        else if (activeParam === 'contrast')     filterString = filterC;
+        else if (activeParam === 'saturation')   filterString = filterS;
+        else if (activeParam === 'clarity')      filterString = filterBlur;
+        else if (activeParam === 'detailedness') filterString = `saturate(0) ${filterD}`;
+        else if (activeParam === 'precision')    filterString = filterP || 'none';
+        else if (activeParam === 'attention_check') filterString = filterB;
+        else filterString = 'none';
+    }
+
+    imgEl.style.filter = filterString;
+}
+
 // --- UI Management ---
 
-function showDiv(divToShowIdOrElement) {
-    // List of all possible screen IDs
-    const allScreenIds = [
-        "accessDeniedScreen",
-        "mainMenu",
-        "welcomeScreen",
-        "consentScreen",
-        "visualCalibrationScreen",
-        "demographicsScreen",
-        "howToScreen",
-        "perceptualRecallIntroScreen",
-        "episodicRecallIntroScreen",
-        "sceneImaginationIntroScreen",
-        "approximationIntroScreen",
-        "quizScreen",
-        "paramIntroScreen",
-        "paramDemoScreen",
-        "practiceIntroScreen",
-        "tutorialPromptScreen",
-        "readyScreen",
-        "parameterSelector",
-        "conditionInstructionScreen",
-        "preVimScreenContainer",
-        "vimTaskInterface",
-        "vviqScreen",
-        "resultsDisplay",
-        "breakScreen",
-    ];
-
-    // Resolve the element to show
-    let divToShow = divToShowIdOrElement;
-    if (typeof divToShowIdOrElement === 'string') {
-        divToShow = document.getElementById(divToShowIdOrElement);
-    }
-
-    // 1. Unconditionally hide every single screen.
-    allScreenIds.forEach((id) => {
-        const div = document.getElementById(id);
-        if (div) div.classList.add("hidden");
-    });
-
-    // 2. Clear any lingering keyboard focus from the previous screen.
-    if (typeof clearAllFocus === 'function') {
-        clearAllFocus();
-    }
-
-    const langSelector = document.getElementById("languageSelector");
-
-    // 3. If a specific screen was requested, show it.
-    if (divToShow) {
-        divToShow.classList.remove("hidden");
-
-        // Check if the screen being shown is the main menu
-        if (divToShow.id === "mainMenu") {
-            if (langSelector) langSelector.classList.remove("hidden"); // Show language buttons
-            if (typeof setupMainMenuFocus === 'function') setupMainMenuFocus();
-        } else {
-            if (langSelector) langSelector.classList.add("hidden"); // Hide language buttons on all other screens
-        }
-
-        // --- Handle setting initial focus for the new screen ---
-        if (divToShow.id === "parameterSelector") {
-            if (typeof setupParameterSelectorFocus === 'function') setupParameterSelectorFocus();
-        } else if (divToShow.id === "conditionInstructionScreen") {
-            // We need to access state or global variables here if we want to be precise,
-            // but for now we can just find the button.
-            const btn = document.getElementById("startTrialFromInstructionsBtn");
-            if (btn && typeof updateKeyboardFocus === 'function') {
-                // We need to set currentFocusableElements in state
-                state.currentFocusableElements = [btn];
-                updateKeyboardFocus(0);
-            }
-        } else if (divToShow.id === "vimTaskInterface") {
-            const coarseStepDiv = document.getElementById("coarseStep");
-            if (coarseStepDiv && !coarseStepDiv.classList.contains("hidden")) {
-                if (typeof setupCoarseStepFocus === 'function') setupCoarseStepFocus();
-            }
-        }
-    } else {
-        // If we are hiding everything (e.g., in-between states), also hide the selector
-        if (langSelector) langSelector.classList.add("hidden");
-    }
-}
+// showDiv logic moved to app.js
 
 function setLanguage(lang) {
     state.currentLanguage = lang; // Update state

@@ -1,8 +1,21 @@
 # === Python ===
 *.py
+!analysis_pipeline.py
+!analyze_data_postpilot.py
 __pycache__/
 *.pyc
 .venv/
+
+# === Deployment Exclusions ===
+_morales.txt
+_singhal.txt
+.claude/
+VIVIM_pilot_data.csv
+reviewer_response.md
+reviewer_response.pdf
+figure1_squared.png
+filter_test.html
+plots/
 
 # === Documentation & Manuscript ===
 VIM_documentation/
@@ -30,9 +43,16 @@ figure_generation.html
 # === Data Files ===
 metrics_normalized.csv
 
-# === Obsolete / Unused Image Dirs ===
+# === Legacy Pre-Rendered Images ===
+# The engine now uses real-time Canvas/CSS rendering
 images/blurriness/
+images/brightness/
+images/clarity/
+images/contrast/
+images/detailedness/
+images/precision/
 images/precision2/
+images/saturation/
 
 # === Build Tools ===
 images/optimize_images.ps1
