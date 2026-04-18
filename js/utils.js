@@ -207,8 +207,8 @@ function applyFiltersToElement(imgEl, canvasEl, levels, activeParam, combinedMod
     }
 
     if (combinedMode) {
-        // Apply all filters linearly
-        filterString = `${filterB} ${filterC} ${filterS} ${filterBlur} ${filterD}`;
+        // Apply core filters linearly (filterD is intentionally omitted to prevent blowout)
+        filterString = `${filterB} ${filterC} ${filterS} ${filterBlur}`;
         if (filterP) filterString += ` ${filterP}`;
     } else {
         if (activeParam === 'brightness')        filterString = filterB;
