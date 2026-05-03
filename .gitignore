@@ -63,3 +63,14 @@ oup-authoring-template/
 
 # === Misc ===
 nul
+search_pdf_out.txt
+
+# === Microsoft Office Temp / Lock Files ===
+~$*.doc
+~$*.docx
+~$*.xlsx
+~$*.pptx
+~WRL*.tmp
+
+# === Reviewer Response (all formats) ===
+reviewer_response.docx

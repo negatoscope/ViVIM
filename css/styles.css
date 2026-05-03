@@ -100,6 +100,14 @@ body {
   border-radius: 8px;
 }
 
+/* Applied after card calibration to pin the image panel to the target visual-angle width.
+   --vim-image-width is set dynamically in JS after calibration. */
+.image-panel--calibrated {
+  flex: 0 0 var(--vim-image-width, 800px);
+  max-width: var(--vim-image-width, 800px);
+  min-width: var(--vim-image-width, 800px);
+}
+
 .controls-panel {
   flex: 0 0 400px;
   border: 1px solid #ccc;
@@ -950,3 +958,81 @@ button.disabled-button {
   background-color: #d4edda;
   border: 1px solid #c3e6cb;
 }
+
+/* --- Screen Size Blocking Overlay --- */
+#screenSizeOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: #f4f4f4;
+  z-index: 2000; /* above orientationOverlay (1000) */
+  display: none; /* controlled by JS */
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+/* --- Credit Card Calibration Screen --- */
+#cardCalibContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 30px auto 10px auto;
+  height: 90px;
+  overflow: visible;
+}
+
+#cardCalibRect {
+  position: relative;
+  height: 70px; /* fixed display height, user adjusts width */
+  width: 300px; /* sensible starting width */
+  border: 3px dashed #007bff;
+  border-radius: 6px;
+  background: rgba(0, 123, 255, 0.06);
+  user-select: none;
+  cursor: default;
+  flex-shrink: 0;
+}
+
+#cardCalibHandle {
+  position: absolute;
+  right: -18px;
+  top: 0;
+  width: 34px;
+  height: 100%;
+  cursor: ew-resize;
+  background-color: #007bff;
+  border-radius: 0 6px 6px 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 18px;
+  font-weight: bold;
+  user-select: none;
+}
+
+#cardCalibHandle:hover {
+  background-color: #0056b3;
+}
+
+#cardCalibFeedback {
+  min-height: 24px;
+  margin: 8px 0;
+  font-size: 15px;
+  color: #333;
+}
+
+#cardCalibRecommendation {
+  margin: 10px auto;
+  max-width: 600px;
+  padding: 12px 18px;
+  background-color: #e8f4fd;
+  border-left: 4px solid #007bff;
+  border-radius: 4px;
+  font-size: 15px;
+  line-height: 1.5;
+  text-align: left;
+}

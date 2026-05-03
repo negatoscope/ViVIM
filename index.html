@@ -450,6 +450,31 @@
     </div>
   </div>
 
+  <!-- Screen Size Overlay (blocks viewports narrower than 1024px) -->
+  <div id="screenSizeOverlay">
+    <div class="orientation-message">
+      <span class="orientation-icon" style="font-size:64px;">&#128444;</span>
+      <p style="font-size:1.2em; font-weight:bold; margin-bottom:10px;">Your browser window is too small.</p>
+      <p>This experiment requires a minimum width of <strong>1024 pixels</strong>.<br>Please expand your browser to full screen, or use a larger display.</p>
+    </div>
+  </div>
+
+  <!-- Card Calibration Screen -->
+  <div id="cardCalibrationScreen" class="main-container hidden">
+    <h2 data-lang-key="cardCalibTitle"></h2>
+    <div class="instruction-content">
+      <p data-lang-key="cardCalibInstructions"></p>
+    </div>
+    <div id="cardCalibContainer">
+      <div id="cardCalibRect">
+        <div id="cardCalibHandle">&#8596;</div>
+      </div>
+    </div>
+    <p id="cardCalibFeedback"></p>
+    <p id="cardCalibRecommendation" class="hidden"></p>
+    <button id="cardCalibContinueBtn" disabled data-lang-key="continueButton"></button>
+  </div>
+
   <!-- Hidden original image used as canvas source for HSV quantization -->
   <img id="trialOriginalImgHidden" src="" style="display:none;" crossorigin="anonymous">
 

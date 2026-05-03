@@ -215,6 +215,8 @@ const LANG_STRINGS = {
       }
     ],
     vviqCheckboxLabel: "Include VVIQ-2",
+    cardCalibTitle: "Screen Calibration: Physical Size",
+    cardCalibInstructions: `<p>To help us standardise your viewing experience, please complete a quick screen calibration. Drag the <b>right edge</b> of the blue rectangle below until its width matches that of a physical <b>credit or debit card</b> (or any standard ID card).</p><p>The card should appear as if it were laid flat on your screen. Once it looks right, press Continue.</p>`,
     demographics: {
       title: "Demographic Information",
       ageLabel: "1. What is your age?",
@@ -432,6 +434,8 @@ const LANG_STRINGS = {
       }
     ],
     vviqCheckboxLabel: "Incluir VVIQ-2",
+    cardCalibTitle: "Calibración de Pantalla: Tamaño Físico",
+    cardCalibInstructions: `<p>Para ayudarnos a estandarizar su experiencia visual, complete una breve calibración de pantalla. Arrastre el <b>borde derecho</b> del rectángulo azul hasta que su ancho coincida con el de una <b>tarjeta de crédito, débito</b> o cualquier tarjeta de identificación estándar.</p><p>La tarjeta debe verse como si estuviera apoyada sobre su pantalla. Cuando el tamaño sea correcto, pulse Continuar.</p>`,
     demographics: {
       title: "Información Demográfica",
       ageLabel: "1. ¿Cuál es tu edad?",

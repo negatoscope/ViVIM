@@ -59,6 +59,9 @@ const state = {
     vviq_scores: [],
     vviqEnabled: true,
 
+    // Screen calibration (credit card)
+    screenCalibration: null, // { pixelsPerMm, devicePixelRatio, estimatedScreenDiagonalInches, cardWidthCSSPx }
+
     reset() {
         this.sessionID = null;
         this.participantID = null;
@@ -83,6 +86,9 @@ const state = {
         this.hasMovedSlider = false;
         this.breakData = [];
         this.vviq_scores = [];
+        // Note: screenCalibration is intentionally NOT reset here.
+        // It is set during onboarding and describes the physical display session,
+        // not the task run. It must persist into startActualTask().
 
         // Keyboard focus state
         this.currentFocusableElements = [];

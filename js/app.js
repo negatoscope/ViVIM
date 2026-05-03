@@ -83,6 +83,7 @@ const ONBOARDING_FLOW = [
     'welcomeScreen',
     'consentScreen',
     'visualCalibrationScreen',
+    'cardCalibrationScreen',
     'demographicsScreen',
     'howToScreen',
     'perceptualRecallIntroScreen',
@@ -152,6 +153,10 @@ document.addEventListener("DOMContentLoaded", () => {
     state.sessionID = getUrlParameter("SESSION_ID");
 
     setLanguage("en");
+
+    // Check screen size immediately and on every resize
+    checkScreenSize();
+    window.addEventListener('resize', checkScreenSize);
 
     // Check for demo mode
     state.isDemoMode = getUrlParameter("mode") === "DEMO";
@@ -256,7 +261,19 @@ function setupEventListeners() {
         { id: 'howToContinueBtn', action: () => advanceOnboarding() },
         { id: 'paramIntroContinueBtn', action: () => advanceOnboarding() },
         { id: 'practiceIntroContinueBtn', action: () => advanceOnboarding() },
-        { id: 'tutorialStartBtn', action: () => advanceOnboarding() }
+        { id: 'tutorialStartBtn', action: () => advanceOnboarding() },
+        {
+            id: 'cardCalibContinueBtn', action: () => {
+                // Compute target image width immediately after card calibration is confirmed
+                const excluded = computeVisualAngleScaling();
+                if (!excluded) {
+                    // Apply immediately so demo, tutorial, and practice screens
+                    // all use the calibrated panel width, not just the main task.
+                    applyVisualAngleScaling();
+                    advanceOnboarding();
+                }
+            }
+        }
     ];
 
     onboardingBtns.forEach(cfg => {
@@ -432,6 +449,9 @@ function runOnboardingStep() {
     } else if (currentStepName === 'visualCalibrationScreen') {
         startVisualCalibration();
         showDiv(dom.visualCalibrationScreen);
+    } else if (currentStepName === 'cardCalibrationScreen') {
+        startCardCalibration();
+        showDiv(document.getElementById('cardCalibrationScreen'));
     } else if (currentStepName && currentStepName.endsWith('Screen')) {
         showDiv(document.getElementById(currentStepName));
     } else if (currentStepName === 'preloadDemos') {
@@ -869,6 +889,8 @@ async function startActualTask() {
 
     state.reset();
     state.currentTaskMode = "actual_task_full";
+    // Apply the calibrated image panel width before any trial renders
+    applyVisualAngleScaling();
     state.sessionID = Date.now();
     state.participantID = generateParticipantID();
     console.log("Participant ID:", state.participantID);
@@ -1416,8 +1438,12 @@ function handleConfirmSelection() {
     const maxL = state.currentFineTuneRange.max;
     const actualLevel = minL + ((maxL - minL) * (sliderPos / 100));
 
-    // Normalize level from 1-21 range to 0-100 score
-    const normalizedScore = Math.round(((actualLevel - 1) / 20) * 100);
+    // Normalize to a seamless 0-100 score using band-aware mapping.
+    // Each coarse band (Low/Mid/High) maps to one contiguous third of the 0-100 range:
+    // Low → 0–33, Mid → 33–67, High → 67–100.
+    // This avoids the structural gaps (31-34, 66-69) that the old 1-21 linear mapping produced.
+    const bandIndex = (minL === 1) ? 0 : (minL === 8) ? 1 : 2;
+    const normalizedScore = Math.round((bandIndex + sliderPos / 100) / 3 * 100);
 
     if (!state.currentTrialResponses.parameter_responses) {
         state.currentTrialResponses.parameter_responses = {};
@@ -2149,4 +2175,276 @@ function showReadyScreen() {
     readyScreenDiv.querySelector('[data-lang-key="readyText"]').textContent = LANG_STRINGS[state.currentLanguage].readyText;
     readyScreenDiv.querySelector('[data-lang-key="startExperimentButton"]').textContent = LANG_STRINGS[state.currentLanguage].startExperimentButton;
     showDiv(readyScreenDiv);
+}
+
+// =============================================================================
+// SCREEN SIZE CHECK
+// =============================================================================
+
+const MIN_VIEWPORT_WIDTH = 1024;
+
+function checkScreenSize() {
+    const overlay = document.getElementById('screenSizeOverlay');
+    if (!overlay) return;
+    if (window.innerWidth < MIN_VIEWPORT_WIDTH) {
+        overlay.style.display = 'flex';
+    } else {
+        overlay.style.display = 'none';
+    }
+}
+
+// =============================================================================
+// CREDIT CARD CALIBRATION
+// =============================================================================
+
+const CREDIT_CARD_WIDTH_MM = 85.6;
+const CARD_INITIAL_WIDTH_PX = 300;
+const CARD_MIN_WIDTH_PX = 150;  // below ~60 PPI — implausibly large/low-res display
+const CARD_MAX_WIDTH_PX = 850;  // above ~300 PPI — implausibly small/very-high-res display
+
+let _cardIsDragging = false;
+let _cardDragStartX = 0;
+let _cardStartWidth = 0;
+
+function startCardCalibration() {
+    const rect = document.getElementById('cardCalibRect');
+    rect.style.width = CARD_INITIAL_WIDTH_PX + 'px';
+
+    document.getElementById('cardCalibFeedback').textContent = '';
+    document.getElementById('cardCalibFeedback').style.color = '#333';
+    document.getElementById('cardCalibRecommendation').classList.add('hidden');
+    document.getElementById('cardCalibContinueBtn').disabled = true;
+
+    // Re-bind handle listeners cleanly (clone to remove any old listeners)
+    const oldHandle = document.getElementById('cardCalibHandle');
+    const newHandle = oldHandle.cloneNode(true);
+    oldHandle.parentNode.replaceChild(newHandle, oldHandle);
+
+    newHandle.addEventListener('mousedown', _onCardMouseDown);
+    newHandle.addEventListener('touchstart', _onCardTouchStart, { passive: false });
+
+    // Update text for current language
+    const lang = state.currentLanguage;
+    const titleEl = document.querySelector('#cardCalibrationScreen h2');
+    if (titleEl) titleEl.innerHTML = LANG_STRINGS[lang].cardCalibTitle;
+    const instrEl = document.querySelector('#cardCalibrationScreen [data-lang-key="cardCalibInstructions"]');
+    if (instrEl) instrEl.innerHTML = LANG_STRINGS[lang].cardCalibInstructions;
+}
+
+function _onCardMouseDown(e) {
+    e.preventDefault();
+    _cardIsDragging = true;
+    _cardDragStartX = e.clientX;
+    _cardStartWidth = document.getElementById('cardCalibRect').getBoundingClientRect().width;
+    document.addEventListener('mousemove', _onCardMouseMove);
+    document.addEventListener('mouseup', _onCardMouseUp);
+}
+
+function _onCardMouseMove(e) {
+    if (!_cardIsDragging) return;
+    _updateCardWidth(e.clientX);
+}
+
+function _onCardMouseUp() {
+    _cardIsDragging = false;
+    document.removeEventListener('mousemove', _onCardMouseMove);
+    document.removeEventListener('mouseup', _onCardMouseUp);
+}
+
+function _onCardTouchStart(e) {
+    e.preventDefault();
+    _cardIsDragging = true;
+    _cardDragStartX = e.touches[0].clientX;
+    _cardStartWidth = document.getElementById('cardCalibRect').getBoundingClientRect().width;
+    document.addEventListener('touchmove', _onCardTouchMove, { passive: false });
+    document.addEventListener('touchend', _onCardTouchEnd);
+}
+
+function _onCardTouchMove(e) {
+    e.preventDefault();
+    if (!_cardIsDragging) return;
+    _updateCardWidth(e.touches[0].clientX);
+}
+
+function _onCardTouchEnd() {
+    _cardIsDragging = false;
+    document.removeEventListener('touchmove', _onCardTouchMove);
+    document.removeEventListener('touchend', _onCardTouchEnd);
+}
+
+function _updateCardWidth(currentClientX) {
+    const dx = currentClientX - _cardDragStartX;
+    const newWidth = Math.max(CARD_MIN_WIDTH_PX, Math.min(CARD_MAX_WIDTH_PX, _cardStartWidth + dx));
+    document.getElementById('cardCalibRect').style.width = newWidth + 'px';
+    _updateCardCalibFeedback(newWidth);
+}
+
+function _updateCardCalibFeedback(cssWidthPx) {
+    const feedbackEl = document.getElementById('cardCalibFeedback');
+    const recEl = document.getElementById('cardCalibRecommendation');
+    const continueBtn = document.getElementById('cardCalibContinueBtn');
+
+    const dpr = window.devicePixelRatio || 1;
+    // Physical pixels per mm: CSS px × device pixel ratio / card width in mm
+    const physPixelsPerMm = (cssWidthPx * dpr) / CREDIT_CARD_WIDTH_MM;
+    const physPPI = physPixelsPerMm * 25.4;
+
+    // Validate plausible PPI range (60–300 covers almost all real displays)
+    if (physPPI < 60 || physPPI > 310) {
+        feedbackEl.textContent = 'This size looks unusual — please try again with a real credit or debit card.';
+        feedbackEl.style.color = '#b00';
+        recEl.classList.add('hidden');
+        continueBtn.disabled = true;
+        return;
+    }
+
+    // Estimate screen diagonal from screen pixel dimensions + calibrated PPI
+    const screenWidthMm  = (screen.width  * dpr) / physPixelsPerMm;
+    const screenHeightMm = (screen.height * dpr) / physPixelsPerMm;
+    const screenDiagIn   = Math.sqrt(screenWidthMm ** 2 + screenHeightMm ** 2) / 25.4;
+
+    // Warn if screen appears unusually small
+    if (screenDiagIn < 10) {
+        feedbackEl.textContent = `Estimated screen: ${screenDiagIn.toFixed(1)}". This may be too small — if this is wrong, please re-adjust the rectangle.`;
+        feedbackEl.style.color = '#b06000';
+    } else {
+        feedbackEl.textContent = `Estimated screen size: ${screenDiagIn.toFixed(1)}" diagonal.`;
+        feedbackEl.style.color = '#333';
+    }
+
+    // Save to state
+    state.screenCalibration = {
+        pixelsPerMm: physPixelsPerMm,
+        devicePixelRatio: dpr,
+        estimatedScreenDiagonalInches: Math.round(screenDiagIn * 10) / 10,
+        cardWidthCSSPx: cssWidthPx
+    };
+
+    // Show viewing distance recommendation
+    recEl.innerHTML = `<b>Viewing distance recommendation:</b> Based on your screen, please sit approximately <b>60&nbsp;cm</b> (arm's length) from your display throughout the experiment. This is important for ensuring consistent image quality across participants.`;
+    recEl.classList.remove('hidden');
+
+    continueBtn.disabled = false;
+}
+
+// =============================================================================
+// VISUAL ANGLE SCALING
+// =============================================================================
+
+// Target: images subtend 20° of visual angle at 60 cm viewing distance.
+// Physical width = 2 × 600mm × tan(10°) ≈ 211.6 mm
+const VA_TARGET_ANGLE_DEG   = 20;
+const VA_VIEWING_DISTANCE_MM = 600;
+const VA_TARGET_PHYSICAL_MM  = 2 * VA_VIEWING_DISTANCE_MM * Math.tan((VA_TARGET_ANGLE_DEG / 2) * (Math.PI / 180));
+// ≈ 211.6 mm
+
+const VA_MIN_PX = 600;  // below this: image too small for reliable quality judgements
+const VA_MAX_PX = 1400; // clamp ceiling for very dense screens that still fit in viewport
+const VA_CONTROLS_WIDTH_PX = 420; // controls panel (400px) + gap (20px)
+
+/**
+ * Called immediately after the card calibration Continue button is pressed.
+ * Derives the target image panel width from the calibrated CSS pixels-per-mm,
+ * validates it, and stores it in state.screenCalibration.
+ *
+ * @returns {boolean} true if the participant is excluded (implausible setup), false otherwise.
+ */
+function computeVisualAngleScaling() {
+    if (!state.screenCalibration || !state.screenCalibration.cardWidthCSSPx) {
+        console.warn('[VA] No card calibration found — skipping visual angle scaling.');
+        return false;
+    }
+
+    const cssPixelsPerMm = state.screenCalibration.cardWidthCSSPx / 85.6;
+    const rawTargetPx = Math.round(VA_TARGET_PHYSICAL_MM * cssPixelsPerMm);
+    const availablePx = window.innerWidth - VA_CONTROLS_WIDTH_PX;
+
+    console.log(`[VA] cssPixelsPerMm=${cssPixelsPerMm.toFixed(3)}, rawTargetPx=${rawTargetPx}, availablePx=${availablePx}`);
+
+    // Exclude if image cannot meet the minimum size for reliable quality judgements
+    if (rawTargetPx < VA_MIN_PX) {
+        console.warn(`[VA] Excluded: rawTargetPx=${rawTargetPx} < VA_MIN_PX=${VA_MIN_PX} (screen too small/low-density).`);
+        _showScreenExclusionMessage(rawTargetPx, 'small');
+        return true;
+    }
+
+    // Exclude only if the image physically cannot fit alongside the controls panel
+    if (rawTargetPx > availablePx) {
+        console.warn(`[VA] Excluded: rawTargetPx=${rawTargetPx} > availablePx=${availablePx} (layout overflow).`);
+        _showScreenExclusionMessage(rawTargetPx, 'overflow');
+        return true;
+    }
+
+    // For valid but very dense screens (rawTargetPx > VA_MAX_PX but fits in viewport),
+    // clamp to VA_MAX_PX rather than excluding. The image will be slightly narrower than
+    // the true 20° target, but the participant has a good screen.
+    const targetPx = Math.min(rawTargetPx, VA_MAX_PX);
+    if (rawTargetPx > VA_MAX_PX) {
+        console.log(`[VA] High-density screen: rawTargetPx=${rawTargetPx} clamped to ${VA_MAX_PX}px.`);
+    }
+
+    state.screenCalibration.targetImageWidthPx = targetPx;
+    state.screenCalibration.rawTargetImageWidthPx = rawTargetPx;
+    state.screenCalibration.visualAngleDeg = VA_TARGET_ANGLE_DEG;
+
+    return false; // proceed normally
+}
+
+/**
+ * Shows a friendly exclusion screen when the participant's screen setup is
+ * outside the valid range. Prolific participants are redirected to return their
+ * submission.
+ */
+function _showScreenExclusionMessage(targetPx, reason) {
+    const overlay = document.getElementById('screenSizeOverlay');
+    if (!overlay) return;
+
+    let message;
+    if (reason === 'small') {
+        message = `Based on your screen calibration, your display is too small or low-resolution 
+            to present the study images at the minimum size required for reliable visual quality 
+            judgements (computed image width: ${targetPx}px; minimum required: ${VA_MIN_PX}px).`;
+    } else {
+        // overflow: target image is wider than available viewport space
+        const available = window.innerWidth - VA_CONTROLS_WIDTH_PX;
+        message = `Based on your screen calibration, the study images would be wider 
+            (${targetPx}px) than the available display area (${available}px) on your current 
+            browser window. Please try expanding your browser to full screen and refreshing, 
+            or use a different display.`;
+    }
+
+    overlay.querySelector('.orientation-message').innerHTML = `
+        <span style="font-size:48px;">&#9888;</span>
+        <p style="font-size:1.2em; font-weight:bold; margin-bottom:10px;">
+            Your screen setup is not compatible with this study.
+        </p>
+        <p>${message}</p>
+        <p>
+            If you are participating via Prolific, please <b>return your submission</b>.
+            We apologise for the inconvenience.
+        </p>`;
+    overlay.style.display = 'flex';
+}
+
+/**
+ * Applies the calibrated image panel width to the DOM.
+ * Sets the CSS custom property --vim-image-width and adds the
+ * .image-panel--calibrated modifier class to the image panel.
+ *
+ * Must be called before the first trial renders.
+ */
+function applyVisualAngleScaling() {
+    if (!state.screenCalibration || !state.screenCalibration.targetImageWidthPx) {
+        console.warn('[VA] No target image width available — using default flex:1 layout.');
+        return;
+    }
+
+    const targetPx = state.screenCalibration.targetImageWidthPx;
+    document.documentElement.style.setProperty('--vim-image-width', targetPx + 'px');
+
+    // There are multiple .image-panel elements in the DOM (paramDemoScreen,
+    // preVimScreenContainer, vimTaskInterface). Target all of them.
+    const panels = document.querySelectorAll('.image-panel');
+    panels.forEach(panel => panel.classList.add('image-panel--calibrated'));
+    console.log(`[VA] ${panels.length} image panel(s) fixed to ${targetPx}px (≈${VA_TARGET_ANGLE_DEG}° at ${VA_VIEWING_DISTANCE_MM / 10}cm).`);
 }
