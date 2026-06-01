@@ -1,0 +1,18 @@
+# Normalize line endings: convert CRLF to LF on commit
+* text=auto
+*.js text eol=lf
+*.html text eol=lf
+*.css text eol=lf
+*.md text eol=lf
+*.R text eol=lf
+*.py text eol=lf
+*.json text eol=lf
+
+# Binary files — no conversion
+*.webp binary
+*.png binary
+*.jpg binary
+*.pdf binary
+*.docx binary
+*.pptx binary
+*.csv binary

@@ -1,7 +1,14 @@
+# === Analysis Pipeline (generated/intermediate) ===
+data/
+reports/
+_archive/
+tools/
+
 # === Python ===
 *.py
 !analysis_pipeline.py
 !analyze_data_postpilot.py
+!analyze_data.py
 __pycache__/
 *.pyc
 .venv/

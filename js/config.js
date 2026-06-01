@@ -27,7 +27,7 @@ const FINE_TUNE_RANGE = 3;
 const IMAGE_BASE_FOLDER = "images";
 const IMAGE_EXTENSION = ".webp";
 const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwkcpn2kATIjVlfgGAT6um4sN2LOcTU6Qde2vj8mKzd19VtfVxHynh3KR-qMBuNeanSkQ/exec";
-const PROLIFIC_COMPLETION_URL = "https://app.prolific.com/submissions/complete?cc=YOUR_CODE_HERE";
+const PROLIFIC_COMPLETION_URL = "https://app.prolific.com/submissions/complete?cc=C168B2T5";
 
 // Language Strings
 const LANG_STRINGS = {
@@ -66,6 +66,28 @@ const LANG_STRINGS = {
       "Are you sure you want to exit the current task and return to the main menu? Progress will be lost.",
     resultsTitle: "Task Complete",
     downloadResultsButton: "Download Results",
+    debriefContent: `
+      <div style="max-width:680px; margin:0 auto; font-family:inherit; line-height:1.65; color:#222;">
+        <h2 style="font-size:1.4em; font-weight:700; margin-bottom:18px;">Thank you for completing this study!</h2>
+
+        <h3 style="font-size:1em; font-weight:700; margin:18px 0 6px;">What this study was about</h3>
+        <p style="margin-bottom:12px;">You just participated in research on visual mental imagery — the ability to form and manipulate mental pictures. We are developing a new measurement tool called <strong>ViVIM</strong> (Visual Imagery Vividness Matching) that captures different qualities of mental images more precisely than standard questionnaires.</p>
+        <p style="margin-bottom:12px;">We asked you to adjust images to match your mental representations because research suggests that vividness is not a single quality. It may have at least two separable dimensions: <em>intensity</em> (how bright, contrasted, and colourful a mental image feels) and <em>specificity</em> (how sharp, detailed, and precisely coloured it is). We are testing whether these dimensions behave differently depending on whether you are recalling something you just saw, retrieving an autobiographical memory, or imagining something new.</p>
+
+        <h3 style="font-size:1em; font-weight:700; margin:18px 0 6px;">Was anything hidden from you?</h3>
+        <p style="margin-bottom:12px;">No. This study used no deception. The task was exactly as described.</p>
+
+        <h3 style="font-size:1em; font-weight:700; margin:18px 0 6px;">Did you know?</h3>
+        <p style="margin-bottom:12px;">About 2–3% of people report having no visual imagery at all (a condition called <em>aphantasia</em>), while others experience exceptionally vivid imagery (<em>hyperphantasia</em>). Most people fall somewhere in between — your responses today help us understand this full range of human experience.</p>
+
+        <h3 style="font-size:1em; font-weight:700; margin:18px 0 6px;">Open science</h3>
+        <p style="margin-bottom:12px;">This study is part of a pre-registered research programme. The full protocol and analysis plan are publicly available at: <a href="https://osf.io/wqdma/" target="_blank" style="color:#0066cc;">osf.io/wqdma/</a></p>
+
+        <h3 style="font-size:1em; font-weight:700; margin:18px 0 6px;">Questions or concerns?</h3>
+        <p style="margin-bottom:20px;">Contact us at <a href="mailto:leudave@unav.es" style="color:#0066cc;">leudave@unav.es</a> — we are happy to hear from you.</p>
+
+        <p style="font-size:0.85em; color:#666; border-top:1px solid #ddd; padding-top:12px;">This research was conducted at the University of Navarra (Ethics ref. 2025.235). Thank you for contributing to the science of mental imagery.</p>
+      </div>`,
     confidencePrompt: "How confident are you in your selection?",
     likertLabelLow: "Not at all confident",
     likertLabelHigh: "Completely confident",
@@ -285,6 +307,28 @@ const LANG_STRINGS = {
       "¿Está seguro/a de que desea salir de la tarea actual y volver al menú principal? El progreso se perderá.",
     resultsTitle: "Tarea completada",
     downloadResultsButton: "Descargar Resultados",
+    debriefContent: `
+      <div style="max-width:680px; margin:0 auto; font-family:inherit; line-height:1.65; color:#222;">
+        <h2 style="font-size:1.4em; font-weight:700; margin-bottom:18px;">¡Gracias por completar este estudio!</h2>
+
+        <h3 style="font-size:1em; font-weight:700; margin:18px 0 6px;">De qué trataba este estudio</h3>
+        <p style="margin-bottom:12px;">Acabas de participar en una investigación sobre la imaginería visual — la capacidad de formar y manipular imágenes mentales. Estamos desarrollando una nueva herramienta de medida llamada <strong>ViVIM</strong> (Visual Imagery Vividness Matching) que captura distintas cualidades de las imágenes mentales con más precisión que los cuestionarios estándar.</p>
+        <p style="margin-bottom:12px;">Te pedimos que ajustaras imágenes para que coincidieran con tus representaciones mentales porque la investigación sugiere que la viveza no es una cualidad única. Puede tener al menos dos dimensiones separables: la <em>intensidad</em> (cuán brillante, contrastada y colorida se siente una imagen mental) y la <em>especificidad</em> (cuán nítida, detallada y con colores precisos es). Estudiamos si estas dimensiones se comportan de forma diferente según estés recordando algo que acabas de ver, recuperando un recuerdo autobiográfico o imaginando algo nuevo.</p>
+
+        <h3 style="font-size:1em; font-weight:700; margin:18px 0 6px;">¿Se ocultó algo?</h3>
+        <p style="margin-bottom:12px;">No. Este estudio no utilizó ningún tipo de engaño. La tarea fue exactamente tal como se describió.</p>
+
+        <h3 style="font-size:1em; font-weight:700; margin:18px 0 6px;">¿Sabías que…?</h3>
+        <p style="margin-bottom:12px;">Aproximadamente el 2–3% de las personas refieren no tener ningún tipo de imaginería visual (una condición llamada <em>afantasía</em>), mientras que otras experimentan imágenes mentales extraordinariamente vívidas (<em>hiperfantasía</em>). La mayoría de las personas se sitúa en algún punto intermedio — tus respuestas de hoy nos ayudan a comprender todo este rango de la experiencia humana.</p>
+
+        <h3 style="font-size:1em; font-weight:700; margin:18px 0 6px;">Ciencia abierta</h3>
+        <p style="margin-bottom:12px;">Este estudio forma parte de un programa de investigación prerregistrado. El protocolo completo y el plan de análisis están disponibles públicamente en: <a href="https://osf.io/wqdma/" target="_blank" style="color:#0066cc;">osf.io/wqdma/</a></p>
+
+        <h3 style="font-size:1em; font-weight:700; margin:18px 0 6px;">¿Preguntas o comentarios?</h3>
+        <p style="margin-bottom:20px;">Contacta con nosotros en <a href="mailto:leudave@unav.es" style="color:#0066cc;">leudave@unav.es</a> — estaremos encantados de atenderte.</p>
+
+        <p style="font-size:0.85em; color:#666; border-top:1px solid #ddd; padding-top:12px;">Esta investigación fue realizada en la Universidad de Navarra (ref. ética 2025.235). Gracias por contribuir a la ciencia de la imaginería mental.</p>
+      </div>`,
     confidencePrompt: "¿Qué tan seguro/a está de su selección?",
     likertLabelLow: "Nada seguro/a",
     likertLabelHigh: "Completamente seguro/a",

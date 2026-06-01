@@ -1,275 +1,339 @@
 # =====================================================================
-# ViVIM Pre-Registered Analysis Pipeline (R Translation + Visualization)
+# ViVIM Pre-Registered Analysis Pipeline
 # =====================================================================
-# This script precisely mirrors the Python analysis_pipeline.py logic,
-# but utilizes R's rich statistical ecosystem and ggplot2 for 
-# publication-ready data visualizations.
+# Usage:
+#   Rscript analysis_pipeline.R <path_to_clean_csv>
+#   Rscript analysis_pipeline.R                        # uses VIVIM_pilot_data_clean.csv fallback
+#
+# Input CSV columns: participant, condition, Intensity, Specificity, VVIQ2
+# Outputs:
+#   data/results.json   — BFs, stopping decision, N
+#   reports/figures/    — Publication plots (PDF)
 
-# --- 1. Dependencies Setup ---
-# Automatically install pacman if missing, then load required libraries
-if (!require("pacman")) install.packages("pacman")
-pacman::p_load(
-  tidyverse,    # Data manipulation and ggplot2
-  afex,         # Frequentist RM-ANOVAs
-  BayesFactor,  # Bayesian analyses
-  psych,        # Intra-Class Correlations (ICC)
-  TOSTER,       # Equivalence Testing
-  lme4,         # Linear Mixed Models
-  lmerTest,     # p-values for LMMs
-  cocor,        # Steiger's Z tests
-  patchwork     # Plot combining
-)
+suppressPackageStartupMessages({
+  if (!require("pacman", quietly=TRUE)) install.packages("pacman", repos="https://cloud.r-project.org")
+  # Load tidyverse components individually to avoid readr/vroom (cpp11 issue on R 4.6.0)
+  pacman::p_load(dplyr, tidyr, ggplot2, forcats, stringr,
+                 afex, BayesFactor, psych, TOSTER, lme4, lmerTest, cocor, patchwork, jsonlite)
+})
 
-# --- 2. Configuration ---
-SCENARIO <- "MESSY"  # Switch to 'IDEAL' to test a perfectly clean cascade
-N_PARTICIPANTS <- 60
-TRIALS_PER_CONDITION <- 4
-CONDITIONS <- c('Perceptual', 'Episodic', 'Imagination')
-PLOT_DIR <- "plots"
-if(!dir.exists(PLOT_DIR)) dir.create(PLOT_DIR)
+# --- CLI Args ---
+args <- commandArgs(trailingOnly = TRUE)
+csv_path <- if (length(args) >= 1) args[1] else "data/pilot_clean.csv"
 
-set.seed(42) # For reproducibility
+REPORT_DIR <- "reports"
+PLOT_DIR   <- file.path(REPORT_DIR, "figures")
+DATA_DIR   <- "data"
+for (d in c(REPORT_DIR, PLOT_DIR, DATA_DIR)) if (!dir.exists(d)) dir.create(d, recursive=TRUE)
 
 # =====================================================================
-# STEP 1: DATA SIMULATION (Matches Python Pilot Constraints)
+# STEP 1: LOAD DATA
 # =====================================================================
-cat(">> STEP 1: Simulating trial-level data for", N_PARTICIPANTS, "participants...\n")
+cat(">> Loading data from:", csv_path, "\n")
 
-df_trials_list <- list()
-
-for(p in 1:N_PARTICIPANTS) {
-  # Baseline traits
-  vviq2 <- round(runif(1, 32, 160))
-  # Map VVIQ (32-160) to a baseline ability (150 to 250)
-  baseline_ability <- 150 + ((vviq2 - 32) / (160 - 32)) * 100
-  
-  for(cond in CONDITIONS) {
-    for(t in 1:TRIALS_PER_CONDITION) {
-      
-      # Intensity (H1: Stable)
-      int_drop <- 0 # Pilot intensity was remarkably flat across conditions!
-      intensity_noise <- ifelse(SCENARIO == 'IDEAL', 20, 25)
-      intensity <- rnorm(1, mean = baseline_ability - int_drop, sd = intensity_noise)
-      
-      # Specificity (H2: Decays)
-      if(cond == 'Perceptual') {
-        spec_drop <- 0
-      } else if(cond == 'Episodic') {
-        spec_drop <- ifelse(SCENARIO == 'IDEAL', rnorm(1, 30, 15), rnorm(1, 27, 25))
-      } else { # Imagination
-        spec_drop <- ifelse(SCENARIO == 'IDEAL', rnorm(1, 60, 20), rnorm(1, 42, 30))
-      }
-      spec_noise <- ifelse(SCENARIO == 'IDEAL', 20, 35)
-      specificity <- rnorm(1, mean = baseline_ability - spec_drop, sd = spec_noise)
-      
-      # Constrain output (0 to 300)
-      intensity <- min(max(intensity, 0), 300)
-      specificity <- min(max(specificity, 0), 300)
-      
-      df_trials_list[[length(df_trials_list) + 1]] <- data.frame(
-        Participant = as.character(p),
-        Condition = factor(cond, levels = CONDITIONS),
-        Trial = t,
-        Intensity = intensity,
-        Specificity = specificity,
-        VVIQ2 = vviq2
-      )
-    }
-  }
+if (!file.exists(csv_path)) {
+  stop(paste("CSV file not found:", csv_path))
 }
 
-df_trials <- bind_rows(df_trials_list) %>%
-  mutate(Participant = as.factor(Participant))
+df_agg <- read.csv(csv_path, stringsAsFactors = FALSE)
 
-# STEP 2: Aggregate to Participant Level
-df_agg <- df_trials %>%
-  group_by(Participant, Condition) %>%
-  summarize(
-    Intensity = mean(Intensity),
-    Specificity = mean(Specificity),
-    VVIQ2 = first(VVIQ2),
-    .groups = 'drop'
-  )
+n_raw       <- n_distinct(df_agg$participant)
+CONDITIONS  <- c("perceptual_recall", "episodic_recall", "scene_imagination")
 
-# Reshape data into 'long' format for Repeated Measures ANOVA
+df_agg <- df_agg %>%
+  mutate(
+    Participant = as.factor(participant),
+    Condition   = factor(condition, levels = CONDITIONS)
+  ) %>%
+  filter(!is.na(Condition))
+
+n_analyzed <- n_distinct(df_agg$Participant)
+cat(sprintf("   N raw: %d | N with complete conditions: %d\n", n_raw, n_analyzed))
+
+if (n_analyzed < 10) {
+  cat("WARNING: fewer than 10 participants — BFs will be unreliable.\n")
+}
+
+# Reshape to long format for RM-ANOVA
 df_long <- df_agg %>%
   pivot_longer(
-    cols = c(Intensity, Specificity),
-    names_to = "Dimension",
+    cols      = c(Intensity, Specificity),
+    names_to  = "Dimension",
     values_to = "Score"
   ) %>%
-  mutate(Dimension = factor(Dimension, levels=c("Intensity", "Specificity")))
-
-cat("Simulation complete. Proceeding to statistical analysis...\n")
-cat("----------------------------------------------------------\n")
-
-
-# =====================================================================
-# STEP 3: HYPOTHESIS TESTING
-# =====================================================================
-
-# ---------------------------------------------------------------------
-cat("== TESTING H1: Dissociation (2x3 Repeated Measures ANOVA)\n\n")
-
-# Frequentist
-freq_h1 <- afex::aov_ez(id = "Participant", dv = "Score", 
-                        within = c("Dimension", "Condition"), data = df_long)
-print(summary(freq_h1))
-
-# Bayesian
-bf_main <- anovaBF(Score ~ Dimension * Condition + Participant, data = df_long, 
-                   whichRandom = "Participant", progress = FALSE)
-bf_interaction_only <- bf_main[4] / bf_main[3] 
-bf_h1_interaction <- exp(bf_interaction_only@bayesFactor$bf)
-cat("\n-> Bayes Factor for interaction (inclusion):", round(bf_h1_interaction, 2), "\n")
-
-
-# ---------------------------------------------------------------------
-cat("\n----------------------------------------------------------\n")
-cat("== TESTING H2a: Vividness Hierarchy Main Effect (on Specificity)\n")
+  mutate(Dimension = factor(Dimension, levels = c("Intensity", "Specificity")))
 
 df_spec <- df_long %>% filter(Dimension == "Specificity")
-freq_h2a <- afex::aov_ez(id = "Participant", dv = "Score", 
-                         within = "Condition", data = df_spec)
+
+df_sub <- df_agg %>%
+  group_by(Participant) %>%
+  summarize(
+    Intensity   = mean(Intensity, na.rm = TRUE),
+    Specificity = mean(Specificity, na.rm = TRUE),
+    VVIQ2       = first(VVIQ2),
+    .groups     = "drop"
+  )
+
+cat(">> Data loaded. Proceeding to hypothesis testing...\n")
+cat("----------------------------------------------------------\n")
+
+# =====================================================================
+# STEP 2: HYPOTHESIS TESTING
+# =====================================================================
+
+# --- H1: Dissociation (2x3 RM-ANOVA) ---
+cat("== H1: Dissociation (Dimension x Condition interaction)\n")
+
+freq_h1 <- afex::aov_ez(
+  id = "Participant", dv = "Score",
+  within = c("Dimension", "Condition"), data = df_long
+)
+print(summary(freq_h1))
+
+bf_main            <- anovaBF(Score ~ Dimension * Condition + Participant,
+                               data = df_long, whichRandom = "Participant", progress = FALSE)
+bf_interaction_raw <- bf_main[4] / bf_main[3]
+bf_H1              <- as.numeric(exp(bf_interaction_raw@bayesFactor$bf))
+cat(sprintf("-> BF_inclusion (H1 Interaction): %.4f\n\n", bf_H1))
+
+
+# --- H2a: Specificity Main Effect ---
+cat("== H2a: Vividness Hierarchy (Specificity Main Effect)\n")
+
+freq_h2a <- afex::aov_ez(
+  id = "Participant", dv = "Score",
+  within = "Condition", data = df_spec
+)
 print(summary(freq_h2a))
 
-bf_h2a <- anovaBF(Score ~ Condition + Participant, data=df_spec, 
-                  whichRandom="Participant", progress=FALSE)
-bf_h2a_val <- exp(bf_h2a@bayesFactor$bf)
-cat("-> Bayes Factor for Specificity Main Effect:", round(bf_h2a_val, 2), "\n")
+bf_h2a_obj <- anovaBF(Score ~ Condition + Participant,
+                       data = df_spec, whichRandom = "Participant", progress = FALSE)
+bf_H2a     <- as.numeric(exp(bf_h2a_obj@bayesFactor$bf))
+cat(sprintf("-> BF_inclusion (H2a Specificity Main Effect): %.4f\n\n", bf_H2a))
 
 
-# ---------------------------------------------------------------------
-cat("\n== TESTING H2b: Directional Contrasts\n")
+# --- H2b: Directional Contrasts ---
+cat("== H2b: Directional Contrasts (Perceptual > Episodic > Imagination)\n")
 
-perc_scores <- df_spec %>% filter(Condition == "Perceptual") %>% pull(Score)
-epis_scores <- df_spec %>% filter(Condition == "Episodic") %>% pull(Score)
-imag_scores <- df_spec %>% filter(Condition == "Imagination") %>% pull(Score)
+perc_scores <- df_spec %>% filter(Condition == "perceptual_recall") %>% pull(Score)
+epis_scores <- df_spec %>% filter(Condition == "episodic_recall")   %>% pull(Score)
+imag_scores <- df_spec %>% filter(Condition == "scene_imagination") %>% pull(Score)
 
-bf_pe <- ttestBF(perc_scores, epis_scores, paired = TRUE)
-bf_ei <- ttestBF(epis_scores, imag_scores, paired = TRUE)
+bf_pe_obj <- ttestBF(perc_scores, epis_scores, paired = TRUE)
+bf_ei_obj <- ttestBF(epis_scores, imag_scores, paired = TRUE)
 
-cat("   Perceptual > Episodic (BF10):", round(exp(bf_pe@bayesFactor$bf), 2), "\n")
-cat("   Episodic > Imagination (BF10):", round(exp(bf_ei@bayesFactor$bf), 2), "\n")
+bf_H2b_PE <- as.numeric(exp(bf_pe_obj@bayesFactor$bf))
+bf_H2b_EI <- as.numeric(exp(bf_ei_obj@bayesFactor$bf))
 
+# Frequentist t-tests + Cohen's d
+t_pe     <- t.test(perc_scores, epis_scores, paired = TRUE)
+t_ei     <- t.test(epis_scores, imag_scores, paired = TRUE)
+d_pe     <- (mean(perc_scores) - mean(epis_scores)) / sd(perc_scores - epis_scores)
+d_ei     <- (mean(epis_scores) - mean(imag_scores)) / sd(epis_scores - imag_scores)
 
-# ---------------------------------------------------------------------
-cat("\n----------------------------------------------------------\n")
-cat("== TESTING H3: Convergent Validity (Correlations with VVIQ-2)\n")
-
-df_sub <- df_agg %>% 
-  group_by(Participant) %>% 
-  summarize(Intensity = mean(Intensity), Specificity = mean(Specificity), VVIQ2 = first(VVIQ2))
-
-cor_int <- cor.test(df_sub$Intensity, df_sub$VVIQ2)
-cor_spe <- cor.test(df_sub$Specificity, df_sub$VVIQ2)
-
-bf_r1 <- correlationBF(df_sub$Intensity, df_sub$VVIQ2)
-bf_r2 <- correlationBF(df_sub$Specificity, df_sub$VVIQ2)
-
-cat(sprintf("   r1 (Intensity-VVIQ): r = %.3f, BF10 = %.2f\n", cor_int$estimate, exp(bf_r1@bayesFactor$bf)))
-cat(sprintf("   r2 (Specificity-VVIQ): r = %.3f, BF10 = %.2f\n", cor_spe$estimate, exp(bf_r2@bayesFactor$bf)))
-
-# Steiger's Z
-r1_val <- cor_int$estimate
-r2_val <- cor_spe$estimate
-r.12 <- cor(df_sub$Intensity, df_sub$Specificity)
-steiger <- cocor.dep.groups.overlap(r.jk=r1_val, r.jh=r2_val, r.kh=r.12, n=N_PARTICIPANTS)
-cat("   Steiger's Z Test Results:\n")
-print(steiger)
+cat(sprintf("   Perceptual > Episodic   BF10: %.4f  t(%.0f)=%.3f  d=%.3f\n",
+            bf_H2b_PE, t_pe$parameter, t_pe$statistic, d_pe))
+cat(sprintf("   Episodic > Imagination  BF10: %.4f  t(%.0f)=%.3f  d=%.3f\n\n",
+            bf_H2b_EI, t_ei$parameter, t_ei$statistic, d_ei))
 
 
-# =====================================================================
-# STEP 4: VISUALIZATIONS (ggplot2)
-# =====================================================================
-cat("\n>> GENERATING PUBLICATION PLOTS in ./plots/ \n")
+# --- H3: Convergent Validity (VVIQ-2 correlations) ---
+cat("== H3: Convergent Validity (Correlations with VVIQ-2)\n")
 
-bg_colors <- c("#D81B60", "#1E88E5", "#FFC107") # Accessibility-friendly palette
+df_sub_vviq <- df_sub %>% filter(!is.na(VVIQ2))
 
-# --- Plot 1: Interaction Line Plot (H1) ---
-plot_h1_data <- df_long %>%
-  group_by(Condition, Dimension) %>%
-  summarize(mean_score = mean(Score), se = sd(Score)/sqrt(n()), .groups = 'drop')
+r_int <- NA; p_int <- NA; r_spe <- NA; p_spe <- NA
 
-p1 <- ggplot(plot_h1_data, aes(x = Condition, y = mean_score, group = Dimension, color = Dimension)) +
-  geom_line(linewidth = 1.2) +
-  geom_point(size = 4) +
-  geom_errorbar(aes(ymin = mean_score - se, ymax = mean_score + se), width = 0.1) +
-  scale_color_manual(values = c("Intensity" = "#1E88E5", "Specificity" = "#D81B60")) +
-  theme_minimal(base_size = 14) +
-  labs(title = "H1: Dissociation of Intensity & Specificity",
-       y = "Mean Score (± SE)", x = "Memory Condition") +
-  theme(legend.position = "bottom")
-
-ggsave(file.path(PLOT_DIR, "H1_Interaction_Plot.pdf"), p1, width = 7, height = 5)
-
-
-# --- Plot 2: Hierarchy Raincloud Plot (H2) ---
-# Simple Raincloud using base ggplot geoms to prevent missing dependency errors
-p2 <- ggplot(df_spec, aes(x = Condition, y = Score, fill = Condition)) +
-  geom_violin(alpha = 0.5, trim = FALSE, adjust = 1.5) +
-  geom_boxplot(width = 0.1, fill = "white", outlier.shape = NA) +
-  geom_jitter(width = 0.05, alpha = 0.3, size = 1.5) +
-  scale_fill_manual(values = bg_colors) +
-  theme_minimal(base_size = 14) +
-  labs(title = "H2: Specificity Decay Across Conditions",
-       y = "Specificity Score", x = "") +
-  theme(legend.position = "none")
-
-ggsave(file.path(PLOT_DIR, "H2_Hierarchy_Violin.pdf"), p2, width = 6, height = 5)
-
-
-# --- Plot 3: Convergent Validity Scatters (H3) ---
-df_h3_long <- df_sub %>%
-  pivot_longer(cols = c(Intensity, Specificity), names_to = "Dimension", values_to = "Score")
-
-p3 <- ggplot(df_h3_long, aes(x = VVIQ2, y = Score, color = Dimension)) +
-  geom_point(alpha = 0.6, size = 2) +
-  geom_smooth(method = "lm", alpha = 0.2) +
-  scale_color_manual(values = c("Intensity" = "#1E88E5", "Specificity" = "#D81B60")) +
-  theme_minimal(base_size = 14) +
-  labs(title = "H3: Correlation with VVIQ-2") +
-  facet_wrap(~Dimension) + 
-  theme(legend.position = "none")
-
-ggsave(file.path(PLOT_DIR, "H3_Convergent_Validity.pdf"), p3, width = 8, height = 4)
-
-cat("   [OK] Generated Ploted and saved to:", PLOT_DIR, "\n")
+if (nrow(df_sub_vviq) >= 5) {
+  bf_r1_obj    <- correlationBF(df_sub_vviq$Intensity,   df_sub_vviq$VVIQ2)
+  bf_r2_obj    <- correlationBF(df_sub_vviq$Specificity, df_sub_vviq$VVIQ2)
+  bf_H3_int    <- as.numeric(exp(bf_r1_obj@bayesFactor$bf))
+  bf_H3_spe    <- as.numeric(exp(bf_r2_obj@bayesFactor$bf))
+  cor_int_test <- cor.test(df_sub_vviq$Intensity,   df_sub_vviq$VVIQ2)
+  cor_spe_test <- cor.test(df_sub_vviq$Specificity, df_sub_vviq$VVIQ2)
+  r_int <- as.numeric(cor_int_test$estimate)
+  p_int <- as.numeric(cor_int_test$p.value)
+  r_spe <- as.numeric(cor_spe_test$estimate)
+  p_spe <- as.numeric(cor_spe_test$p.value)
+  cat(sprintf("   r(Intensity, VVIQ-2):   r=%.3f  BF10=%.4f\n", r_int, bf_H3_int))
+  cat(sprintf("   r(Specificity, VVIQ-2): r=%.3f  BF10=%.4f\n\n", r_spe, bf_H3_spe))
+} else {
+  bf_H3_int <- NA
+  bf_H3_spe <- NA
+  cat("   Not enough VVIQ data for H3 correlations.\n\n")
+}
 
 
 # =====================================================================
-# STEP 5: ROBUSTNESS CHECKS & SEQUENTIAL STOPPING
+# STEP 3: SEQUENTIAL STOPPING RULE
 # =====================================================================
-cat("\n>> ROBUSTNESS CHECKS\n")
+cat(">> SEQUENTIAL STOPPING RULE\n")
 
-# ICC
-df_perc_spec <- df_trials %>% filter(Condition == "Perceptual") %>% select(Participant, Trial, Specificity)
-icc_val <- ICC(df_perc_spec %>% pivot_wider(names_from = Trial, values_from = Specificity) %>% select(-Participant))
-cat("  - ICC(3,k):", round(icc_val$results$ICC[6], 2), "\n")
+is_decisive <- function(bf) !is.na(bf) && (bf > 6 || bf < (1/6))
+criteria <- list(
+  H1_interaction         = bf_H1,
+  H2a_specificity_ME     = bf_H2a,
+  H2b_perceptual_episodic = bf_H2b_PE,
+  H2b_episodic_imagination = bf_H2b_EI
+)
 
-# TOST
-cat("  - Equivalence TOST testing bounded p-value...\n")
-tost_res <- TOSTER::tsum_TOST(m1 = mean(perc_scores), sd1 = sd(perc_scores), n1 = length(perc_scores),
-                              m2 = mean(imag_scores), sd2 = sd(imag_scores), n2 = length(imag_scores),
-                              eqb = 0.3)
-# LMM
-cat("  - Linear Mixed Effects Model (Warning is expected due to simulated variance!)\n")
+decisive_flags  <- sapply(criteria, is_decisive)
+decisive_count  <- sum(decisive_flags)
+all_decisive    <- all(decisive_flags)
+stop_decision   <- if (all_decisive || n_analyzed >= 150) "STOP" else "CONTINUE"
 
-df_trials_long <- df_trials %>%
-  pivot_longer(cols = c(Intensity, Specificity), names_to = "Dimension", values_to = "Score") %>%
-  mutate(Dimension = factor(Dimension, levels=c("Intensity", "Specificity")))
+# Next milestone (every 10 participants)
+milestones <- seq(60, 150, by=10)
+next_milestone <- milestones[milestones > n_analyzed][1]
+if (is.na(next_milestone)) next_milestone <- 150
 
-suppressWarnings({
-  lmm_model <- lmerTest::lmer(Score ~ Dimension * Condition + (1 | Participant), data = df_trials_long)
-})
-print(summary(lmm_model)$coef)
+for (nm in names(criteria)) {
+  bf_val <- criteria[[nm]]
+  flag   <- if (is_decisive(bf_val)) "[X]" else "[ ]"
+  cat(sprintf("  %s %s: %.4f\n", flag, nm, ifelse(is.na(bf_val), 0, bf_val)))
+}
 
-cat("\n----------------------------------------------------------\n")
-cat(">> SEQUENTIAL SAMPLING 'ALL OR MAX' RULE LOGIC\n")
-check_bf <- function(val) { if(val > 6 || val < (1/6)) "[X]" else "[ ]" }
+cat(sprintf("\n  Decisive: %d / %d\n", decisive_count, length(criteria)))
+cat(sprintf("  Decision: %s\n\n", stop_decision))
 
-cat(sprintf("  %s BF_incl (Interaction H1): %.2f\n", check_bf(bf_h1_interaction), bf_h1_interaction))
-cat(sprintf("  %s BF_incl (Specificity M.E. H2): %.2f\n", check_bf(bf_h2a_val), bf_h2a_val))
-cat(sprintf("  %s BF_r1 (Intensity ~ VVIQ): %.2f\n", check_bf(exp(bf_r1@bayesFactor$bf)), exp(bf_r1@bayesFactor$bf)))
-cat(sprintf("  %s BF_r2 (Specificity ~ VVIQ): %.2f\n", check_bf(exp(bf_r2@bayesFactor$bf)), exp(bf_r2@bayesFactor$bf)))
+
+# =====================================================================
+# STEP 4: VISUALIZATIONS
+# =====================================================================
+cat(">> Generating plots in", PLOT_DIR, "\n")
+
+cond_labels <- c(
+  perceptual_recall = "Perceptual",
+  episodic_recall   = "Episodic",
+  scene_imagination = "Imagination"
+)
+
+df_long_plot <- df_long %>%
+  mutate(ConditionLabel = factor(recode(as.character(Condition), !!!cond_labels),
+                                  levels = c("Perceptual","Episodic","Imagination")))
+
+# Plot 1: H1 Interaction
+plot_h1_data <- df_long_plot %>%
+  group_by(ConditionLabel, Dimension) %>%
+  summarize(mean_score = mean(Score, na.rm=TRUE), se = sd(Score, na.rm=TRUE)/sqrt(n()), .groups="drop")
+
+p1 <- ggplot(plot_h1_data, aes(x=ConditionLabel, y=mean_score, group=Dimension, color=Dimension)) +
+  geom_line(linewidth=1.2) + geom_point(size=4) +
+  geom_errorbar(aes(ymin=mean_score-se, ymax=mean_score+se), width=0.1) +
+  scale_color_manual(values=c("Intensity"="#1E88E5","Specificity"="#D81B60")) +
+  theme_minimal(base_size=14) +
+  labs(title="H1: Dissociation of Intensity & Specificity",
+       y="Mean Score (± SE)", x="Memory Condition") +
+  theme(legend.position="bottom")
+
+ggsave(file.path(PLOT_DIR, "H1_Interaction.pdf"), p1, width=7, height=5)
+
+# Plot 2: H2 Specificity Hierarchy
+df_spec_plot <- df_spec %>%
+  mutate(ConditionLabel = factor(recode(as.character(Condition), !!!cond_labels),
+                                  levels=c("Perceptual","Episodic","Imagination")))
+
+p2 <- ggplot(df_spec_plot, aes(x=ConditionLabel, y=Score, fill=ConditionLabel)) +
+  geom_violin(alpha=0.5, trim=FALSE, adjust=1.5) +
+  geom_boxplot(width=0.1, fill="white", outlier.shape=NA) +
+  geom_jitter(width=0.05, alpha=0.3, size=1.5) +
+  scale_fill_manual(values=c("#D81B60","#1E88E5","#FFC107")) +
+  theme_minimal(base_size=14) +
+  labs(title="H2: Specificity Hierarchy", y="Specificity Score", x="") +
+  theme(legend.position="none")
+
+ggsave(file.path(PLOT_DIR, "H2_Specificity_Hierarchy.pdf"), p2, width=6, height=5)
+
+# Plot 3: H3 Convergent Validity
+if (!is.na(bf_H3_int)) {
+  df_h3_long <- df_sub_vviq %>%
+    pivot_longer(cols=c(Intensity, Specificity), names_to="Dimension", values_to="Score")
+  p3 <- ggplot(df_h3_long, aes(x=VVIQ2, y=Score, color=Dimension)) +
+    geom_point(alpha=0.6, size=2) +
+    geom_smooth(method="lm", alpha=0.2) +
+    scale_color_manual(values=c("Intensity"="#1E88E5","Specificity"="#D81B60")) +
+    theme_minimal(base_size=14) +
+    labs(title="H3: Correlation with VVIQ-2") +
+    facet_wrap(~Dimension) + theme(legend.position="none")
+  ggsave(file.path(PLOT_DIR, "H3_Convergent_Validity.pdf"), p3, width=8, height=4)
+}
+
+cat("   Plots saved.\n")
+
+
+# =====================================================================
+# STEP 5: WRITE results.json
+# =====================================================================
+
+# Extract frequentist ANOVA stats safely
+safe_anova_stat <- function(obj, effect, col) {
+  tryCatch({
+    tbl <- obj$anova_table
+    as.numeric(tbl[effect, col])
+  }, error = function(e) NA_real_)
+}
+
+h1_F   <- safe_anova_stat(freq_h1,  "Dimension:Condition", "F")
+h1_p   <- safe_anova_stat(freq_h1,  "Dimension:Condition", "Pr(>F)")
+h1_eta <- safe_anova_stat(freq_h1,  "Dimension:Condition", "ges")
+h2a_F  <- safe_anova_stat(freq_h2a, "Condition", "F")
+h2a_p  <- safe_anova_stat(freq_h2a, "Condition", "Pr(>F)")
+h2a_eta<- safe_anova_stat(freq_h2a, "Condition", "ges")
+
+# Interaction means for chart
+cond_labels_map <- c(perceptual_recall="Perceptual", episodic_recall="Episodic", scene_imagination="Imagination")
+interaction_means <- df_long %>%
+  mutate(CondLabel = recode(as.character(Condition), !!!cond_labels_map)) %>%
+  group_by(CondLabel, Dimension) %>%
+  summarize(mean=mean(Score,na.rm=TRUE), se=sd(Score,na.rm=TRUE)/sqrt(n()),
+            sd=sd(Score,na.rm=TRUE), n=n(), .groups="drop")
+
+# Specificity raw values per condition for violin
+spec_vals <- df_spec %>%
+  mutate(CondLabel = recode(as.character(Condition), !!!cond_labels_map)) %>%
+  group_by(CondLabel) %>%
+  summarize(values = list(Score), .groups = "drop")
+
+results <- list(
+  timestamp     = format(Sys.time(), "%Y-%m-%dT%H:%M:%SZ", tz="UTC"),
+  n_raw         = n_raw,
+  n_analyzed    = n_analyzed,
+  bfs = list(
+    H1_interaction              = bf_H1,
+    H2a_specificity_main        = bf_H2a,
+    H2b_perceptual_vs_episodic  = bf_H2b_PE,
+    H2b_episodic_vs_imagination = bf_H2b_EI,
+    H3_intensity_vviq           = bf_H3_int,
+    H3_specificity_vviq         = bf_H3_spe
+  ),
+  stats = list(
+    H1  = list(F=h1_F,  p=h1_p,  eta_sq=h1_eta),
+    H2a = list(F=h2a_F, p=h2a_p, eta_sq=h2a_eta),
+    H2b_PE = list(t=as.numeric(t_pe$statistic), df=as.numeric(t_pe$parameter),
+                  p=as.numeric(t_pe$p.value), d=d_pe),
+    H2b_EI = list(t=as.numeric(t_ei$statistic), df=as.numeric(t_ei$parameter),
+                  p=as.numeric(t_ei$p.value), d=d_ei),
+    H3_int = list(r=r_int, p=p_int, n=nrow(df_sub_vviq)),
+    H3_spe = list(r=r_spe, p=p_spe, n=nrow(df_sub_vviq))
+  ),
+  chart_data = list(
+    interaction_means  = interaction_means,
+    specificity_by_cond = setNames(
+      lapply(spec_vals$values, function(v) round(v, 4)),
+      spec_vals$CondLabel
+    ),
+    vviq_values = if (nrow(df_sub_vviq) > 0) round(df_sub_vviq$VVIQ2, 2) else list()
+  ),
+  stopping = list(
+    decision       = stop_decision,
+    decisive_count = decisive_count,
+    total_criteria = length(criteria),
+    all_decisive   = all_decisive
+  ),
+  next_milestone = next_milestone
+)
+
+results_path <- file.path(DATA_DIR, "results.json")
+write_json(results, results_path, auto_unbox=TRUE, digits=4, null="null")
+cat(">> Results written to:", results_path, "\n")
 cat("=========================================================\n")

@@ -862,7 +862,7 @@ function handleCalibrationResponse(response) {
                 console.log('[Calibration] Screening failure. Sending data silently...');
                 sendDataToGoogleSheet(true);
                 setTimeout(() => {
-                    window.location.href = "https://app.prolific.com/submissions/complete?cc=YOUR_CODE_HERE";
+                    window.location.href = "https://app.prolific.com/submissions/complete?cc=CLBIA383";
                 }, 5000);
             }
         } else {
