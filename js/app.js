@@ -762,7 +762,7 @@ function drawMullerLyer() {
     ctx.fillStyle = '#000000';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    ctx.strokeStyle = '#080808';
+    ctx.strokeStyle = '#0C0C0C';
     ctx.lineWidth = 3;
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
