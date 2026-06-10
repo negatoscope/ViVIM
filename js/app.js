@@ -922,6 +922,8 @@ async function startActualTask() {
     state.currentSessionTrials = constrainedShuffle(generated.trials);
     state.assignedSet = generated.usedSet; // Store for data submission
 
+    await saveSessionMetadata();
+
     // Add attention checks
     const attentionCheckCount = 3;
     let indices = Array.from(Array(state.currentSessionTrials.length).keys());
@@ -1848,6 +1850,29 @@ async function saveTrialToServer(trialData) {
     }
 }
 
+async function saveSessionMetadata() {
+    if (!GOOGLE_SCRIPT_URL || GOOGLE_SCRIPT_URL === "YOUR_GOOGLE_SCRIPT_URL_HERE") return;
+    const payload = {
+        participantID: state.participantID,
+        session_id: state.sessionID,
+        prolific_pid: state.prolificPID || "",
+        study_id: state.studyID || "",
+        assigned_set: state.assignedSet || "N/A",
+        page_load_ms: PAGE_LOAD_TIME,
+        demographics: state.demographics,
+        calibration_log: state.calibrationLog
+    };
+    const params = new URLSearchParams();
+    params.append("data", JSON.stringify(payload));
+    try {
+        await fetch(GOOGLE_SCRIPT_URL, { method: "POST", body: params });
+        state.metadataSaved = true;
+        console.log("[Session] Metadata (demographics + calibration) saved before first trial.");
+    } catch (err) {
+        console.warn("[Session] Metadata pre-save failed; will retry in final send.", err);
+    }
+}
+
 async function sendDataToGoogleSheet(isSilent = false) {
     const dataToPost = {
         participantID: state.participantID || "P-DEBUG",
@@ -1855,11 +1880,11 @@ async function sendDataToGoogleSheet(isSilent = false) {
         prolific_pid: state.prolificPID || "",
         study_id: state.studyID || "",
         session_id: state.sessionID || "",
-        assigned_set: state.assignedSet || "N/A", // Latin Square set
+        assigned_set: state.assignedSet || "N/A",
         page_load_ms: PAGE_LOAD_TIME,
-        demographics: state.demographics,
-        calibration_log: state.calibrationLog, // Calibration attempts (success/fail)
-        vim_results: state.allCollectedResponses,
+        demographics: state.metadataSaved ? null : state.demographics,
+        calibration_log: state.metadataSaved ? [] : state.calibrationLog,
+        vim_results: [], // trials saved in real-time via saveTrialToServer()
         break_data: state.breakData,
         vviq_scores: state.vviq_scores
     };

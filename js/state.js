@@ -18,6 +18,9 @@ const state = {
     longerLinePosition: null,
     calibrationLog: [], // Track all attempts for data analysis
 
+    // Session metadata flush
+    metadataSaved: false,
+
     // Onboarding
     onboardingStep: 0,
     currentDemoIndex: 0,
@@ -68,8 +71,11 @@ const state = {
         this.currentTaskMode = null;
         this.calibrationConsecutiveCorrect = 0;
         this.calibrationTotalWrong = 0;
-        this.calibrationLog = [];
         this.longerLinePosition = null;
+        this.metadataSaved = false;
+        // Note: calibrationLog is intentionally NOT reset here.
+        // It is collected during onboarding calibration and must persist into startActualTask().
+        // Cleared only on page load (initialized above as []).
         this.assignedSet = null;
         this.onboardingStep = 0;
         this.currentDemoIndex = 0;
