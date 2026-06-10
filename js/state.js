@@ -146,7 +146,8 @@ const state = {
             calibrationSuccess: this.calibrationSuccess,
             currentTaskMode: this.currentTaskMode,
             participantID: this.participantID,
-            breakData: this.breakData
+            breakData: this.breakData,
+            screenCalibration: this.screenCalibration
         };
         try {
             localStorage.setItem(this.LOCAL_STORAGE_KEY, JSON.stringify(backup));
@@ -201,6 +202,7 @@ const state = {
         this.currentTaskMode = backup.currentTaskMode || "actual_task_full";
         this.participantID = backup.participantID || null;
         this.breakData = backup.breakData || [];
+        this.screenCalibration = backup.screenCalibration || null;
         console.log('[LocalStorage] State restored from backup.');
     },
 

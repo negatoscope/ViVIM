@@ -137,6 +137,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (backup) {
         console.log('[Resume] Valid session backup found. Restoring state...');
         state.restoreFromBackup(backup);
+        applyVisualAngleScaling(); // re-apply calibrated image sizing (bypassed startActualTask)
 
         // Resume to the correct point in the task
         if (state.currentSessionTrials.length > 0 && state.currentGlobalTrialIndex < state.currentSessionTrials.length) {
@@ -1197,7 +1198,9 @@ function loadNextParameterInVim() {
         setupCoarseStepVim();
     } else {
         // Check if ALL parameters were responded to with "no_info"
-        const allNoInfo = Object.values(state.currentTrialResponses.parameter_responses).every(r => r.level === 'no_info');
+        const allNoInfo = Object.entries(state.currentTrialResponses.parameter_responses)
+            .filter(([key]) => key !== 'attention_check')
+            .every(([, r]) => r.level === 'no_info');
 
         // Show combined image rating screen before finishing (task OR practice)
         if (state.finalMatchRating === null && !allNoInfo) {
