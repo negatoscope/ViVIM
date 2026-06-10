@@ -68,6 +68,7 @@ const state = {
         this.currentTaskMode = null;
         this.calibrationConsecutiveCorrect = 0;
         this.calibrationTotalWrong = 0;
+        this.calibrationLog = [];
         this.longerLinePosition = null;
         this.assignedSet = null;
         this.onboardingStep = 0;

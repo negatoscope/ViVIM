@@ -738,7 +738,6 @@ function startVisualCalibration() {
     state.calibrationAttempts = 0;
     state.calibrationConsecutiveCorrect = 0;
     state.calibrationTotalWrong = 0;
-    state.calibrationLog = [];
 
     const feedback = document.getElementById('calibrationFeedback');
     const retryBtn = document.getElementById('calibrationRetryBtn');
