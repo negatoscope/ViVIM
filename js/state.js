@@ -143,7 +143,10 @@ const state = {
             currentParameterIndexInTask: this.currentParameterIndexInTask,
             actualTaskOrder: this.actualTaskOrder,
             demographics: this.demographics,
-            calibrationSuccess: this.calibrationSuccess
+            calibrationSuccess: this.calibrationSuccess,
+            currentTaskMode: this.currentTaskMode,
+            participantID: this.participantID,
+            breakData: this.breakData
         };
         try {
             localStorage.setItem(this.LOCAL_STORAGE_KEY, JSON.stringify(backup));
@@ -195,6 +198,9 @@ const state = {
         this.actualTaskOrder = backup.actualTaskOrder;
         this.demographics = backup.demographics;
         this.calibrationSuccess = backup.calibrationSuccess;
+        this.currentTaskMode = backup.currentTaskMode || "actual_task_full";
+        this.participantID = backup.participantID || null;
+        this.breakData = backup.breakData || [];
         console.log('[LocalStorage] State restored from backup.');
     },
 
