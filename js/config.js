@@ -102,7 +102,7 @@ const LANG_STRINGS = {
 <p>Before starting, you will be asked some brief demographic questions. Upon completing the main task, you will answer a standardized questionnaire about your general imagery abilities (VVIQ-2). The study takes approximately 45 minutes in total.</p>
 
 <h4>Risks and Benefits of Participating</h4>
-<p>You will be compensated for your participation with £6.75 (or its equivalent in your local currency) via Prolific, once the validity of your submission has been verified. This study includes questions to evaluate your attention and response patterns to avoid invalid data. If you do not answer the attention questions correctly, your participation will be returned.</p>
+<p>You will be compensated for your participation with £7.80 (or its equivalent in your local currency) via Prolific, once the validity of your submission has been verified. This study includes questions to evaluate your attention and response patterns to avoid invalid data. If you do not answer the attention questions correctly, your participation will be returned.</p>
 <p>Participation in this study carries no significant risks beyond those associated with normal computer use for a similar period (possible visual fatigue or tiredness). The study includes two mandatory breaks to minimize these discomforts.</p>
 <p>If you feel any discomfort, or in any other circumstance, you may stop and/or leave the study at any time, without explanation, questioning, or consequences.</p>
 
@@ -342,7 +342,7 @@ const LANG_STRINGS = {
 <p>Antes de comenzar, se le harán unas breves preguntas demográficas. Al finalizar la tarea principal, deberá responder a un cuestionario estandarizado sobre sus habilidades generales de imaginación (VVIQ-2). En total, el estudio tiene una duración aproximada de 45 minutos.</p>
 
 <h4>Riesgos y beneficios de participar en el estudio</h4>
-<p>Usted será compensado por su participación con £6.75 (o su equivalente en su moneda local) a través de Prolific, una vez que se haya corroborado la validez del envío. Este estudio cuenta con preguntas que evaluarán su atención y su forma de contestar con el objetivo de evitar datos inválidos. En caso de no responder correctamente a las preguntas atencionales, su participación será devuelta.</p>
+<p>Usted será compensado por su participación con £7.80 (o su equivalente en su moneda local) a través de Prolific, una vez que se haya corroborado la validez del envío. Este estudio cuenta con preguntas que evaluarán su atención y su forma de contestar con el objetivo de evitar datos inválidos. En caso de no responder correctamente a las preguntas atencionales, su participación será devuelta.</p>
 <p>La participación en este estudio no conlleva riesgos significativos más allá de los asociados al uso normal de un ordenador durante un periodo de tiempo similar (posible fatiga visual o cansancio). El estudio incluye dos descansos obligatorios para minimizar estas molestias.</p>
 <p>En caso de sentir cualquier tipo de incomodidad, y en cualquier otra circunstancia, usted podrá detener y/o abandonar el estudio en cualquier momento, sin necesidad de dar explicaciones, sin cuestionamientos ni consecuencias por ello.</p>
 
