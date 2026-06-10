@@ -738,7 +738,6 @@ function handleDemographicsSubmit() {
 function startVisualCalibration() {
     state.calibrationAttempts = 0;
     state.calibrationConsecutiveCorrect = 0;
-    state.calibrationTotalWrong = 0;
 
     const feedback = document.getElementById('calibrationFeedback');
     const retryBtn = document.getElementById('calibrationRetryBtn');
@@ -847,7 +846,7 @@ function handleCalibrationResponse(response) {
         state.calibrationTotalWrong++;
         state.calibrationConsecutiveCorrect = 0;
 
-        if (state.calibrationTotalWrong >= 4) {
+        if (state.calibrationTotalWrong >= 10) {
             state.calibrationSuccess = false;
             const baseMsg = lang === 'en'
                 ? LANG_STRINGS.en.calibrationFailed
