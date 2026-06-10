@@ -1851,6 +1851,9 @@ async function saveTrialToServer(trialData) {
 }
 
 async function saveSessionMetadata() {
+    // Fires at task start (before first trial) to preserve calibration even on mid-task dropout.
+    // Sends calibration_log only — demographics is sent at session end by sendDataToGoogleSheet()
+    // so it can carry session_end_ms for accurate duration tracking.
     if (!GOOGLE_SCRIPT_URL || GOOGLE_SCRIPT_URL === "YOUR_GOOGLE_SCRIPT_URL_HERE") return;
     const payload = {
         participantID: state.participantID,
@@ -1858,8 +1861,6 @@ async function saveSessionMetadata() {
         prolific_pid: state.prolificPID || "",
         study_id: state.studyID || "",
         assigned_set: state.assignedSet || "N/A",
-        page_load_ms: PAGE_LOAD_TIME,
-        demographics: state.demographics,
         calibration_log: state.calibrationLog
     };
     const params = new URLSearchParams();
@@ -1867,9 +1868,9 @@ async function saveSessionMetadata() {
     try {
         await fetch(GOOGLE_SCRIPT_URL, { method: "POST", body: params });
         state.metadataSaved = true;
-        console.log("[Session] Metadata (demographics + calibration) saved before first trial.");
+        console.log("[Session] Calibration log saved before first trial.");
     } catch (err) {
-        console.warn("[Session] Metadata pre-save failed; will retry in final send.", err);
+        console.warn("[Session] Pre-task calibration save failed; will retry in final send.", err);
     }
 }
 
@@ -1882,8 +1883,9 @@ async function sendDataToGoogleSheet(isSilent = false) {
         session_id: state.sessionID || "",
         assigned_set: state.assignedSet || "N/A",
         page_load_ms: PAGE_LOAD_TIME,
-        demographics: state.metadataSaved ? null : state.demographics,
-        calibration_log: state.metadataSaved ? [] : state.calibrationLog,
+        session_end_ms: Date.now(),                                          // client-side end timestamp (ms)
+        demographics: state.demographics,                                    // always included for session_end_ms
+        calibration_log: state.metadataSaved ? [] : state.calibrationLog,   // skip if pre-saved
         vim_results: [], // trials saved in real-time via saveTrialToServer()
         break_data: state.breakData,
         vviq_scores: state.vviq_scores
