@@ -197,7 +197,10 @@ function applyFiltersToElement(imgEl, canvasEl, levels, activeParam, combinedMod
     const filterC = `contrast(${cVal.toFixed(3)})`;
     const filterS = `saturate(${sVal})`;
     const filterBlur = `blur(${blurVal}px)`;
-    const filterD = `brightness(${dBri.toFixed(3)}) contrast(${dCon.toFixed(3)})`;
+    const detailBlur = cur.detailedness < 6 ? (6 - cur.detailedness) / 5 * 3 : 0;
+    const filterD = detailBlur > 0.05
+        ? `brightness(${dBri.toFixed(3)}) contrast(${dCon.toFixed(3)}) blur(${detailBlur.toFixed(2)}px)`
+        : `brightness(${dBri.toFixed(3)}) contrast(${dCon.toFixed(3)})`;
 
     let filterP = '';
     const N = Math.round(getInterpolatedValue(PARAM_VALUES.precision, cur.precision));

@@ -1,3 +1,5 @@
+const PAGE_LOAD_TIME = Date.now(); // captured before any onboarding step
+
 // --- DOM ELEMENTS ---
 const dom = {
     accessDeniedScreen: document.getElementById("accessDeniedScreen"),
@@ -1855,6 +1857,7 @@ async function sendDataToGoogleSheet(isSilent = false) {
         study_id: state.studyID || "",
         session_id: state.sessionID || "",
         assigned_set: state.assignedSet || "N/A", // Latin Square set
+        page_load_ms: PAGE_LOAD_TIME,
         demographics: state.demographics,
         calibration_log: state.calibrationLog, // Calibration attempts (success/fail)
         vim_results: state.allCollectedResponses,
@@ -2117,7 +2120,6 @@ function showBreakScreen(callback) {
     // Helper to finish break
     const finishBreak = () => {
         if (timerInterval) clearInterval(timerInterval);
-        document.removeEventListener('keydown', skipListener);
 
         // Record break end
         const duration = Date.now() - breakStart;
@@ -2130,14 +2132,6 @@ function showBreakScreen(callback) {
         });
         callback();
     };
-
-    // Skip listener (press 'S' to skip)
-    const skipListener = (e) => {
-        if (e.key === 's' || e.key === 'S') {
-            finishBreak();
-        }
-    };
-    document.addEventListener('keydown', skipListener);
 
     if (DEBUG_SKIP_BREAK_TIMER) {
         btn.disabled = false;

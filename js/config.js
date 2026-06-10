@@ -80,9 +80,6 @@ const LANG_STRINGS = {
         <h3 style="font-size:1em; font-weight:700; margin:18px 0 6px;">Did you know?</h3>
         <p style="margin-bottom:12px;">About 2–3% of people report having no visual imagery at all (a condition called <em>aphantasia</em>), while others experience exceptionally vivid imagery (<em>hyperphantasia</em>). Most people fall somewhere in between — your responses today help us understand this full range of human experience.</p>
 
-        <h3 style="font-size:1em; font-weight:700; margin:18px 0 6px;">Open science</h3>
-        <p style="margin-bottom:12px;">This study is part of a pre-registered research programme. The full protocol and analysis plan are publicly available at: <a href="https://osf.io/wqdma/" target="_blank" style="color:#0066cc;">osf.io/wqdma/</a></p>
-
         <h3 style="font-size:1em; font-weight:700; margin:18px 0 6px;">Questions or concerns?</h3>
         <p style="margin-bottom:20px;">Contact us at <a href="mailto:leudave@unav.es" style="color:#0066cc;">leudave@unav.es</a> — we are happy to hear from you.</p>
 
@@ -181,7 +178,7 @@ const LANG_STRINGS = {
           </p>
       `,
     tutorialPromptTitle: "Practice Trial: Instructions",
-    tutorialPromptText: "For this practice trial, please: <b>IMAGINE a father playing with this infant son at a park.</b><br><br>Please close your eyes to form a clear and stable mental image. When you have it, open your eyes and press Continue.",
+    tutorialPromptText: "For this practice trial, please: <b>IMAGINE a father playing with his infant son at a park.</b><br><br>Please close your eyes to form a clear and stable mental image. When you have it, open your eyes and press Continue.",
     tutorialVimInstruction: "This is a practice round. Please try to match the <b>Brightness</b> of the mental image you are holding in your mind.",
     startPracticeButton: "Continue",
     readyTitle: "Practice Complete",
@@ -321,8 +318,6 @@ const LANG_STRINGS = {
         <h3 style="font-size:1em; font-weight:700; margin:18px 0 6px;">¿Sabías que…?</h3>
         <p style="margin-bottom:12px;">Aproximadamente el 2–3% de las personas refieren no tener ningún tipo de imaginería visual (una condición llamada <em>afantasía</em>), mientras que otras experimentan imágenes mentales extraordinariamente vívidas (<em>hiperfantasía</em>). La mayoría de las personas se sitúa en algún punto intermedio — tus respuestas de hoy nos ayudan a comprender todo este rango de la experiencia humana.</p>
 
-        <h3 style="font-size:1em; font-weight:700; margin:18px 0 6px;">Ciencia abierta</h3>
-        <p style="margin-bottom:12px;">Este estudio forma parte de un programa de investigación prerregistrado. El protocolo completo y el plan de análisis están disponibles públicamente en: <a href="https://osf.io/wqdma/" target="_blank" style="color:#0066cc;">osf.io/wqdma/</a></p>
 
         <h3 style="font-size:1em; font-weight:700; margin:18px 0 6px;">¿Preguntas o comentarios?</h3>
         <p style="margin-bottom:20px;">Contacta con nosotros en <a href="mailto:leudave@unav.es" style="color:#0066cc;">leudave@unav.es</a> — estaremos encantados de atenderte.</p>
