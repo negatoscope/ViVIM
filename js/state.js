@@ -58,6 +58,9 @@ const state = {
     // Breaks
     breakData: [],
 
+    // Pending trials that failed real-time save (flushed at session end)
+    pendingTrials: [],
+
     // VVIQ
     vviq_scores: [],
     vviqEnabled: true,
@@ -92,6 +95,7 @@ const state = {
         this.actualTaskOrder = [];
         this.hasMovedSlider = false;
         this.breakData = [];
+        this.pendingTrials = [];
         this.vviq_scores = [];
         // Note: screenCalibration is intentionally NOT reset here.
         // It is set during onboarding and describes the physical display session,
@@ -147,6 +151,7 @@ const state = {
             currentTaskMode: this.currentTaskMode,
             participantID: this.participantID,
             breakData: this.breakData,
+            pendingTrials: this.pendingTrials,
             screenCalibration: this.screenCalibration
         };
         try {
@@ -202,6 +207,7 @@ const state = {
         this.currentTaskMode = backup.currentTaskMode || "actual_task_full";
         this.participantID = backup.participantID || null;
         this.breakData = backup.breakData || [];
+        this.pendingTrials = backup.pendingTrials || [];
         this.screenCalibration = backup.screenCalibration || null;
         console.log('[LocalStorage] State restored from backup.');
     },

@@ -1815,6 +1815,20 @@ function collectAndFinish() {
 // --- REAL-TIME TRIAL SAVING ---
 // Sends a single completed trial to the server asynchronously.
 // This is 'fire-and-forget' to avoid blocking the task flow.
+async function fetchWithRetry(url, options, maxAttempts = 3, baseDelayMs = 1000) {
+    let lastErr;
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+        try {
+            return await fetch(url, options);
+        } catch (err) {
+            lastErr = err;
+            if (attempt < maxAttempts)
+                await new Promise(r => setTimeout(r, baseDelayMs * attempt));
+        }
+    }
+    throw lastErr;
+}
+
 async function saveTrialToServer(trialData) {
     if (!GOOGLE_SCRIPT_URL || GOOGLE_SCRIPT_URL === "YOUR_GOOGLE_SCRIPT_URL_HERE") {
         console.log('[RealTimeSave] GOOGLE_SCRIPT_URL not configured. Skipping server save.');
@@ -1837,18 +1851,19 @@ async function saveTrialToServer(trialData) {
 
     try {
         console.log(`[RealTimeSave] Sending trial ${trialData.trial_id} to server...`);
-        const response = await fetch(GOOGLE_SCRIPT_URL, {
+        const response = await fetchWithRetry(GOOGLE_SCRIPT_URL, {
             method: "POST",
             body: params
         });
         if (response.ok) {
             console.log(`[RealTimeSave] Trial ${trialData.trial_id} saved successfully.`);
         } else {
-            console.warn(`[RealTimeSave] Server responded with status ${response.status}. Trial ${trialData.trial_id} may not be saved.`);
+            console.warn(`[RealTimeSave] Server responded with status ${response.status} for trial ${trialData.trial_id}.`);
         }
     } catch (error) {
-        console.warn(`[RealTimeSave] Network error for trial ${trialData.trial_id}:`, error.message);
-        // Silently fail. The full dataset will be sent at the end.
+        console.warn(`[RealTimeSave] All retries failed for trial ${trialData.trial_id}. Queued for final send.`, error.message);
+        state.pendingTrials.push(trialData);
+        state.saveToLocalStorage();
     }
 }
 
@@ -1877,6 +1892,15 @@ async function saveSessionMetadata() {
 }
 
 async function sendDataToGoogleSheet(isSilent = false) {
+    // Flush any trials that failed real-time save (last-chance retry before final submission)
+    if (state.pendingTrials.length > 0) {
+        console.log(`[PendingFlush] Retrying ${state.pendingTrials.length} queued trial(s)...`);
+        for (const trial of state.pendingTrials) {
+            await saveTrialToServer(trial);
+        }
+        state.pendingTrials = [];
+    }
+
     const dataToPost = {
         participantID: state.participantID || "P-DEBUG",
         sessionID: state.sessionID || Date.now(),
